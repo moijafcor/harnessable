@@ -44,11 +44,11 @@ than a bad implementation.
 **Recon Pass (mandatory before authoring DIP):**
 See `agents/engineer.md` for the full recon protocol. Minimum recon:
 - Read the DMT in full, including comments and linked issues
-- Scan affected codebase areas (files, modules, schemas)
+- Scan the affected domain (files, systems, schemas, processes, policies)
 - Read `docs/mandates/` for related prior mandates
 - Query Claude memory/past sessions for relevant context
-- Check infrastructure state if SRE work is involved
-- Identify all external dependencies (APIs, SDKs, third-party services)
+- Check infrastructure or operational state if relevant
+- Identify all external dependencies (APIs, services, integrations, stakeholders)
 
 **Permissions:**
 - Author and update DIP
@@ -58,7 +58,7 @@ See `agents/engineer.md` for the full recon protocol. Minimum recon:
 - Comment on DMT
 
 **Prohibitions:**
-- Must not implement (no code changes, no infrastructure mutations)
+- Must not implement (no changes to the domain under mandate — code, infrastructure, documents, communications, or any other output)
 - Must not advance board past `PLANNED` (Coder owns `IN_PROGRESS`)
 
 **Handoff signal:** DIP complete, board status `PLANNED` = Coder may begin.

@@ -107,15 +107,15 @@
 - [ ] [REQUIRED] [specific behaviour assertion]
 - [ ] [OPTIONAL] [nice-to-have assertion]
 
-### Operational / SRE Checks
-- [ ] [REQUIRED] No new errors in application logs after deployment
-- [ ] [REQUIRED] [health endpoint / smoke test passes]
-- [ ] [REQUIRED] [relevant metric within acceptable range]
+### Operational Checks
+- [ ] [REQUIRED] No new errors or anomalies after execution
+- [ ] [REQUIRED] [health probe / smoke check passes]
+- [ ] [REQUIRED] [relevant metric or signal within acceptable range]
 
-### Code Quality Checks
-- [ ] [REQUIRED] Linter passes (`[command]`)
-- [ ] [REQUIRED] Type checker passes (`[command]`)
-- [ ] [REQUIRED] Test suite passes (`[command]`) — output captured in TIR
+### Domain Verification Checks
+- [ ] [REQUIRED] [primary verification command passes] (`[command]`) — output captured in TIR
+- [ ] [REQUIRED] [secondary check passes] (`[command]`)
+- [ ] [REQUIRED] [domain-specific validator passes] (`[command]`)
 
 ### QA-Specific Checks (from DMT)
 - [ ] [REQUIRED] [acceptance criterion mapped to a specific verification action]

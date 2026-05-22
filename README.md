@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository defines protocols for running AI coding agents on production software work. It includes four roles, a structured artifact chain, a state machine, enforcement protocols, and a continuous improvement loop. The process is adapted from regulated engineering practices and applied to software teams using LLMs.
+This repository is the operational governance layer for autonomous agents working in high-stakes production environments — from AI coding assistants to chief-of-staff, legal review, and financial analysis agents. It provides four roles, a structured artifact chain, a state machine, and a continuous improvement loop — all backed by a deployable enforcement layer: a hooks dispatcher and scripts that make the governance protocols mechanically enforceable, not merely advisory. The process is adapted from regulated engineering disciplines and applied to any domain where an agent operates with real consequences.
 
 All abbreviations and framework-specific terms are defined in [GLOSSARY.md](GLOSSARY.md).
 
@@ -20,15 +20,15 @@ Reliability requires controls around the model, not only model selection or prom
 Agent = Model + Context + Tools + Enforcement + Verification + Observability
 ```
 
-A model without operational controls is difficult to validate, audit, and recover. A constrained, verified, observable agent can be operated as part of an engineering workflow.
+A model without operational controls is difficult to validate, audit, and recover. A constrained, verified, observable agent can be operated as part of any high-stakes workflow.
 
 ---
 
 ## What This Is Not
 
 - Not a framework for one-shot prompts or chat assistants
-- Not a library or SDK — it is a set of protocols, templates, and agent instructions
-- Not model-specific — designed for Claude but applicable to any capable coding agent
+- Not a general AI application toolkit — it is specifically for teams operating autonomous agents in environments where actions have real consequences
+- Not model-specific — designed for Claude Code but the protocols and hook architecture apply to any autonomous agent runtime with lifecycle hooks
 
 ---
 
@@ -63,7 +63,7 @@ Engineer authors DIP
     ▼
 Coder implements + streams TIR
     │
-    │  Completed work with evidence: test output, linter output,
+    │  Completed work with evidence: verification output,
     │  deviations filed, and gates checked.
     ▼
 QA verifies + issues verdict
@@ -100,25 +100,25 @@ Full transition table and invariants: [references/state-machine.md](references/s
 User Request
       │
       ▼
-Context Layer      ← project rules, session memory, governance docs
+Context Layer      ← AGENTS.md: project rules, allowed/blocked actions, completion gate
       │
       ▼
 Tool Layer         ← controlled tools with schemas, validation, audit logging
       │
       ▼
-Enforcement Layer  ← hooks that block unsafe actions regardless of model decisions
-      │
+Enforcement Layer  ← PreToolUse: bouncer.py + secrets_guard.py (block before execution)
+      │               PostToolUse: audit_logger.py (record after execution)
       ▼
 Execution
       │
       ▼
-Verification Layer ← independent QA, automated checks, evidence required
-      │
+Verification Layer ← Stop: completion_gate.py (completion gate before turn completes)
+      │               Independent QA, automated checks, evidence required
       ▼
 Approved Output
 ```
 
-Prompts live in the Context Layer. They are useful but not enforceable. Enforcement lives in hooks and gates that run regardless of what the model decides.
+Prompts live in the Context Layer. They are useful but not enforceable. Enforcement lives in hooks and gates that run regardless of what the model decides. The `hooks/` directory makes the Enforcement Layer operational — copy it into your project and wire it via `.claude/settings.json`.
 
 ---
 
@@ -132,11 +132,23 @@ harnessable/
 │   ├── coder.md                   Build discipline, pre-completion hook runner, exit gate
 │   └── qa.md                      Adversarial verification protocol, verdict criteria
 │
+├── hooks/                         Enforcement Layer — drop into your project to activate
+│   ├── run.py                     Universal dispatcher: discovers and runs *.py scripts per event
+│   ├── pre_tool_use/              Scripts run on PreToolUse (add files here to extend)
+│   │   ├── bouncer.py             Blocks Bash commands matching AGENTS.md ## Blocked list
+│   │   └── secrets_guard.py       Hardcoded floor: blocks credential reads and exfiltration
+│   ├── post_tool_use/             Scripts run on PostToolUse (add files here to extend)
+│   │   └── audit_logger.py        Appends every tool call to .harnessable/audit.log
+│   ├── stop/                      Scripts run on Stop (add files here to extend)
+│   │   └── completion_gate.py     Runs AGENTS.md ## Completion Gate commands; blocks if any fail
+│   └── claude_code_settings_template.json     Drop-in .claude/settings.json — all events wired through run.py
+│
 ├── references/                    Reference documents loaded at session start
 │   ├── roles.md                   Full role definitions, permissions, prohibitions
 │   ├── state-machine.md           Board status transitions and invariants
 │   ├── error-modes.md             Classified failure patterns and expected responses
-│   └── continuous-improvement.md  Failure → RCA → harness improvement loop
+│   ├── continuous-improvement.md  Failure → RCA → harness improvement loop
+│   └── hooks.md                   Hook lifecycle events, installation, and extension guide
 │
 ├── templates/
 │   └── dip.md                     Design Implementation Plan template (all required sections)
@@ -203,7 +215,21 @@ Declare the tool and integration method in your project's `AGENTS.md` under `## 
 
 ### 2. Copy the framework files
 
-Place `agents/`, `references/`, and `templates/` somewhere your agent sessions can read them. A `docs/harness/` directory in your project works well.
+Place `agents/`, `references/`, `templates/`, and `hooks/` somewhere your agent sessions can read them. A `docs/harness/` directory in your project works well.
+
+### 2a. Wire the enforcement hooks
+
+Copy `hooks/claude_code_settings_template.json` to `.claude/settings.json` at the root of your project (or merge it into an existing settings file). Update the base path if you placed `hooks/` somewhere other than `docs/harness/hooks/`.
+
+This registers `hooks/run.py` as the dispatcher for three lifecycle events:
+
+| Event | Subdirectory | What runs |
+| --- | --- | --- |
+| PreToolUse | `hooks/pre_tool_use/` | `bouncer.py`, `secrets_guard.py` |
+| PostToolUse | `hooks/post_tool_use/` | `audit_logger.py` |
+| Stop | `hooks/stop/` | `completion_gate.py` |
+
+Adding a new check later requires only dropping a `.py` file into the relevant subdirectory — no further changes to `settings.json`.
 
 ### 3. Load agent context at session start
 
@@ -238,7 +264,7 @@ Each role reads its protocol file before starting any work. No role begins witho
 | Anti-pattern | Replace with |
 | --- | --- |
 | Unlimited shell access | Controlled tools with schemas and permission checks |
-| Prompt-only safety (`"never delete data"`) | Enforced hooks that block regardless of model intent |
+| Prompt-only safety (`"never delete data"`) | Enforced hooks via `hooks/run.py` that block regardless of model intent |
 | Self-verification | Independent QA that re-executes checks themselves |
 | Huge agent contexts | Sub-agents with scoped tasks, summarised findings passed to parent |
 | No audit trail | Structured TIR with real output evidence |

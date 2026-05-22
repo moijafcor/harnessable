@@ -1,0 +1,43 @@
+{
+  "_readme": [
+    "Drop this file into your project as .claude/settings.json (or merge into an existing one).",
+    "Adjust the base path to wherever you placed the harnessable hooks/ directory.",
+    "The default paths assume hooks/ lives at docs/harness/hooks/ inside your project.",
+    "To add a new check, drop a .py file into the relevant subdirectory — no edits here needed.",
+    "See references/hooks.md for the full wiring guide."
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 docs/harness/hooks/run.py pre_tool_use"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 docs/harness/hooks/run.py post_tool_use"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 docs/harness/hooks/run.py stop"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -70,8 +70,7 @@ Implement the closest valid equivalent. If no valid equivalent exists: `BLOCKER`
 **Board:** Continue in `IN_PROGRESS`; BLOCKER if no path forward.
 
 ### C2: Verification Gate Failure
-**Trigger:** A DIP verification checklist item fails (test failure, linter error,
-type error, health check failure).
+**Trigger:** A DIP verification checklist item fails (a domain check, validation step, health probe, or completion gate command exits non-zero).
 **Response:** Do not advance board. Document failure in TIR `## Blockers`.
 Diagnose and fix within mandate scope. If fix requires scope expansion:
 `DEVIATION` or new child task.

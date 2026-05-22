@@ -29,7 +29,7 @@ The task created by the Architect in the project tracker. Defines the problem, c
 The document produced by the Engineer. Describes how to implement the DMT: recon findings, architecture decisions, ordered implementation steps, verification checklists, and containment plan. Lives at `docs/mandates/{bucket}/{slug}_implementation_plan.md`.
 
 **TIR — Task Implementation Report**
-The record produced by the Coder during and after implementation. Embedded as a section in the DIP. Contains what was actually built, evidence (test output, linter output, health checks), deviation records, and the Coder's sign-off checklist.
+The record produced by the Coder during and after implementation. Embedded as a section in the DIP. Contains what was actually built, evidence (verification output, domain-specific checks, health probes), deviation records, and the Coder's sign-off checklist.
 
 **QA Verdict**
 The outcome produced by QA after verification. Appended to the DIP. One of three outcomes: `PASS`, `CONDITIONAL_PASS`, or `FAIL`, with evidence and rationale.
@@ -99,7 +99,7 @@ The operating environment around the model: context, tools, permissions, enforce
 A structured review of a failure to identify the missing or ineffective control that allowed the failure to occur (or to reach the stage it did). Required for every HARNESS_IMPROVEMENT discovery and for any mandate closed with CONDITIONAL_PASS or that passed through NEEDS_REVISION more than once.
 
 **SRE — Site Reliability Engineering**
-A discipline applying software engineering practices to infrastructure and operations. Referenced in the framework's engineering model context. Relevant to how the framework thinks about reliability, error budgets, and failure containment.
+A discipline applying reliability engineering practices to infrastructure and operations. Referenced in the framework's engineering model context. Relevant to how the framework thinks about reliability, error budgets, and failure containment.
 
 **MCP — Model Context Protocol**
 Anthropic's open protocol for connecting AI agents to external tools and data sources via structured integrations. One possible implementation of the project tracker integration declared in `AGENTS.md`. Not required — REST API or manual updates are equally valid.

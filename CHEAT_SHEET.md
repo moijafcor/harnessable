@@ -1,6 +1,6 @@
 # AI Agent Harness Engineering Cheat Sheet
 
-> Engineering patterns for building reliable AI systems, coding agents, and autonomous workflows.
+> Operational governance for autonomous agents: protocols, roles, and a deployable enforcement layer for high-stakes production work.
 
 ---
 
@@ -41,7 +41,7 @@ Effective agent systems require:
 
 A model without operational controls is difficult to validate, audit, and recover.
 
-A constrained, verified, and observable model can be operated as part of an engineering system.
+A constrained, verified, and observable agent can be operated safely in any domain where actions carry real consequences. Harnessable provides both the governance protocols that define those controls and the enforcement infrastructure that makes them deterministic — not advisory.
 
 ---
 
@@ -185,23 +185,34 @@ What control was missing?
 User Request
       │
       ▼
-Context Layer
+Context Layer          ← AGENTS.md: rules, Blocked list, Completion Gate
       │
       ▼
-Tool Layer
+Tool Layer             ← controlled tools with schemas and permission checks
       │
       ▼
-Enforcement Layer
-      │
+Enforcement Layer      ← hooks/run.py dispatches to pre_tool_use/*.py
+      │                    bouncer.py blocks AGENTS.md ## Blocked commands
+      │                    secrets_guard.py blocks credential exposure
       ▼
 Execution
       │
       ▼
-Verification Layer
+                       ← hooks/run.py dispatches to post_tool_use/*.py
+                           audit_logger.py records every tool call
       │
+      ▼
+Verification Layer     ← hooks/run.py dispatches to stop/*.py
+      │                    completion_gate.py gates on AGENTS.md ## Completion Gate
+      │                    independent QA, automated checks, evidence required
       ▼
 Approved Output
 ```
+
+The dispatcher (`hooks/run.py`) is the single entry point wired in
+`.claude/settings.json`. It discovers `*.py` files in each event
+subdirectory alphabetically and runs them in order. Adding a new check
+means dropping a file — no settings changes required.
 
 ---
 
@@ -270,10 +281,25 @@ Escalation: [describe when to interrupt vs. proceed with a logged DEVIATION]
 
 ## Blocked
 
-- rm -rf
-- DROP TABLE
-- Force push to main
+- `rm -rf`
+- `DROP TABLE`
+- `git push --force`
+- `git push -f`
+
+## Completion Gate
+
+- npx eslint src/
+- npx tsc --noEmit
+- npx jest --passWithNoTests
 ```
+
+Both sections are read at runtime by the hook scripts invoked through the
+dispatcher (`hooks/run.py`). AGENTS.md is the single source of truth —
+write policy once and it is both documented and enforced.
+
+`## Blocked` patterns must be command fragments (not prose) for reliable
+substring matching. `## Completion Gate` commands must each exit 0 for the
+agent's turn to complete. Omit the section entirely to disable the gate.
 
 ---
 
@@ -452,19 +478,38 @@ Useful as guidance, but not enforceable.
 
 ### Enforcement Hooks
 
-Example:
+The `hooks/` directory provides a ready-to-use implementation. Copy it into
+your project and wire it via `hooks/claude_code_settings_template.json` → `.claude/settings.json`.
 
-```text
-DELETE *
+**The dispatcher** (`hooks/run.py`) is the only script referenced in
+`.claude/settings.json`. It discovers `*.py` files in the relevant event
+subdirectory and runs them in alphabetical order, feeding each the original
+stdin payload:
+
+```
+.claude/settings.json
+  PreToolUse  → python3 hooks/run.py pre_tool_use
+                    ├── bouncer.py        (AGENTS.md ## Blocked enforcement)
+                    └── secrets_guard.py  (hardcoded credential floor)
+  PostToolUse → python3 hooks/run.py post_tool_use
+                    └── audit_logger.py   (.harnessable/audit.log)
+  Stop        → python3 hooks/run.py stop
+                    └── completion_gate.py (AGENTS.md ## Completion Gate)
 ```
 
-↓
+**To add a check:** drop a `.py` file into the relevant subdirectory.
+No `settings.json` edit is required.
 
-```text
-BLOCKED
-```
+Exit code protocol:
 
-The action never executes.
+- `0` — allow, continue
+- `2` — block; stderr message is fed back to the agent as the reason
+
+The dispatcher stops at the first exit 2 in each event directory.
+Scripts that must never block (e.g. loggers) should handle their own
+errors and always exit 0.
+
+Full reference: `references/hooks.md`
 
 ---
 
@@ -476,7 +521,7 @@ Prevent:
 
 - Privilege escalation
 - Unauthorised access
-- Secret exposure
+- Secret exposure (`secrets_guard.py` covers common patterns out of the box)
 
 ---
 
@@ -490,17 +535,31 @@ Require:
 
 ---
 
-#### Code Quality Hooks
+#### Completion Verification Hooks
 
-Run:
+Configure domain-specific checks in AGENTS.md `## Completion Gate`.
+Each bullet is a shell command that must exit 0 before the agent's turn ends.
 
-```bash
-lint
-typecheck
-test
+Software project example:
+
+```markdown
+## Completion Gate
+
+- npx eslint src/
+- npx tsc --noEmit
+- npx jest --passWithNoTests
 ```
 
-before completion.
+Executive assistant example:
+
+```markdown
+## Completion Gate
+
+- python3 scripts/verify_recipients.py
+- python3 scripts/check_calendar_conflicts.py
+```
+
+The `completion_gate.py` Stop hook runs these before every turn completes.
 
 ---
 
@@ -706,18 +765,23 @@ Record:
 - Approvals
 - Deployments
 
+`hooks/post_tool_use/audit_logger.py` covers tool invocations automatically —
+every tool call is appended to `.harnessable/audit.log` (one JSON object per
+line) via the PostToolUse dispatcher. Add scripts to `hooks/post_tool_use/`
+to capture additional signals (metrics, external alerting, ticket creation).
+
 ---
 
 ### Example Audit Trail
 
 ```text
 Request received
-Permission validated
+Permission validated            ← bouncer.py (PreToolUse)
 Tests executed
-Deployment executed
+Deployment executed             ← audit_logger.py records this entry
 Health checks passed
 Approved
-Completed
+Completed                       ← completion_gate.py passed (Stop)
 ```
 
 ---
@@ -754,9 +818,12 @@ Completed
 
 ### Enforcement
 
-- [ ] Dangerous actions blocked
-- [ ] Hooks configured
-- [ ] Human approval gates defined
+- [ ] `hooks/` copied into the project
+- [ ] `.claude/settings.json` wired from `hooks/claude_code_settings_template.json`
+- [ ] AGENTS.md `## Blocked` list populated with command fragments
+- [ ] AGENTS.md `## Completion Gate` populated (or consciously omitted)
+- [ ] `secrets_guard.py` patterns reviewed for project-specific credential files
+- [ ] Human approval gates defined for `## Ask First` actions
 - [ ] No unrestricted shell access
 
 ---
@@ -811,7 +878,7 @@ Produces the **Task Implementation Report (TIR)**, containing:
 
 - Completed work with evidence
 - Deviation records
-- Test / linter / health check output
+- Verification output (tests, checks, health probes, or domain-specific validators)
 - Known limitations
 
 ---

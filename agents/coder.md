@@ -84,82 +84,91 @@ If the deviation would change the scope significantly: file `BLOCKER` instead, h
 
 ## Pre-Completion Hook Runner
 
-The exit gate is not a passive checklist — it is an **active retry loop**.
-Hooks run automatically before the Coder can declare completion.
-The Coder cannot self-certify; the hooks must pass.
+The exit gate is not a passive checklist — it is an **active retry loop**
+enforced by a real harness hook.
+
+When the Coder finishes a turn, the Stop event fires and
+`hooks/stop/completion_gate.py` runs every command listed in
+AGENTS.md `## Completion Gate`. If any command fails, the hook exits 2,
+the turn is blocked, and the full output is fed back to the Coder as the
+reason. The Coder must fix the issue and complete again.
 
 ```text
-Coder believes step N is complete
+Coder finishes a turn
            ↓
-   Run hook suite for step N
+   Stop event fires
            ↓
-    All hooks pass? ──────────────► Check off step N, continue
+   hooks/run.py stop
+           ↓
+   completion_gate.py runs AGENTS.md ## Completion Gate commands in order
+           ↓
+    All pass? ────────────────────► Turn completes
            ↓ (any fail)
-   Capture full output:
-   - Error message
-   - Stack trace / log lines
-   - Affected file/line
+   Hook exits 2; full output returned to Coder:
+   - Failing command and exit code
+   - stdout / stderr from the command
            ↓
-   Return to implementation with diagnostics
-   (do NOT summarise — paste raw output into TIR ## Blockers)
+   Coder fixes the issue
+   (do NOT summarise output — paste raw into TIR ## Blockers)
            ↓
-   Fix and re-run full hook suite
+   Coder completes again → hook re-runs full suite
    (partial re-run is not permitted — a fix can introduce a new failure)
            ↓
-   Repeat until all hooks pass
+   Repeat until all gate commands pass
 ```
 
-### Hook Suite by Mandate Type
+The Coder cannot self-certify; the hook must pass. This is mechanically
+enforced, not advisory.
 
-**Python mandates:**
+### Configuring the Gate in AGENTS.md
 
-```bash
-# Run in this order — earlier failures block later hooks
-ruff check [affected_module]                     # lint
-mypy [affected_module] --strict                  # typecheck
-python -m pytest [affected_tests] -v             # unit tests
-python -m pytest tests/integration/ -v -k [tag]  # integration (if applicable)
+The completion gate is driven by the project's AGENTS.md `## Completion Gate`
+section. The Architect or Engineer sets it up for the project; the Coder
+runs it as-is. Example configurations:
+
+**Python projects:**
+
+```markdown
+## Completion Gate
+
+- ruff check .
+- mypy . --strict
+- python -m pytest -v
 ```
 
-**Node.js / TypeScript mandates:**
+**Node.js / TypeScript projects:**
 
-```bash
-npx eslint [affected_path]                       # lint
-npx tsc --noEmit                                 # typecheck
-npx jest [affected_test_file] --verbose          # tests
+```markdown
+## Completion Gate
+
+- npx eslint src/
+- npx tsc --noEmit
+- npx jest --passWithNoTests
 ```
 
-**SRE / infrastructure mandates:**
+**SRE / infrastructure projects:**
 
-```bash
-# Validate config syntax before any apply
-[tool] validate [config_file]                    # e.g., nginx -t, terraform validate
-# Health check after change
-curl -sf [health_endpoint] | jq .status          # must return expected value
-# Confirm no new errors in service log window
-journalctl -u [service] --since "5 minutes ago" | grep -c ERROR  # must be 0
+```markdown
+## Completion Gate
+
+- terraform validate
+- curl -sf http://localhost/health | grep ok
 ```
 
-**Data mandates:**
-
-```sql
--- Row count assertion — before vs after
-SELECT COUNT(*) FROM [table];                    -- must match expected delta
--- Constraint validation
-SELECT * FROM [table] WHERE [constraint_col] IS NULL;  -- must return 0 rows
-```
+If no `## Completion Gate` section exists, the hook is a no-op. If you are
+working on a mandate where one should exist but does not, file a
+`HARNESS_IMPROVEMENT` field discovery.
 
 ### Hook Failure Handling
 
-When a hook fails:
+When the completion gate fails:
 
 1. Paste the **full raw output** into TIR `## Blockers` — do not summarise
-2. Note which hook, which step, which file/line
-3. Do not proceed to the next implementation step
-4. Fix, then re-run the **complete** hook suite (not just the failing hook)
-5. Only check off the step when the full suite is green
+2. Note which command failed and on which step
+3. Fix, then let the next turn trigger the full gate suite again
+4. Only check off the implementation step when the gate is green
 
-If the same hook fails three times on the same step:
+If the same gate command fails three times on the same step:
 
 - Stop. This is likely a design issue, not an implementation issue.
 - File a `BLOCKER` field discovery with the diagnostic output.
