@@ -288,6 +288,82 @@ control, or track it for compliance:
 
 ## Extending the Hooks
 
+## Pre-built Guards
+
+The following scripts ship in `hooks/pre_tool_use/` and can be activated by
+simply placing them in the directory. Each is independently auditable,
+independently testable, and covers a distinct risk domain.
+
+### `bouncer.py` — Policy enforcement (AGENTS.md-driven)
+
+Reads the `## Blocked` list from AGENTS.md and blocks any Bash command
+containing a listed pattern. This is the configurable policy layer: teams
+write their rules once in AGENTS.md and the bouncer enforces them.
+
+### `secrets_guard.py` — Credential protection (hardcoded floor)
+
+Blocks commands that read or transmit sensitive files (`.env`, `.pem`, `.key`,
+`credentials.json`) or match credential exfiltration patterns (`printenv`,
+`echo $SECRET`, `curl --header Authorization`). Runs regardless of AGENTS.md.
+
+### `database_guard.py` — Data destruction prevention
+
+Blocks destructive SQL regardless of how it reaches the shell:
+
+| Blocked | Why |
+| --- | --- |
+| `DROP TABLE`, `DROP DATABASE`, `DROP SCHEMA` | Irreversible schema destruction |
+| `TRUNCATE` | Removes all rows, often outside transaction scope |
+| `DELETE FROM x` without `WHERE` | Deletes every row in the table |
+| `UPDATE x SET` without `WHERE` | Overwrites every row in the table |
+
+The WHERE-clause check is the key insight: `DELETE FROM orders` is
+catastrophic; `DELETE FROM orders WHERE id = 42` is routine. A simple
+substring match cannot distinguish them — this guard does.
+
+### `git_guard.py` — History and branch protection
+
+Blocks git operations that destroy shared history or work with no recovery path:
+
+| Blocked | Why |
+| --- | --- |
+| `git push --force` / `-f` | Rewrites shared remote history; destroys others' commits |
+| `git push origin :<ref>` | Deletes a remote branch or tag |
+| `git reset --hard` | Permanently discards all uncommitted changes |
+| `git branch -D` | Force-deletes a branch even with unmerged commits |
+| `git clean -f` | Permanently deletes all untracked files |
+| `git rebase` onto shared branches | Rewrites already-published commits |
+| `git tag -d` | Deletes a tag without removing the remote counterpart |
+
+Each block message names the safe alternative (e.g. `--force-with-lease`,
+`git branch -d`, `git stash`, `git clean -n`) so the agent can immediately
+propose a corrected approach.
+
+### `communication_guard.py` — Unauthorized external communications
+
+Prevents agents from sending messages on behalf of a human without approval.
+Directly relevant to executive assistant, chief-of-staff, legal, and
+customer-facing agents where an unsanctioned message carries reputational
+or legal risk.
+
+| Blocked | Platforms covered |
+| --- | --- |
+| CLI email tools | `sendmail`, `mailx`, `mutt`, `msmtp`, `swaks` |
+| SMTP in scripts | `smtplib.SMTP`, direct SMTP connections |
+| Email delivery APIs | SendGrid, Mailgun, Postmark, AWS SES |
+| Chat | Slack `chat.post`, `chat.update`, `chat.delete` |
+| Microsoft 365 | Graph API `sendMail`, `events` (calendar writes) |
+| Google Workspace | Gmail `messages.send`, Calendar event writes |
+| SMS / voice | Twilio, MessageBird, Vonage, Bandwidth |
+| Generic outbound POST | curl/wget POSTs with message-shaped payloads |
+
+The agent is instructed to draft the message and present it for human
+review — not to simply fail. The block message explains exactly why.
+
+---
+
+## Extending the Hooks
+
 Because `run.py` discovers scripts dynamically, extending any event means
 writing a new script and placing it in the relevant directory.
 

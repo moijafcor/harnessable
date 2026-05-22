@@ -135,8 +135,11 @@ harnessable/
 ├── hooks/                         Enforcement Layer — drop into your project to activate
 │   ├── run.py                     Universal dispatcher: discovers and runs *.py scripts per event
 │   ├── pre_tool_use/              Scripts run on PreToolUse (add files here to extend)
-│   │   ├── bouncer.py             Blocks Bash commands matching AGENTS.md ## Blocked list
-│   │   └── secrets_guard.py       Hardcoded floor: blocks credential reads and exfiltration
+│   │   ├── bouncer.py             Blocks commands matching AGENTS.md ## Blocked (policy-driven)
+│   │   ├── secrets_guard.py       Hardcoded floor: blocks credential reads and exfiltration
+│   │   ├── database_guard.py      Blocks DROP, TRUNCATE, and WHERE-less DELETE/UPDATE
+│   │   ├── git_guard.py           Blocks force push, hard reset, branch and history destruction
+│   │   └── communication_guard.py Blocks unauthorized email, Slack, SMS, and calendar writes
 │   ├── post_tool_use/             Scripts run on PostToolUse (add files here to extend)
 │   │   └── audit_logger.py        Appends every tool call to .harnessable/audit.log
 │   ├── stop/                      Scripts run on Stop (add files here to extend)
