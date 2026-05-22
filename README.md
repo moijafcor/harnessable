@@ -12,7 +12,7 @@ All abbreviations and framework-specific terms are defined in [GLOSSARY.md](GLOS
 
 Prompt instructions are advisory unless backed by enforcement. Models are probabilistic, and long workflows compound errors.
 
-A 95%-accurate model running a 20-step workflow succeeds **36% of the time**.
+A 95%-accurate model running a 20-step workflow succeeds **36% of the time** (0.95²⁰ = 0.358). That figure assumes each step fails independently — which is optimistic. In practice, a wrong decision in step 3 corrupts the state that step 4 operates on, making downstream failures more likely, not equally likely. The real number is lower.
 
 Reliability requires controls around the model, not only model selection or prompt design.
 
