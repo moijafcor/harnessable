@@ -258,6 +258,56 @@ Create a board or workflow in your project tracker of choice (GitHub Projects, J
 
 `BACKLOG` · `MANDATED` · `IN_RECON` · `PLANNED` · `IN_PROGRESS` · `IN_REVIEW` · `BLOCKED` · `NEEDS_REVISION` · `VERIFIED` · `DONE`
 
+**If using GitHub Projects:** all ten columns can be created in one `gh` CLI command rather than through the UI. Column names must exactly match the list above — a typo causes status transitions to fail silently. First fetch the project ID and the Status field ID:
+
+```bash
+gh api graphql -f query='
+query($org: String!, $number: Int!) {
+  organization(login: $org) {
+    projectV2(number: $number) {
+      id
+      fields(first: 20) {
+        nodes {
+          ... on ProjectV2SingleSelectField { id name }
+        }
+      }
+    }
+  }
+}' -F org=YOUR_ORG -F number=YOUR_PROJECT_NUMBER
+```
+
+Then set all ten options in one mutation (replace `PROJECT_ID` and `FIELD_ID` with the values returned above):
+
+```bash
+gh api graphql -f query='
+mutation($projectId: ID!, $fieldId: ID!) {
+  updateProjectV2Field(input: {
+    projectId: $projectId
+    fieldId: $fieldId
+    singleSelectOptions: [
+      {name: "BACKLOG",        color: GRAY},
+      {name: "MANDATED",       color: BLUE},
+      {name: "IN_RECON",       color: BLUE},
+      {name: "PLANNED",        color: BLUE},
+      {name: "IN_PROGRESS",    color: YELLOW},
+      {name: "IN_REVIEW",      color: ORANGE},
+      {name: "BLOCKED",        color: RED},
+      {name: "NEEDS_REVISION", color: RED},
+      {name: "VERIFIED",       color: GREEN},
+      {name: "DONE",           color: GREEN}
+    ]
+  }) {
+    projectV2Field {
+      ... on ProjectV2SingleSelectField {
+        options { id name color }
+      }
+    }
+  }
+}' -F projectId=PROJECT_ID -F fieldId=FIELD_ID
+```
+
+If the board already has a Status field with existing options, this mutation replaces all options; export existing item statuses first if any items are already assigned a value.
+
 Declare the tool and integration method in your project's `AGENTS.md` under `## Project Tracker` so every agent session knows how to read and update board state.
 
 ### 2. Copy the framework files
@@ -277,6 +327,36 @@ This registers `hooks/run.py` as the dispatcher for three lifecycle events:
 | Stop | `hooks/stop/` | `completion_gate.py` |
 
 Adding a new check later requires only dropping a `.py` file into the relevant subdirectory — no further changes to `settings.json`.
+
+To verify the enforcement layer is live after wiring, run these three checks. Pipe each payload as a **standalone command** — do not embed them in a compound shell script. Guards inspect the outer command string: a compound script containing `git push --force` will be blocked by the bouncer on the test invocation itself, before the JSON payload is evaluated.
+
+```bash
+# 1. Safe command — must exit 0, no output
+printf '{"tool_name":"Bash","tool_input":{"command":"echo ok"}}' \
+  | python3 docs/harness/hooks/run.py pre_tool_use
+echo "Exit: $?"
+
+# 2. Force push guard — must exit 2 with a GitGuard message
+printf '{"tool_name":"Bash","tool_input":{"command":"git push origin main --force"}}' \
+  | python3 docs/harness/hooks/run.py pre_tool_use 2>&1
+echo "Exit: $?"
+
+# 3. WHERE-less DELETE guard — must exit 2 with a DatabaseGuard message
+printf '{"tool_name":"Bash","tool_input":{"command":"psql -c \"DELETE FROM users\""}}' \
+  | python3 docs/harness/hooks/run.py pre_tool_use 2>&1
+echo "Exit: $?"
+```
+
+### 2b. Add `.harnessable/` to `.gitignore`
+
+`audit_logger.py` begins writing to `.harnessable/audit.log` on the first tool call after hooks are wired. Add the directory to `.gitignore` before your first `git add`:
+
+```text
+# .gitignore
+.harnessable/
+```
+
+Ignoring the directory (not just the log file) protects all runtime output the framework may write there. If a specific artifact later needs to be versioned, add a negation entry (`!.harnessable/filename`).
 
 ### 3. Load agent context at session start
 

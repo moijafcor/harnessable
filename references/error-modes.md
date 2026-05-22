@@ -56,6 +56,11 @@ note uncertainty level in `## Architecture Decisions`.
 Log all intended tracker operations in DIP `## Tracker Ops Log`. Execute retroactively when the integration restores.
 **Board:** Intended status transition logged; actual transition deferred.
 
+### B4: DMT Was Never Created
+**Trigger:** Engineer begins a session and no DMT exists in the tracker for the described work, even though the tracker is reachable. The mandate was delivered conversationally (chat message, meeting note, or verbal instruction) without being formalized as a tracker task.
+**Response:** Engineer creates the DMT retroactively from the conversational mandate description before setting board status to `IN_RECON`. All tracker operations that would have referenced the DMT are logged in DIP `## Tracker Ops Log` and executed after DMT creation. The DIP header marks the DMT field as `(Conversational mandate — DMT created retroactively)`.
+**Board:** Set to `IN_RECON` only after the DMT exists in the tracker.
+
 ---
 
 ## Class C — Implementation Errors

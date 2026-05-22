@@ -59,6 +59,19 @@ echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"},"cwd":"/tmp"}' \
   | python3 hooks/pre_tool_use/bouncer.py
 ```
 
+**When testing through the dispatcher, use `printf` with a standalone pipeline — not a compound script:**
+
+```bash
+printf '{"tool_name":"Bash","tool_input":{"command":"git push origin main --force"}}' \
+  | python3 hooks/run.py pre_tool_use
+```
+
+Guards that inspect command content (bouncer, git_guard, database_guard) scan the
+outer shell command string. If a test payload is embedded inside a compound script
+that itself contains a blocked pattern, the guard blocks the test invocation — not
+the JSON payload being tested. Use `printf '…' | python3 hooks/run.py` as a
+standalone pipeline.
+
 ---
 
 ## Lifecycle Events

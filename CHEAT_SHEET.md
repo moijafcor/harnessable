@@ -247,7 +247,7 @@ Timezone: [IANA timezone — e.g. America/Toronto]
 
 ## Project Tracker
 Tool: [GitHub Projects | Jira | Linear | Asana | other]
-Integration: [MCP server name | REST API | manual]
+Integration: [MCP server name | REST API | gh CLI | manual]
 Task URL pattern: [template — e.g. https://github.com/org/repo/issues/{id}]
 
 ## Locale
@@ -858,6 +858,10 @@ Record:
 every tool call is appended to `.harnessable/audit.log` (one JSON object per
 line) via the PostToolUse dispatcher. Add scripts to `hooks/post_tool_use/`
 to capture additional signals (metrics, external alerting, ticket creation).
+
+Add `.harnessable/` to `.gitignore` immediately after wiring the hooks — the
+audit logger starts writing on the next tool call, and the directory will appear
+in `git status` on the first `git add` if not excluded.
 
 ---
 

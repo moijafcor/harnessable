@@ -122,6 +122,11 @@ DMT title: [HARNESS] Skill improvements from {mandate-slug-1}, {mandate-slug-2},
 This meta-mandate goes through the full pipeline like any other mandate —
 with its own DIP, TIR, and QA verdict. The skill files are the codebase.
 
+The DIP for a `[HARNESS]` meta-mandate lives in the harnessable repository at
+`docs/mandates/{harness-slug}_implementation_plan.md`, not in the consuming
+project's `docs/mandates/harness/` directory. The framework repository is the
+codebase; the DIP and TIR belong there.
+
 ---
 
 ## Failure Classes and Their Systemic Signals

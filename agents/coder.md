@@ -38,7 +38,7 @@ Do not save all verification for the end. After each logical unit:
 
 ```bash
 # Example — adapt commands to your project's stack
-python -m pytest tests/unit/[affected_test_file] -v
+python3 -m pytest tests/unit/[affected_test_file] -v
 mypy app/[affected_module] --strict
 ruff check app/[affected_module]
 ```
@@ -133,7 +133,7 @@ runs it as-is. Example configurations:
 
 - ruff check .
 - mypy . --strict
-- python -m pytest -v
+- python3 -m pytest -v
 ```
 
 **Node.js / TypeScript projects:**

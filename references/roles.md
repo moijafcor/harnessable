@@ -127,3 +127,31 @@ without assuming the Coder did it right.
 - Must not fix defects themselves (creates QA / Coder role collapse)
 - Must not issue `PASS` with open required check failures
 - Must not skip the DMT acceptance criteria review
+
+---
+
+## Solo / Small-Team Operating Mode
+
+### When It Applies
+
+Solo mode applies when:
+- One or two humans are running the entire mandate pipeline, and
+- No independent agent session is available to act as QA without access to the Coder session's context and prior outputs.
+
+This is a proactive declaration, distinct from Error Mode E3 (which detects role collapse after the fact). Declare solo mode at the start of a mandate when role separation is structurally impossible.
+
+### Required Compensating Controls
+
+1. **24-hour delay between Coder sign-off and QA re-execution.** The same person must re-read the work with fresh eyes. Same-day re-execution in the same session does not satisfy this control.
+
+2. **Re-run all TIR evidence — do not copy-paste.** Evidence cited in the QA verdict must be produced by fresh command execution during the QA pass, not carried over from Coder session notes.
+
+3. **Explicit Architect sign-off required for all `CONDITIONAL_PASS` or `NEEDS_REVISION` outcomes.** Even when the Architect is the same person, sign-off must be documented as a `## Post-Close Notes` entry with a timestamp and rationale.
+
+4. **Declare solo mode in the DIP header.** Add an `Operating Mode:` field with value `solo` or `small-team (N humans)` so the context is visible to any reviewer reading the artifact chain.
+
+### Relationship to E3
+
+Error Mode E3 still applies in solo mode — the QA verdict remains `UNVERIFIED (self-review)` and Architect sign-off is required before `DONE`. The compensating controls above reduce the probability that the Architect review will surface errors that should have been caught during QA.
+
+See: `references/error-modes.md` — E3: Role Collapse
