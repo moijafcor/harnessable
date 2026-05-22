@@ -192,8 +192,11 @@ Tool Layer             ← controlled tools with schemas and permission checks
       │
       ▼
 Enforcement Layer      ← hooks/run.py dispatches to pre_tool_use/*.py
-      │                    bouncer.py blocks AGENTS.md ## Blocked commands
-      │                    secrets_guard.py blocks credential exposure
+      │                    bouncer.py             AGENTS.md ## Blocked policy
+      │                    secrets_guard.py       credential reads and exfiltration
+      │                    database_guard.py      DROP / TRUNCATE / WHERE-less DELETE
+      │                    git_guard.py           force push / hard reset / branch destruction
+      │                    communication_guard.py email / Slack / SMS without approval
       ▼
 Execution
       │
@@ -489,12 +492,15 @@ stdin payload:
 ```
 .claude/settings.json
   PreToolUse  → python3 hooks/run.py pre_tool_use
-                    ├── bouncer.py        (AGENTS.md ## Blocked enforcement)
-                    └── secrets_guard.py  (hardcoded credential floor)
+                    ├── bouncer.py             (AGENTS.md ## Blocked policy)
+                    ├── secrets_guard.py       (credential reads and exfiltration)
+                    ├── database_guard.py      (DROP / TRUNCATE / WHERE-less DELETE)
+                    ├── git_guard.py           (force push / hard reset / branch destruction)
+                    └── communication_guard.py (email / Slack / SMS without approval)
   PostToolUse → python3 hooks/run.py post_tool_use
-                    └── audit_logger.py   (.harnessable/audit.log)
+                    └── audit_logger.py        (.harnessable/audit.log)
   Stop        → python3 hooks/run.py stop
-                    └── completion_gate.py (AGENTS.md ## Completion Gate)
+                    └── completion_gate.py     (AGENTS.md ## Completion Gate)
 ```
 
 **To add a check:** drop a `.py` file into the relevant subdirectory.
@@ -513,15 +519,98 @@ Full reference: `references/hooks.md`
 
 ---
 
-### Recommended Hook Categories
+### Pre-built Guards
 
-#### Security Hooks
+Five guards ship in `hooks/pre_tool_use/` and activate by being present
+in the directory. Each illustrates a different enforcement principle.
 
-Prevent:
+---
 
-- Privilege escalation
-- Unauthorised access
-- Secret exposure (`secrets_guard.py` covers common patterns out of the box)
+#### `database_guard.py` — Intent detection, not keyword blocking
+
+The WHERE-less check is the key distinction: `DELETE FROM orders` destroys
+all data; `DELETE FROM orders WHERE id = 42` is safe. A substring match
+cannot tell them apart — this guard does.
+
+```text
+Agent:   psql -c "DELETE FROM users"
+Blocked: DELETE without WHERE would delete every row.
+         Add WHERE or have a human run it.
+
+Agent:   psql -c "DELETE FROM users WHERE status = 'inactive'"
+Allowed: ✓
+
+Agent:   psql -c "DROP TABLE sessions"
+Blocked: Irreversible DDL. Have a human run this after confirming a backup.
+```
+
+Also blocks: `DROP DATABASE`, `TRUNCATE`, `UPDATE … SET` without `WHERE`.
+
+---
+
+#### `git_guard.py` — History protection with safe alternatives
+
+Each block message names the safe path so the agent can immediately
+propose a corrected command.
+
+```text
+Agent:   git push origin main --force
+Blocked: Rewrites shared history; destroys others' commits.
+         Use --force-with-lease or have a human approve.
+
+Agent:   git reset --hard HEAD~3
+Blocked: Permanently discards uncommitted changes.
+         Use git stash before resetting.
+
+Agent:   git branch -D feature/old
+Blocked: Force-deletes branch even with unmerged commits.
+         Use git branch -d (safe delete) instead.
+```
+
+Also blocks: remote ref deletion, `git clean -f`, rebase onto shared branches.
+
+---
+
+#### `communication_guard.py` — The chief-of-staff case
+
+Prevents an agent from sending messages on behalf of a human without
+approval. The block message instructs the agent to draft and present
+for review — not to simply fail.
+
+```text
+Agent:   curl -X POST https://api.sendgrid.com/v3/mail/send -d '{...}'
+Blocked: All outbound email must be reviewed by a human before sending.
+         Draft the message and present it for approval.
+
+Agent:   python3 send_slack.py --channel #board --message "..."
+Blocked: Slack messages require human approval before posting.
+```
+
+Covers: `sendmail`, SMTP, SendGrid, Mailgun, SES, Slack, Microsoft Graph,
+Gmail, Google Calendar, Twilio, and generic outbound POSTs with message payloads.
+
+---
+
+#### `secrets_guard.py` — Hardcoded credential floor
+
+Blocks commands that read or transmit `.env`, `.pem`, `.key`,
+`credentials.json`, and credential exfiltration patterns (`printenv`,
+`echo $SECRET`, `curl --header Authorization`). Runs unconditionally —
+not driven by AGENTS.md.
+
+---
+
+#### `bouncer.py` — Configurable policy from AGENTS.md
+
+Reads `## Blocked` and enforces it at runtime. The team writes their
+policy once in AGENTS.md; the bouncer makes it mechanical.
+
+```text
+AGENTS.md:  - `git push --force`
+
+Agent:      git push origin main --force
+Blocked:    Command matches 'git push --force' from AGENTS.md ## Blocked.
+```
 
 ---
 
@@ -916,7 +1005,18 @@ Anti-pattern: unlimited shell access.
 
 Anti-pattern: relying only on prompt instructions for safety.
 
+```text
+Prompt says:  "Never delete production data."
+Agent does:   psql -c "DELETE FROM users"   ← nothing stops it
+```
+
 **Replace with:** Enforced policies via hooks that run regardless of model decisions.
+
+```text
+database_guard.py intercepts:  DELETE without WHERE
+Agent receives:                "DELETE without a WHERE clause would delete every row."
+Agent cannot proceed.          The instruction is no longer advisory — it is mechanical.
+```
 
 ---
 

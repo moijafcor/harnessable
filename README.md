@@ -106,8 +106,13 @@ Context Layer      ← AGENTS.md: project rules, allowed/blocked actions, comple
 Tool Layer         ← controlled tools with schemas, validation, audit logging
       │
       ▼
-Enforcement Layer  ← PreToolUse: bouncer.py + secrets_guard.py (block before execution)
-      │               PostToolUse: audit_logger.py (record after execution)
+Enforcement Layer  ← PreToolUse: five guards block before execution
+      │                 bouncer.py          AGENTS.md ## Blocked policy
+      │                 secrets_guard.py    credential reads and exfiltration
+      │                 database_guard.py   DROP / TRUNCATE / WHERE-less DELETE
+      │                 git_guard.py        force push / hard reset / branch destruction
+      │                 communication_guard.py  email / Slack / SMS without approval
+      │               PostToolUse: audit_logger.py records every tool call
       ▼
 Execution
       │
@@ -119,6 +124,45 @@ Approved Output
 ```
 
 Prompts live in the Context Layer. They are useful but not enforceable. Enforcement lives in hooks and gates that run regardless of what the model decides. The `hooks/` directory makes the Enforcement Layer operational — copy it into your project and wire it via `.claude/settings.json`.
+
+### Guards in Action
+
+The pre-built guards ship ready to use. Each shows the difference between advisory and enforced:
+
+**database_guard.py — intent detection, not keyword blocking**
+
+```text
+Agent proposes:  psql -c "DELETE FROM users"
+Guard blocks:    DELETE without a WHERE clause would delete every row.
+                 Add WHERE or have a human run it directly.
+
+Agent proposes:  psql -c "DELETE FROM users WHERE last_login < '2020-01-01'"
+Guard allows:    ✓
+```
+
+**git_guard.py — history protection with a safe alternative**
+
+```text
+Agent proposes:  git push origin main --force
+Guard blocks:    Rewrites shared remote history; destroys others' commits.
+                 Use --force-with-lease or have a human approve.
+
+Agent proposes:  git push origin main --force-with-lease
+Guard allows:    ✓
+```
+
+**communication_guard.py — the chief-of-staff case**
+
+```text
+Agent proposes:  curl -X POST https://api.sendgrid.com/v3/mail/send -d '{...}'
+Guard blocks:    All outbound email must be reviewed and approved by a human
+                 before sending. Draft the message and present it for review.
+
+Agent proposes:  [presents draft to human for approval]
+Human approves:  human runs the send command directly  ✓
+```
+
+In every case the agent receives a specific, actionable reason — not a generic failure — so it can propose a corrected approach immediately.
 
 ---
 
@@ -228,7 +272,7 @@ This registers `hooks/run.py` as the dispatcher for three lifecycle events:
 
 | Event | Subdirectory | What runs |
 | --- | --- | --- |
-| PreToolUse | `hooks/pre_tool_use/` | `bouncer.py`, `secrets_guard.py` |
+| PreToolUse | `hooks/pre_tool_use/` | `bouncer.py`, `secrets_guard.py`, `database_guard.py`, `git_guard.py`, `communication_guard.py` |
 | PostToolUse | `hooks/post_tool_use/` | `audit_logger.py` |
 | Stop | `hooks/stop/` | `completion_gate.py` |
 
