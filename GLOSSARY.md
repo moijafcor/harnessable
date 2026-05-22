@@ -23,7 +23,13 @@ The role responsible for independently verifying the implementation against the 
 ## Artifacts
 
 **DMT — Design Mandate Task**
-The task created by the Architect in the project tracker. Defines the problem, constraints, acceptance criteria, and out-of-scope declarations. The DMT is the source of truth for what the mandate is supposed to achieve.
+The authoritative source that defines the mandate: its problem, constraints, acceptance criteria, and out-of-scope declarations. The DMT is the source of truth for what a mandate is supposed to achieve. A DMT may originate from one of three sources — all three carry the same authority; the DIP treats them identically once the source is resolved:
+
+* **Board task** — created in the project tracker; has a URL, board status, and comments. The preferred source when a project uses a board.
+* **Local file** — a Markdown file checked into `docs/mandates/` (or equivalent); authored by the Architect or Engineer directly; no board item required.
+* **Inline description** — text passed directly to the Engineer agent; no persistent file, no board item.
+
+The project tracker is the preferred source but is not required. Board status operations (setting statuses, posting comments) apply only when a board task exists.
 
 **DIP — Design Implementation Plan**
 The document produced by the Engineer. Describes how to implement the DMT: recon findings, architecture decisions, ordered implementation steps, verification checklists, and containment plan. Lives at `docs/mandates/{bucket}/{slug}_implementation_plan.md`.

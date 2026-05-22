@@ -1,16 +1,18 @@
 # Design Implementation Plan
 
 <!-- HEADER — fill before saving -->
-**DMT:** [URL to task in project tracker]
+**DMT:** [URL to board task | path to local DMT file | (inline — no persistent source)]
 **Title:** [Exact title from DMT]
 **Slug:** [filename slug used for this file]
 **Bucket:** [new | existing]
 **Engineer:** [agent session / human identifier]
 **DIP Created:** [ISO date]
 **DIP Last Updated:** [ISO date]
-**Board Status:** [current status]
+**Board Status:** [current status | N/A — no board item]
 **Board Status History:**
-- [ISO datetime] MANDATED — Architect created DMT
+<!-- Board-tracked mandates start with MANDATED.
+     Locally-authored mandates start with IN_RECON (first DIP-authoring session). -->
+- [ISO datetime] [MANDATED — Architect created DMT | IN_RECON — local DMT, no board item]
 - [ISO datetime] IN_RECON — Engineer session started
 
 ---

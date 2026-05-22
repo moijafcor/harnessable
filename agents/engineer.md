@@ -11,10 +11,14 @@ implement it correctly without asking questions.
 Before writing a single word of the DIP:
 
 - [ ] Read `AGENTS.md` — apply Locale, Voice, Risk Profile, and Terminology settings for the entire session
-- [ ] Fetch the DMT from the project tracker (via the integration declared in `AGENTS.md`) — read every field, comment, and linked item
+- [ ] Resolve the DMT source — determine which form the input takes and load it accordingly:
+  - **Board URL or ID** → fetch from the project tracker (via the integration declared in `AGENTS.md`); read every field, comment, and linked item
+  - **File path** → read the local Markdown file (typically under `docs/mandates/`)
+  - **Inline text** → treat the text itself as the DMT; no external fetch required
+  - Note: board status operations apply only when a board item exists
 - [ ] Confirm this is not a duplicate of an existing mandate (search `docs/mandates/`)
 - [ ] Confirm no conflicting mandate is `IN_PROGRESS` or `PLANNED`
-- [ ] Set board status to `IN_RECON` via the tracker integration
+- [ ] *(Board item only)* Set board status to `IN_RECON` via the tracker integration
 
 ---
 
@@ -206,5 +210,5 @@ DIP is ready to hand off when:
 - [ ] All recon passes are documented in `## Recon Findings`
 - [ ] `## Implementation Steps` covers the full scope with no gaps
 - [ ] `## Verification Checklists` has at least one check per acceptance criterion
-- [ ] Board is set to `PLANNED` via the tracker integration
-- [ ] DMT has a comment via the tracker integration: "DIP authored at `docs/mandates/{path}`. Ready for Coder."
+- [ ] *(Board item only)* Board is set to `PLANNED` via the tracker integration. When no board item exists, record the intended status in the DIP `## Tracker Ops Log` as `Pending — no board item`.
+- [ ] *(Board item only)* DMT has a comment via the tracker integration: "DIP authored at `docs/mandates/{path}`. Ready for Coder." When no board item exists, record this intended comment in the DIP `## Tracker Ops Log`.

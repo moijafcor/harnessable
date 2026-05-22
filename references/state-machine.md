@@ -53,6 +53,22 @@ ANY             → DONE             (only Architect closes)
 
 ---
 
+## Local Track (no board item)
+
+A mandate sourced from a local file or inline description has no `BACKLOG` or `MANDATED` state. The first state in the mandate lifecycle is `IN_RECON`.
+
+`AUTHORED` is a logical marker — **not a board status**. It names the entry condition: a local DMT file exists or an inline description was given. It does not appear on the board and must not be used as a board status.
+
+```
+LOCAL TRACK (no board item)
+
+AUTHORED  →  IN_RECON     (Engineer reads local DMT; begins recon — board step skipped)
+IN_RECON  →  PLANNED      (DIP complete; board update skipped or recorded in Tracker Ops Log)
+PLANNED   →  IN_PROGRESS  (Coder begins; from here, standard track applies)
+```
+
+---
+
 ## State Invariants
 
 These conditions must hold at all times:
@@ -63,45 +79,52 @@ These conditions must hold at all times:
 4. **BLOCKER accountability:** A DMT in `BLOCKED` must have a child task or DIP entry explaining the reason.
 5. **Gate enforcement:** Transition to `IN_REVIEW` requires all DIP verification checklist items checked.
 6. **Closed mandates are immutable:** A DMT in `DONE` must not have its DIP modified (append-only via `## Post-Close Notes`).
+7. **Local track quality gates:** A mandate on the local track must still satisfy DIP-before-code and TIR-before-QA invariants. The absence of a board item does not relax any quality gate.
 
 ---
 
 ## State Diagram (ASCII)
 
 ```
-                    ┌──────────┐
-                    │ BACKLOG  │
-                    └────┬─────┘
-                         │ Architect
-                    ┌────▼─────┐
-                    │ MANDATED │
-                    └────┬─────┘
-                         │ Engineer
-                   ┌─────▼──────┐
-          ┌────────│  IN_RECON  │◄─────────────────┐
-          │        └─────┬──────┘                  │
-          │              │ Engineer (DIP complete)  │
-          │        ┌─────▼──────┐                  │
-          │        │  PLANNED   │──────────────────►│ (revision needed)
-          │        └─────┬──────┘
-          │              │ Coder
-          │       ┌──────▼───────┐
-          │  ┌────│ IN_PROGRESS  │◄─────────────────┐
-          │  │    └──────┬───────┘                  │
-          │  │           │ Coder (all gates pass)    │
-          │  │    ┌──────▼───────┐                  │
-          │  │    │  IN_REVIEW   │                  │
-          │  │    └──┬──────┬────┘                  │
-          │  │  PASS │      │ FAIL                  │
-          │  │  ┌────▼──┐ ┌─▼────────────┐          │
-          │  │  │VERIF. │ │NEEDS_REVISION│──────────┘
-          │  │  └───┬───┘ └─────────────┘
-          │  │      │ Architect
-          │  │  ┌───▼───┐
-          │  │  │ DONE  │
-          │  │  └───────┘
-          │  │
-          └──┴──►BLOCKED◄──── (any state, any role)
-                    │
-                    └────────► [prior status] (Architect unblocks)
+  ╔══════════╗    ┌──────────┐
+  ║ AUTHORED ║    │ BACKLOG  │
+  ║(no board)║    └────┬─────┘
+  ╚═════╤════╝         │ Architect
+        │         ┌────▼─────┐
+        │         │ MANDATED │
+        │         └────┬─────┘
+        │ Engineer      │ Engineer
+        │ reads         │
+        └─ ─ ─ ─ ─►┌────▼───────┐
+              ┌─────│  IN_RECON  │◄─────────────────┐
+              │     └─────┬──────┘                  │
+              │           │ Engineer (DIP complete)  │
+              │     ┌─────▼──────┐                  │
+              │     │  PLANNED   │──────────────────►│ (revision needed)
+              │     └─────┬──────┘
+              │           │ Coder
+              │    ┌──────▼───────┐
+              │ ┌──│ IN_PROGRESS  │◄─────────────────┐
+              │ │  └──────┬───────┘                  │
+              │ │         │ Coder (all gates pass)    │
+              │ │  ┌──────▼───────┐                  │
+              │ │  │  IN_REVIEW   │                  │
+              │ │  └──┬──────┬────┘                  │
+              │ │PASS │      │ FAIL                  │
+              │ │┌────▼──┐ ┌─▼────────────┐          │
+              │ ││VERIF. │ │NEEDS_REVISION│──────────┘
+              │ │└───┬───┘ └─────────────┘
+              │ │    │ Architect
+              │ │┌───▼───┐
+              │ ││ DONE  │
+              │ │└───────┘
+              │ │
+              └─┴──►BLOCKED◄──── (any state, any role)
+                        │
+                        └────────► [prior status] (Architect unblocks)
+
+  ╔═══════════════════════════════════════════════════════════╗
+  ║ AUTHORED: logical marker only — not a board status.       ║
+  ║ Dashed line (─ ─ ►) = local track path (no board ops).   ║
+  ╚═══════════════════════════════════════════════════════════╝
 ```
