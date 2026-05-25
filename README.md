@@ -34,6 +34,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [3. Load agent context at session start](#3-load-agent-context-at-session-start)
   - [4. Create your first DMT](#4-create-your-first-dmt)
   - [5. Run the workflow](#5-run-the-workflow)
+- [Codex compatibility](#codex-compatibility)
 - [Anti-Patterns](#anti-patterns)
 - [Engineering Model](#engineering-model)
 - [Influences & Acknowledgements](#influences--acknowledgements)
@@ -61,7 +62,7 @@ A model without operational controls is difficult to validate, audit, and recove
 
 - Not a framework for one-shot prompts or chat assistants
 - Not a general AI application toolkit — it is specifically for teams operating autonomous agents in environments where actions have real consequences
-- Not model-specific — designed for Claude Code but the protocols and hook architecture apply to any autonomous agent runtime with lifecycle hooks
+- Not model-specific — the reference implementation uses Claude Code hooks, but the protocols and enforcement architecture apply to any autonomous agent runtime that supports lifecycle hooks or pre-execution guards
 
 ---
 
@@ -468,6 +469,34 @@ Set status to `MANDATED`. The Engineer may begin.
 ### 5. Run the workflow
 
 Each role reads its protocol file before starting any work. No role begins without the preceding artifact existing and the board in the correct state. The `agents/` files are the operating instructions; the `references/` files are the rulebook.
+
+---
+
+## Codex compatibility
+
+Harnessable works with Codex through:
+
+- `AGENTS.md` at the repo root for persistent repository instructions,
+  discovered automatically by Codex at session start
+- `.agents/skills/harnessable/SKILL.md` for progressive, task-specific
+  protocol loading — invoke with `"Use the harnessable skill."` in any prompt
+- `codex/` for install scripts and role prompt examples
+- Harnessable guards adapted as shell or Python checks where Codex
+  lifecycle hooks are available
+
+Install into your project:
+
+```bash
+bash codex/install.sh /path/to/your-project
+```
+
+Then invoke any role:
+
+```bash
+codex "Use the harnessable skill. Act as Engineer and produce a DIP for issue #12."
+```
+
+See `codex/examples/` for complete role prompt templates.
 
 ---
 
