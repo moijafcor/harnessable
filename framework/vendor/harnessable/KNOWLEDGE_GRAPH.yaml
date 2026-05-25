@@ -119,6 +119,14 @@ concepts:
         No concept may appear in the DIP using a raw label if it is absent
         from the project graph. File ONTOLOGY_GAP, resolve it, then
         reference the namespaced term in the DIP.
+    git_obligations:
+      recon_must_verify:
+        - git_status_per_codebase: true
+        - git_log_per_codebase: true
+        - prior_commit_claims_require_sha: true
+          note: >
+            "Already committed from mandate X" is not evidence.
+            Cite the SHA or do not make the claim.
 
   harnessable.Coder:
     type: harnessable.Role
@@ -137,6 +145,17 @@ concepts:
       - File ONTOLOGY_GAP for any concept encountered during implementation
         that is not declared in docs/knowledge-graph.yaml.
       - Halt work until the gap is resolved.
+    git_obligations:
+      before_in_review:
+        - working_directory_clean: true
+          check: "git status in every touched codebase"
+        - commit_message_matches_diff: true
+          check: "git show --stat HEAD"
+        - cross_codebase_commits: true
+          note: "At least one commit per codebase touched"
+      prohibited:
+        - uncommitted_work_at_in_review: true
+        - commit_message_describes_intent_not_diff: true
 
   harnessable.QA:
     type: harnessable.Role

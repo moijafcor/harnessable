@@ -186,6 +186,54 @@ If the same gate command fails three times on the same step:
 
 ---
 
+## Git Commit Discipline
+
+Functional correctness and committed work are not the same thing.
+A working directory with correct, untested, or unstaged changes is not done.
+
+Before setting the board to `IN_REVIEW`, run in every codebase touched
+by the mandate:
+
+```bash
+git status
+```
+
+Expected result: nothing to commit, working tree clean.
+If any changes are unstaged or uncommitted: stage, review, and commit
+them before proceeding.
+
+**One commit per logical unit of work.** Do not bundle unrelated changes.
+Do not leave changes from one mandate uncommitted when starting another.
+
+**Commit messages must describe the diff, not the intent.**
+Before finalising a commit:
+
+```bash
+git diff --staged --stat
+```
+
+Read what is actually staged. The commit title must describe that —
+not what you meant to do or what a prior session claimed.
+
+Verify after committing:
+
+```bash
+git show --stat HEAD
+```
+
+If the title does not match the diff, amend before pushing:
+
+```bash
+git commit --amend
+```
+
+**Cross-codebase mandates require a commit per codebase.**
+If the mandate touches app, console, and api, there must be at least
+one commit in each. `git status` in each repo must show a clean working
+tree before `IN_REVIEW`.
+
+---
+
 ## Exit Gate
 
 You may set board to `IN_REVIEW` only when ALL of the following are true:
@@ -206,6 +254,12 @@ You may set board to `IN_REVIEW` only when ALL of the following are true:
   - Health check / smoke test result
 - [ ] `## Blockers` is either empty or all items are resolved
 - [ ] `## Verification Checklist — Coder Sign-Off` all boxes checked
+
+**Git Cleanliness Gate:**
+
+- [ ] `git status` is clean in every touched codebase
+- [ ] `git show --stat HEAD` confirms commit message matches diff
+- [ ] No cross-mandate changes bundled into mandate commits
 
 **After setting IN_REVIEW:**
 

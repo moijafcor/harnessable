@@ -82,6 +82,7 @@ These conditions must hold at all times:
 7. **Local track quality gates:** A mandate on the local track must still satisfy DIP-before-code and TIR-before-QA invariants. The absence of a board item does not relax any quality gate.
 8. **Graph-before-PLANNED:** All concepts introduced in the DIP must exist in `docs/knowledge-graph.yaml`. DIP concepts that cannot be resolved to a namespaced graph entry block the PLANNED transition.
 9. **Graph-before-DONE:** The Architect must confirm the knowledge graph was enriched with all concepts surfaced during this mandate before setting DONE. Unresolved `ONTOLOGY_GAP` discoveries block the DONE transition.
+10. **Git-clean-before-IN_REVIEW:** The working directory must be clean in every codebase touched by the mandate (`git status` shows nothing to commit) before transitioning to `IN_REVIEW`. All mandate work must be committed with accurate commit messages. No staged or unstaged changes may remain. Cross-codebase mandates must have at least one commit per codebase. A Coder who sets `IN_REVIEW` with uncommitted changes has not completed the mandate. QA must run `git status` and `git log` as part of verification.
 
 ---
 

@@ -142,6 +142,35 @@ For every external API, SDK, or service the mandate touches:
 - Search past sessions for this project area
 - Note any "we decided X because Y" that the DIP must respect
 
+### Git State Verification
+
+Recon must verify git state directly. Never trust prior mandate
+descriptions or board item references for claims about what is
+committed.
+
+Before authoring the DIP, run in every codebase the mandate will touch:
+
+```bash
+git status
+git log --oneline -10
+```
+
+Any DIP claim that prior work is committed must cite the commit SHA.
+The format is:
+
+```text
+"TENANT_DB_DRIVER force=true: committed in af22643"
+```
+
+not:
+
+```text
+"TENANT_DB_DRIVER force=true: already committed from mandate 191656663"
+```
+
+A mandate reference is not a commit reference. If the SHA cannot be
+found with `git log`, the work is not committed — do not claim it is.
+
 ### Knowledge Graph Obligation
 
 Recon produces two outputs, not one: the DIP and a set of knowledge graph
