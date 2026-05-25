@@ -4,7 +4,7 @@
 
 This repository is the operational governance layer for autonomous agents working in high-stakes production environments — from AI coding assistants to chief-of-staff, legal review, and financial analysis agents. It provides four roles, a structured artifact chain, a state machine, and a continuous improvement loop — all backed by a deployable enforcement layer: a hooks dispatcher and scripts that make the governance protocols mechanically enforceable, not merely advisory. The process is adapted from regulated engineering disciplines and applied to any domain where an agent operates with real consequences.
 
-All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](KNOWLEDGE_GRAPH.yaml).
+All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
 ---
 
@@ -27,7 +27,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
 - [Core Principles](#core-principles)
 - [Getting Started](#getting-started)
   - [1. Set up your project tracker](#1-set-up-your-project-tracker)
-  - [2. Copy the framework files](#2-copy-the-framework-files)
+  - [2. Copy the framework directory](#2-copy-the-framework-directory)
   - [2a. Wire the enforcement hooks](#2a-wire-the-enforcement-hooks)
   - [2b. Add `.harnessable/` to `.gitignore`](#2b-add-harnessable-to-gitignore)
   - [3. Load agent context at session start](#3-load-agent-context-at-session-start)
@@ -122,7 +122,7 @@ BACKLOG → MANDATED → IN_RECON → PLANNED → IN_PROGRESS → IN_REVIEW → 
 
 Every transition has a defined owner, a trigger condition, and invariants that must hold. Illegal jumps (e.g. `PLANNED → IN_REVIEW` with no implementation) are protocol violations that any agent must refuse.
 
-Full transition table and invariants: [references/state-machine.md](references/state-machine.md)
+Full transition table and invariants: [framework/vendor/harnessable/references/state-machine.md](framework/vendor/harnessable/references/state-machine.md)
 
 ---
 
@@ -203,38 +203,44 @@ In every case the agent receives a specific, actionable reason — not a generic
 ```text
 harnessable/
 │
-├── agents/                        Role-specific agent protocols
-│   ├── engineer.md                Recon passes, DIP authoring standards, sub-agent delegation
-│   ├── coder.md                   Build discipline, pre-completion hook runner, exit gate
-│   └── qa.md                      Adversarial verification protocol, verdict criteria
-│
-├── hooks/                         Enforcement Layer — drop into your project to activate
-│   ├── run.py                     Universal dispatcher: discovers and runs *.py scripts per event
-│   ├── pre_tool_use/              Scripts run on PreToolUse (add files here to extend)
-│   │   ├── bouncer.py             Blocks commands matching AGENTS.md ## Blocked (policy-driven)
-│   │   ├── secrets_guard.py       Hardcoded floor: blocks credential reads and exfiltration
-│   │   ├── database_guard.py      Blocks DROP, TRUNCATE, and WHERE-less DELETE/UPDATE
-│   │   ├── git_guard.py           Blocks force push, hard reset, branch and history destruction
-│   │   └── communication_guard.py Blocks unauthorized email, Slack, SMS, and calendar writes
-│   ├── post_tool_use/             Scripts run on PostToolUse (add files here to extend)
-│   │   └── audit_logger.py        Appends every tool call to .harnessable/audit.log
-│   ├── stop/                      Scripts run on Stop (add files here to extend)
-│   │   └── completion_gate.py     Runs AGENTS.md ## Completion Gate commands; blocks if any fail
-│   └── claude_code_settings_template.json     Drop-in .claude/settings.json — all events wired through run.py
-│
-├── references/                    Reference documents loaded at session start
-│   ├── roles.md                   Full role definitions, permissions, prohibitions
-│   ├── state-machine.md           Board status transitions and invariants
-│   ├── error-modes.md             Classified failure patterns and expected responses
-│   ├── continuous-improvement.md  Failure → RCA → harness improvement loop
-│   ├── hooks.md                   Hook lifecycle events, installation, and extension guide
-│   └── knowledge-graph.md         Knowledge graph model, vendoring instructions, and project extension guide
-│
-├── templates/
-│   └── dip.md                     Design Implementation Plan template (all required sections)
+├── framework/                     One-command install: cp -r framework/ docs/harness/
+│   │
+│   ├── agents/                    Tier 1 (copy and own) — role-specific agent protocols
+│   │   ├── engineer.md            Recon passes, DIP authoring standards, sub-agent delegation
+│   │   ├── coder.md               Build discipline, pre-completion hook runner, exit gate
+│   │   └── qa.md                  Adversarial verification protocol, verdict criteria
+│   │
+│   ├── hooks/                     Tier 1 (copy and own) — Enforcement Layer
+│   │   ├── run.py                 Universal dispatcher: discovers and runs *.py scripts per event
+│   │   ├── pre_tool_use/          Scripts run on PreToolUse (add files here to extend)
+│   │   │   ├── bouncer.py         Blocks commands matching AGENTS.md ## Blocked (policy-driven)
+│   │   │   ├── secrets_guard.py   Hardcoded floor: blocks credential reads and exfiltration
+│   │   │   ├── database_guard.py  Blocks DROP, TRUNCATE, and WHERE-less DELETE/UPDATE
+│   │   │   ├── git_guard.py       Blocks force push, hard reset, branch and history destruction
+│   │   │   └── communication_guard.py  Blocks unauthorized email, Slack, SMS, and calendar writes
+│   │   ├── post_tool_use/         Scripts run on PostToolUse (add files here to extend)
+│   │   │   └── audit_logger.py    Appends every tool call to .harnessable/audit.log
+│   │   ├── stop/                  Scripts run on Stop (add files here to extend)
+│   │   │   └── completion_gate.py Runs AGENTS.md ## Completion Gate commands; blocks if any fail
+│   │   └── claude_code_settings_template.json  Drop-in .claude/settings.json — all events wired through run.py
+│   │
+│   ├── templates/                 Tier 1 (copy and own)
+│   │   └── dip.md                 Design Implementation Plan template (all required sections)
+│   │
+│   └── vendor/                    Tier 2 (pin and never modify)
+│       └── harnessable/
+│           ├── KNOWLEDGE_GRAPH.yaml    Framework concept graph — roles, artifacts, enumerations, relationships
+│           ├── HARNESSABLE_VERSION     One line: the release tag or commit SHA pinned here
+│           └── references/            Reference documents — do not modify
+│               ├── roles.md           Full role definitions, permissions, prohibitions
+│               ├── state-machine.md   Board status transitions and invariants
+│               ├── error-modes.md     Classified failure patterns and expected responses
+│               ├── continuous-improvement.md  Failure → RCA → harness improvement loop
+│               ├── hooks.md           Hook lifecycle events, installation, and extension guide
+│               └── knowledge-graph.md Knowledge graph model, vendoring instructions, and project extension guide
 │
 ├── CHEAT_SHEET.md                 Condensed harness engineering reference
-└── KNOWLEDGE_GRAPH.yaml           Framework concept graph — roles, artifacts, enumerations, and relationships
+└── docs/                          Mandate history and implementation plans (not part of the install)
 ```
 
 ---
@@ -243,9 +249,9 @@ harnessable/
 
 ### Knowledge Graph
 
-`KNOWLEDGE_GRAPH.yaml` is the authoritative semantic layer for the framework: it declares every concept in the `harnessable` namespace — roles, artifacts, enumerations, and their relationships — as a machine-readable graph that agents and guards reason against, not merely read. The framework graph is vendored unchanged under `vendor/harnessable/`; project-specific concepts extend it in a separate `docs/knowledge-graph.yaml`. When two platforms use the same label for different concepts, an alignment entry marks `safe_assumption: false` — an active instruction to any agent working across those platforms to treat the concepts as distinct regardless of shared labels.
+`KNOWLEDGE_GRAPH.yaml` is the authoritative semantic layer for the framework: it declares every concept in the `harnessable` namespace — roles, artifacts, enumerations, and their relationships — as a machine-readable graph that agents and guards reason against, not merely read. The framework graph is vendored unchanged under `docs/harness/vendor/harnessable/`; project-specific concepts extend it in a separate `docs/knowledge-graph.yaml`. When two platforms use the same label for different concepts, an alignment entry marks `safe_assumption: false` — an active instruction to any agent working across those platforms to treat the concepts as distinct regardless of shared labels.
 
-Full model and extension guide: [references/knowledge-graph.md](references/knowledge-graph.md)
+Full model and extension guide: [framework/vendor/harnessable/references/knowledge-graph.md](framework/vendor/harnessable/references/knowledge-graph.md)
 
 ### Field Discoveries
 
@@ -349,25 +355,23 @@ If the board already has a Status field with existing options, this mutation rep
 
 Declare the tool and integration method in your project's `AGENTS.md` under `## Project Tracker` so every agent session knows how to read and update board state.
 
-### 2. Copy the framework files
+### 2. Copy the framework directory
 
-Place all framework files under a `harness/` directory at the root of your project.
+All installable files are pre-structured under `framework/`. Copy the directory into your project:
 
-**Tier 1 — Scaffold (copy and own):** `agents/`, `hooks/`, `templates/`
+```bash
+cp -r framework/ path/to/your-project/docs/harness/
+```
 
-Copy these into `harness/` and take full ownership. They are meant to be customised per project; there is no upstream obligation after copying.
+The directory is already organized. Tier 1 files (`agents/`, `hooks/`, `templates/`) are ready to customize. Tier 2 files (`vendor/harnessable/`) define the framework semantics — do not modify them.
 
-**Tier 2 — Vendor (pin and update deliberately):** `KNOWLEDGE_GRAPH.yaml`, `references/`
+Update `docs/harness/vendor/harnessable/HARNESSABLE_VERSION` with the release tag or commit SHA you copied from.
 
-These define the framework semantics. Do not modify them. Place them under `harness/vendor/harnessable/` alongside a `HARNESSABLE_VERSION` file containing the release tag or commit SHA you copied from.
-
-To update: replace `harness/vendor/harnessable/` contents with the new release, update `HARNESSABLE_VERSION`, and review the changelog for changes to the `harnessable` namespace.
-
-See [references/knowledge-graph.md](references/knowledge-graph.md) for the full extension model.
+See [framework/vendor/harnessable/references/knowledge-graph.md](framework/vendor/harnessable/references/knowledge-graph.md) for the full extension model.
 
 ### 2a. Wire the enforcement hooks
 
-Copy `hooks/claude_code_settings_template.json` to `.claude/settings.json` at the root of your project (or merge it into an existing settings file). Update the base path if you placed `hooks/` somewhere other than `harness/hooks/`.
+Copy `framework/hooks/claude_code_settings_template.json` to `.claude/settings.json` at the root of your project (or merge it into an existing settings file). Update the base path if you placed `framework/` somewhere other than `docs/harness/`.
 
 This registers `hooks/run.py` as the dispatcher for three lifecycle events:
 
@@ -384,17 +388,17 @@ To verify the enforcement layer is live after wiring, run these three checks. Pi
 ```bash
 # 1. Safe command — must exit 0, no output
 printf '{"tool_name":"Bash","tool_input":{"command":"echo ok"}}' \
-  | python3 harness/hooks/run.py pre_tool_use
+  | python3 docs/harness/hooks/run.py pre_tool_use
 echo "Exit: $?"
 
 # 2. Force push guard — must exit 2 with a GitGuard message
 printf '{"tool_name":"Bash","tool_input":{"command":"git push origin main --force"}}' \
-  | python3 harness/hooks/run.py pre_tool_use 2>&1
+  | python3 docs/harness/hooks/run.py pre_tool_use 2>&1
 echo "Exit: $?"
 
 # 3. WHERE-less DELETE guard — must exit 2 with a DatabaseGuard message
 printf '{"tool_name":"Bash","tool_input":{"command":"psql -c \"DELETE FROM users\""}}' \
-  | python3 harness/hooks/run.py pre_tool_use 2>&1
+  | python3 docs/harness/hooks/run.py pre_tool_use 2>&1
 echo "Exit: $?"
 ```
 
@@ -416,9 +420,9 @@ At the start of each agent session, tell the agent which role it is playing and 
 ```text
 You are operating as the [Engineer | Coder | QA].
 
-Role definition and permissions: references/roles.md
-State machine: references/state-machine.md
-Your protocol: agents/[engineer|coder|qa].md
+Role definition and permissions: docs/harness/vendor/harnessable/references/roles.md
+State machine: docs/harness/vendor/harnessable/references/state-machine.md
+Your protocol: docs/harness/agents/[engineer|coder|qa].md
 ```
 
 ### 4. Create your first DMT

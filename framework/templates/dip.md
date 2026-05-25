@@ -145,7 +145,7 @@
 |---|---|---|---|---|---|
 | — | — | — | — | *none yet* | — |
 
-*HARNESS_IMPROVEMENT entries must also generate a child task — see `references/continuous-improvement.md`.*
+*HARNESS_IMPROVEMENT entries must also generate a child task — see `vendor/harnessable/references/continuous-improvement.md`.*
 
 ---
 

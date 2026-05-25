@@ -1,10 +1,10 @@
 {
   "_readme": [
     "Drop this file into your project as .claude/settings.json (or merge into an existing one).",
-    "Adjust the base path to wherever you placed the harnessable hooks/ directory.",
-    "The default paths assume hooks/ lives at docs/harness/hooks/ inside your project.",
+    "Adjust the base path if you placed framework/ somewhere other than docs/harness/.",
+    "The default paths assume framework/ was copied to docs/harness/ inside your project.",
     "To add a new check, drop a .py file into the relevant subdirectory — no edits here needed.",
-    "See references/hooks.md for the full wiring guide."
+    "See docs/harness/vendor/harnessable/references/hooks.md for the full wiring guide."
   ],
   "hooks": {
     "PreToolUse": [

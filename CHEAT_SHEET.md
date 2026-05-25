@@ -481,25 +481,24 @@ Useful as guidance, but not enforceable.
 
 ### Enforcement Hooks
 
-The `hooks/` directory provides a ready-to-use implementation. Copy it into
-your project and wire it via `hooks/claude_code_settings_template.json` → `.claude/settings.json`.
+The `framework/hooks/` directory provides a ready-to-use implementation. Copy `framework/` into your project as `docs/harness/` and wire it via `framework/hooks/claude_code_settings_template.json` → `.claude/settings.json`.
 
 **The dispatcher** (`hooks/run.py`) is the only script referenced in
 `.claude/settings.json`. It discovers `*.py` files in the relevant event
 subdirectory and runs them in alphabetical order, feeding each the original
 stdin payload:
 
-```
+```text
 .claude/settings.json
-  PreToolUse  → python3 hooks/run.py pre_tool_use
+  PreToolUse  → python3 docs/harness/hooks/run.py pre_tool_use
                     ├── bouncer.py             (AGENTS.md ## Blocked policy)
                     ├── secrets_guard.py       (credential reads and exfiltration)
                     ├── database_guard.py      (DROP / TRUNCATE / WHERE-less DELETE)
                     ├── git_guard.py           (force push / hard reset / branch destruction)
                     └── communication_guard.py (email / Slack / SMS without approval)
-  PostToolUse → python3 hooks/run.py post_tool_use
+  PostToolUse → python3 docs/harness/hooks/run.py post_tool_use
                     └── audit_logger.py        (.harnessable/audit.log)
-  Stop        → python3 hooks/run.py stop
+  Stop        → python3 docs/harness/hooks/run.py stop
                     └── completion_gate.py     (AGENTS.md ## Completion Gate)
 ```
 
@@ -515,7 +514,7 @@ The dispatcher stops at the first exit 2 in each event directory.
 Scripts that must never block (e.g. loggers) should handle their own
 errors and always exit 0.
 
-Full reference: `references/hooks.md`
+Full reference: `framework/vendor/harnessable/references/hooks.md`
 
 ---
 
@@ -911,8 +910,8 @@ Completed                       ← completion_gate.py passed (Stop)
 
 ### Enforcement
 
-- [ ] `hooks/` copied into the project
-- [ ] `.claude/settings.json` wired from `hooks/claude_code_settings_template.json`
+- [ ] `framework/` copied into the project as `docs/harness/`
+- [ ] `.claude/settings.json` wired from `framework/hooks/claude_code_settings_template.json`
 - [ ] AGENTS.md `## Blocked` list populated with command fragments
 - [ ] AGENTS.md `## Completion Gate` populated (or consciously omitted)
 - [ ] `secrets_guard.py` patterns reviewed for project-specific credential files
