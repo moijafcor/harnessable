@@ -4,7 +4,39 @@
 
 This repository is the operational governance layer for autonomous agents working in high-stakes production environments — from AI coding assistants to chief-of-staff, legal review, and financial analysis agents. It provides four roles, a structured artifact chain, a state machine, and a continuous improvement loop — all backed by a deployable enforcement layer: a hooks dispatcher and scripts that make the governance protocols mechanically enforceable, not merely advisory. The process is adapted from regulated engineering disciplines and applied to any domain where an agent operates with real consequences.
 
-All abbreviations and framework-specific terms are defined in [GLOSSARY.md](GLOSSARY.md).
+All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](KNOWLEDGE_GRAPH.yaml).
+
+---
+
+## Contents
+
+- [Problem Statement](#problem-statement)
+- [What This Is Not](#what-this-is-not)
+- [The Framework](#the-framework)
+  - [Four Roles](#four-roles)
+  - [The Artifact Chain](#the-artifact-chain)
+  - [The State Machine](#the-state-machine)
+  - [Harness Layers](#harness-layers)
+  - [Guards in Action](#guards-in-action)
+- [Repository Structure](#repository-structure)
+- [Key Concepts](#key-concepts)
+  - [Knowledge Graph](#knowledge-graph)
+  - [Field Discoveries](#field-discoveries)
+  - [Containment Checklist](#containment-checklist)
+  - [Continuous Improvement](#continuous-improvement)
+- [Core Principles](#core-principles)
+- [Getting Started](#getting-started)
+  - [1. Set up your project tracker](#1-set-up-your-project-tracker)
+  - [2. Copy the framework files](#2-copy-the-framework-files)
+  - [2a. Wire the enforcement hooks](#2a-wire-the-enforcement-hooks)
+  - [2b. Add `.harnessable/` to `.gitignore`](#2b-add-harnessable-to-gitignore)
+  - [3. Load agent context at session start](#3-load-agent-context-at-session-start)
+  - [4. Create your first DMT](#4-create-your-first-dmt)
+  - [5. Run the workflow](#5-run-the-workflow)
+- [Anti-Patterns](#anti-patterns)
+- [Engineering Model](#engineering-model)
+- [Influences & Acknowledgements](#influences--acknowledgements)
+- [Licence](#licence)
 
 ---
 
@@ -195,18 +227,25 @@ harnessable/
 │   ├── state-machine.md           Board status transitions and invariants
 │   ├── error-modes.md             Classified failure patterns and expected responses
 │   ├── continuous-improvement.md  Failure → RCA → harness improvement loop
-│   └── hooks.md                   Hook lifecycle events, installation, and extension guide
+│   ├── hooks.md                   Hook lifecycle events, installation, and extension guide
+│   └── knowledge-graph.md         Knowledge graph model, vendoring instructions, and project extension guide
 │
 ├── templates/
 │   └── dip.md                     Design Implementation Plan template (all required sections)
 │
 ├── CHEAT_SHEET.md                 Condensed harness engineering reference
-└── GLOSSARY.md                    Definitions for all abbreviations and framework terms
+└── KNOWLEDGE_GRAPH.yaml           Framework concept graph — roles, artifacts, enumerations, and relationships
 ```
 
 ---
 
 ## Key Concepts
+
+### Knowledge Graph
+
+`KNOWLEDGE_GRAPH.yaml` is the authoritative semantic layer for the framework: it declares every concept in the `harnessable` namespace — roles, artifacts, enumerations, and their relationships — as a machine-readable graph that agents and guards reason against, not merely read. The framework graph is vendored unchanged under `vendor/harnessable/`; project-specific concepts extend it in a separate `docs/knowledge-graph.yaml`. When two platforms use the same label for different concepts, an alignment entry marks `safe_assumption: false` — an active instruction to any agent working across those platforms to treat the concepts as distinct regardless of shared labels.
+
+Full model and extension guide: [references/knowledge-graph.md](references/knowledge-graph.md)
 
 ### Field Discoveries
 
@@ -312,11 +351,23 @@ Declare the tool and integration method in your project's `AGENTS.md` under `## 
 
 ### 2. Copy the framework files
 
-Place `agents/`, `references/`, `templates/`, and `hooks/` somewhere your agent sessions can read them. A `docs/harness/` directory in your project works well.
+Place all framework files under a `harness/` directory at the root of your project.
+
+**Tier 1 — Scaffold (copy and own):** `agents/`, `hooks/`, `templates/`
+
+Copy these into `harness/` and take full ownership. They are meant to be customised per project; there is no upstream obligation after copying.
+
+**Tier 2 — Vendor (pin and update deliberately):** `KNOWLEDGE_GRAPH.yaml`, `references/`
+
+These define the framework semantics. Do not modify them. Place them under `harness/vendor/harnessable/` alongside a `HARNESSABLE_VERSION` file containing the release tag or commit SHA you copied from.
+
+To update: replace `harness/vendor/harnessable/` contents with the new release, update `HARNESSABLE_VERSION`, and review the changelog for changes to the `harnessable` namespace.
+
+See [references/knowledge-graph.md](references/knowledge-graph.md) for the full extension model.
 
 ### 2a. Wire the enforcement hooks
 
-Copy `hooks/claude_code_settings_template.json` to `.claude/settings.json` at the root of your project (or merge it into an existing settings file). Update the base path if you placed `hooks/` somewhere other than `docs/harness/hooks/`.
+Copy `hooks/claude_code_settings_template.json` to `.claude/settings.json` at the root of your project (or merge it into an existing settings file). Update the base path if you placed `hooks/` somewhere other than `harness/hooks/`.
 
 This registers `hooks/run.py` as the dispatcher for three lifecycle events:
 
@@ -333,17 +384,17 @@ To verify the enforcement layer is live after wiring, run these three checks. Pi
 ```bash
 # 1. Safe command — must exit 0, no output
 printf '{"tool_name":"Bash","tool_input":{"command":"echo ok"}}' \
-  | python3 docs/harness/hooks/run.py pre_tool_use
+  | python3 harness/hooks/run.py pre_tool_use
 echo "Exit: $?"
 
 # 2. Force push guard — must exit 2 with a GitGuard message
 printf '{"tool_name":"Bash","tool_input":{"command":"git push origin main --force"}}' \
-  | python3 docs/harness/hooks/run.py pre_tool_use 2>&1
+  | python3 harness/hooks/run.py pre_tool_use 2>&1
 echo "Exit: $?"
 
 # 3. WHERE-less DELETE guard — must exit 2 with a DatabaseGuard message
 printf '{"tool_name":"Bash","tool_input":{"command":"psql -c \"DELETE FROM users\""}}' \
-  | python3 docs/harness/hooks/run.py pre_tool_use 2>&1
+  | python3 harness/hooks/run.py pre_tool_use 2>&1
 echo "Exit: $?"
 ```
 
