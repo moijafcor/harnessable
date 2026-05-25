@@ -251,6 +251,8 @@ harnessable/
 
 `KNOWLEDGE_GRAPH.yaml` is the authoritative semantic layer for the framework: it declares every concept in the `harnessable` namespace — roles, artifacts, enumerations, and their relationships — as a machine-readable graph that agents and guards reason against, not merely read. The framework graph is vendored unchanged under `docs/harness/vendor/harnessable/`; project-specific concepts extend it in a separate `docs/knowledge-graph.yaml`. When two platforms use the same label for different concepts, an alignment entry marks `safe_assumption: false` — an active instruction to any agent working across those platforms to treat the concepts as distinct regardless of shared labels.
 
+The knowledge graph is also the pipeline's second output. Every mandate produces working software and an enriched graph — both are required for DONE. Every role is a scout: the Engineer amends the graph during recon, the Coder and QA file `ONTOLOGY_GAP` when they encounter undeclared concepts, and the Architect grounds mandate intent in the graph before the DMT is finalised and confirms enrichment before closure. A concept discovered during any stage that is not in the graph halts work until declared.
+
 Full model and extension guide: [framework/vendor/harnessable/references/knowledge-graph.md](framework/vendor/harnessable/references/knowledge-graph.md)
 
 ### Field Discoveries

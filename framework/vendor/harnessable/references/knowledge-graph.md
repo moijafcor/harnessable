@@ -202,6 +202,28 @@ the concepts as distinct regardless of shared labels.
 
 ---
 
+## The Knowledge Graph as Pipeline Output
+
+Every role is a knowledge scout. The pipeline produces two parallel outputs:
+working software and an enriched knowledge graph. Recon discoveries,
+implementation findings, and QA observations all generate knowledge — about
+the domain, about platform terminology, about where concepts collide. That
+knowledge belongs in the graph, not only in DIP and TIR documents where it
+is findable but not queryable.
+
+The `harnessable.DiscoveryClass.ONTOLOGY_GAP` discovery class is the mechanism.
+Any role that encounters an undeclared concept halts, files the gap, and resumes
+only after the graph is amended. The pipeline gates at PLANNED and DONE enforce
+this: the graph must be enriched as a condition of progression, not as a
+post-mandate cleanup task.
+
+The Architect carries the obligation at both ends. At mandate open, every
+concept in the DMT must be grounded in the project graph — undefined intent is
+a blocker on mandate creation. At mandate close, the graph must reflect
+everything the mandate surfaced — unresolved gaps block DONE.
+
+---
+
 ## Graph relationship reference
 
 These relationship keys are used consistently across both the framework graph

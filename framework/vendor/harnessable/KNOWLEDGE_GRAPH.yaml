@@ -84,6 +84,19 @@ concepts:
       on_accept: harnessable.BoardStatus.DONE
     prohibited_from:
       - acting_as_QA_on_same_mandate
+    knowledge_graph_obligations:
+      at_mandate_open:
+        - Ground every domain concept used in the DMT in
+          docs/knowledge-graph.yaml before the DMT is finalised.
+        - Undefined terms in the DMT are ONTOLOGY_GAP; resolve before
+          setting status to MANDATED.
+      at_mandate_close:
+        - Before accepting the QA verdict and setting DONE, confirm the
+          knowledge graph was amended with all concepts discovered during
+          the mandate lifecycle.
+        - Review all ONTOLOGY_GAP discoveries filed during the mandate
+          and verify each was resolved and committed to the graph.
+        - A mandate whose graph was not enriched is not fully done.
 
   harnessable.Engineer:
     type: harnessable.Role
@@ -97,6 +110,15 @@ concepts:
       on_complete: harnessable.BoardStatus.PLANNED
     prohibited_from:
       - writing_implementation_code
+    knowledge_graph_obligations:
+      recon_produces_two_outputs:
+        - DIP
+        - knowledge graph amendments for every concept encountered during
+          recon that is not declared in docs/knowledge-graph.yaml
+      constraint: >
+        No concept may appear in the DIP using a raw label if it is absent
+        from the project graph. File ONTOLOGY_GAP, resolve it, then
+        reference the namespaced term in the DIP.
 
   harnessable.Coder:
     type: harnessable.Role
@@ -111,6 +133,10 @@ concepts:
     prohibited_from:
       - self_verification
       - proceeding_without_filing_deviation
+    knowledge_graph_obligations:
+      - File ONTOLOGY_GAP for any concept encountered during implementation
+        that is not declared in docs/knowledge-graph.yaml.
+      - Halt work until the gap is resolved.
 
   harnessable.QA:
     type: harnessable.Role
@@ -124,6 +150,11 @@ concepts:
     prohibited_from:
       - accepting_TIR_claims_as_evidence
       - inheriting_checks_from_Coder
+    knowledge_graph_obligations:
+      - File ONTOLOGY_GAP for any concept encountered during verification
+        that is not declared in docs/knowledge-graph.yaml, including
+        misclassified alignments or concepts used under incorrect namespaces.
+      - Halt verification until the gap is resolved.
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ARTIFACTS
@@ -314,6 +345,18 @@ concepts:
         triggers: continuous_improvement_loop
         requires_child_mandate: true
         see: references/continuous-improvement.md
+      ONTOLOGY_GAP:
+        definition: >
+          A concept was encountered during any pipeline stage that does not
+          exist in docs/knowledge-graph.yaml. The concept must be declared
+          and namespaced in the project graph before work continues. If the
+          DIP referenced the concept using a raw label, the DIP must be
+          updated to use the namespaced term.
+        halts_work: true
+        requires_dip_update: true
+        requires_graph_amendment: true
+        filed_by: [harnessable.Architect, harnessable.Engineer,
+                   harnessable.Coder, harnessable.QA]
 
   harnessable.MandateType:
     type: harnessable.Enumeration

@@ -142,6 +142,16 @@ For every external API, SDK, or service the mandate touches:
 - Search past sessions for this project area
 - Note any "we decided X because Y" that the DIP must respect
 
+### Knowledge Graph Obligation
+
+Recon produces two outputs, not one: the DIP and a set of knowledge graph
+amendments. For every concept encountered during recon that is not already
+declared in `docs/knowledge-graph.yaml`, file an `harnessable.DiscoveryClass.ONTOLOGY_GAP`
+discovery before authoring the DIP. Resolve it — declare the concept in the
+project graph with the correct namespace and relationships — then reference the
+namespaced term in the DIP. Raw labels in the DIP are a protocol violation if
+the concept is absent from the graph.
+
 ### Pass 6 — Test Coverage Audit
 
 ```bash

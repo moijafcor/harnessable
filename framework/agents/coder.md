@@ -57,6 +57,15 @@ retrospectively from memory. Key things to capture in real time:
 
 ---
 
+## Knowledge Graph Obligation
+
+If a concept is encountered during implementation that is not declared in
+`docs/knowledge-graph.yaml`, halt and file an `harnessable.DiscoveryClass.ONTOLOGY_GAP`
+discovery before continuing. Do not proceed using a raw label. Do not assume
+the concept was intentionally left undeclared.
+
+---
+
 ## DEVIATION Protocol
 
 If a DIP step cannot be implemented exactly as written:

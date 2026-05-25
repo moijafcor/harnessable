@@ -63,7 +63,16 @@ QA's value is not just re-running the Coder's checks. Add:
 - Integration smoke test (does the feature work end-to-end, not just unit-level?)
 - For SRE mandates: confirm the change is reversible or that rollback is documented
 
-### Phase 5 — Out-of-Scope Regression Scan
+### Phase 5 — Knowledge Graph Verification
+
+During verification, if a concept appears in the DIP, TIR, or implementation
+that is not declared in `docs/knowledge-graph.yaml` — or is declared under
+the wrong namespace or with an incorrect alignment — file an
+`harnessable.DiscoveryClass.ONTOLOGY_GAP` discovery. Halt verification until
+resolved. A passing QA Verdict on a mandate that left graph gaps is a protocol
+violation.
+
+### Phase 6 — Out-of-Scope Regression Scan
 
 Quick scan of components adjacent to what was changed:
 
