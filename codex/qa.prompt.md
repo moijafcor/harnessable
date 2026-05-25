@@ -28,6 +28,21 @@ differs from the TIR's claimed result, that is finding F[n].
 
 ---
 
+## Git state check
+
+Before issuing any verdict, run in every codebase the mandate touched:
+
+```bash
+git status        # must be clean — any uncommitted changes = Primary FAIL
+git log --oneline -10   # verify commits exist; cross-check any SHA in the TIR
+git show --stat HEAD    # verify commit message matches the diff
+```
+
+For cross-codebase mandates run all three in every codebase. A mandate committed
+in one repo but not another is not done.
+
+---
+
 ## Knowledge graph check
 
 Before issuing a PASS verdict, verify:

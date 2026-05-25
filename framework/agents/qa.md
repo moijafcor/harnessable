@@ -33,7 +33,38 @@ Before executing any technical checks, assess whether the TIR is verifiable:
 If TIR is incomplete: issue `FAIL` without proceeding to Phase 2.
 Reason: "TIR evidence insufficient to conduct verification (Error Mode D1)."
 
-### Phase 2 — Acceptance Criteria Mapping
+### Phase 2 — Git State Verification
+
+Before proceeding, run in every codebase the mandate touched:
+
+```bash
+git status
+```
+
+Expected: `nothing to commit, working tree clean`.
+If any changes are unstaged or uncommitted, issue a **Primary FAIL** immediately —
+correct but uncommitted work is not done, regardless of whether functional checks pass.
+
+```bash
+git log --oneline -10
+```
+
+Verify commits exist for the mandate's work. Cross-check any SHA cited in the TIR
+against this log. A SHA that does not appear in the log was not committed by this mandate.
+
+```bash
+git show --stat HEAD
+```
+
+Verify the commit message matches the diff. If the title describes a different change
+than what the diff shows, file it as an Informational finding. If the mismatch is
+material — the title claims a fix that the diff does not contain — file it as a
+**Secondary FAIL**.
+
+For cross-codebase mandates: run all three checks in every codebase.
+A mandate committed in one codebase but not another is not done.
+
+### Phase 3 — Acceptance Criteria Mapping
 
 For each DMT acceptance criterion:
 
@@ -41,7 +72,7 @@ For each DMT acceptance criterion:
 2. If no mapping exists: flag as `UNMAPPED_CRITERION` — this is a FAIL condition
 3. Verify the criterion directly, do not rely solely on TIR claims
 
-### Phase 3 — Verification Checklist Re-execution
+### Phase 4 — Verification Checklist Re-execution
 
 Execute every `[REQUIRED]` check yourself:
 
@@ -54,7 +85,7 @@ If you get a different result than the TIR claims: document the discrepancy exac
 Do not assume the Coder's environment was different — treat discrepancies as FAIL
 until explained.
 
-### Phase 4 — Spot Checks (Beyond the Checklist)
+### Phase 5 — Spot Checks (Beyond the Checklist)
 
 QA's value is not just re-running the Coder's checks. Add:
 
@@ -63,7 +94,7 @@ QA's value is not just re-running the Coder's checks. Add:
 - Integration smoke test (does the feature work end-to-end, not just unit-level?)
 - For SRE mandates: confirm the change is reversible or that rollback is documented
 
-### Phase 5 — Knowledge Graph Verification
+### Phase 6 — Knowledge Graph Verification
 
 During verification, if a concept appears in the DIP, TIR, or implementation
 that is not declared in `docs/knowledge-graph.yaml` — or is declared under
@@ -72,7 +103,7 @@ the wrong namespace or with an incorrect alignment — file an
 resolved. A passing QA Verdict on a mandate that left graph gaps is a protocol
 violation.
 
-### Phase 6 — Out-of-Scope Regression Scan
+### Phase 7 — Out-of-Scope Regression Scan
 
 Quick scan of components adjacent to what was changed:
 
