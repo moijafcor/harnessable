@@ -12,6 +12,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
 
 - [Problem Statement](#problem-statement)
 - [What This Is Not](#what-this-is-not)
+- [The Harness Engineering Manifesto](#the-harness-engineering-manifesto)
 - [The Framework](#the-framework)
   - [Four Roles](#four-roles)
   - [The Artifact Chain](#the-artifact-chain)
@@ -61,6 +62,33 @@ A model without operational controls is difficult to validate, audit, and recove
 - Not a framework for one-shot prompts or chat assistants
 - Not a general AI application toolkit — it is specifically for teams operating autonomous agents in environments where actions have real consequences
 - Not model-specific — designed for Claude Code but the protocols and hook architecture apply to any autonomous agent runtime with lifecycle hooks
+
+---
+
+## The Harness Engineering Manifesto
+
+In production environments where agent actions have real-world consequences, we treat AI agents as regulated systems rather than probabilistic experiments. We define this discipline as **Harness Engineering**.
+
+### The Core Principle
+
+We operate on the fundamental equation:
+
+> **Agent = Model + Harness**
+
+- **The Model** is the black-box engine providing raw reasoning capability.
+- **The Harness** is the **operational infrastructure** — the environment that constrains, validates, and governs the model. The [Problem Statement](#problem-statement) expands the Harness into its component layers: Context, Tools, Enforcement, Verification, and Observability.
+
+### From "Vibe Coding" to Systems Engineering
+
+Traditional agent development often falls into the trap of "vibe coding" — repeatedly refining prompts in hopes of achieving deterministic results. **Harness Engineering** rejects this in favour of structural control:
+
+1. **Guides (Feed-Forward):** Strict architectural constraints — capability allow-lists, rigid file-system boundaries, and context-injection protocols — define the agent's lane before it acts.
+2. **Sensors (Feedback):** Post-action validation — automated testing, static analysis, and loop detection — enforces correctness after it acts. If an agent fails, we do not simply tweak the prompt; we harden the infrastructure.
+3. **Observability:** Every action taken by the model must be audit-ready. The harness provides the logs and state persistence necessary to debug failures as structural gaps rather than random noise.
+
+### Why `harnessable`?
+
+`harnessable` is the realisation of this manifesto. It provides the toolset to build, test, and enforce these structural boundaries, moving AI projects out of the experimental phase and into professional, production-ready software architecture.
 
 ---
 
