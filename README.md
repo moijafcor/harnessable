@@ -428,7 +428,8 @@ printf '{"tool_name":"Bash","tool_input":{"command":"git push origin main --forc
 echo "Exit: $?"
 
 # 3. WHERE-less DELETE guard — must exit 2 with a DatabaseGuard message
-printf '{"tool_name":"Bash","tool_input":{"command":"psql -c \"DELETE FROM users\""}}' \
+# Use printf '%s' so the argument is printed as-is; bare printf interprets \" as " and produces invalid JSON.
+printf '%s' '{"tool_name":"Bash","tool_input":{"command":"psql -c \"DELETE FROM users\""}}' \
   | python3 docs/harness/hooks/run.py pre_tool_use 2>&1
 echo "Exit: $?"
 ```
