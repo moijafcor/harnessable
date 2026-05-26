@@ -391,7 +391,7 @@ Declare the tool and integration method in your project's `AGENTS.md` under `## 
 All installable files are pre-structured under `framework/`. Copy the directory into your project:
 
 ```bash
-cp -r framework/ path/to/your-project/docs/harness/
+cp -r framework/. path/to/your-project/docs/harness/
 ```
 
 The directory is already organized. Tier 1 files (`agents/`, `hooks/`, `templates/`) are ready to customize. Tier 2 files (`vendor/harnessable/`) define the framework semantics — do not modify them.
