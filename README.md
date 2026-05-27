@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents working in high-stakes production environments — from AI coding assistants to chief-of-staff, legal review, and financial analysis agents. It provides four roles, a structured artifact chain, a state machine, and a continuous improvement loop — all backed by a deployable enforcement layer: a hooks dispatcher and scripts that make the governance protocols mechanically enforceable, not merely advisory. The process is adapted from regulated engineering disciplines and applied to any domain where an agent operates with real consequences.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: four roles, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -22,6 +22,8 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
 - [Repository Structure](#repository-structure)
 - [Key Concepts](#key-concepts)
   - [Knowledge Graph](#knowledge-graph)
+  - [Context Continuity](#context-continuity)
+  - [Recursive Self-Improvement](#recursive-self-improvement)
   - [Field Discoveries](#field-discoveries)
   - [Containment Checklist](#containment-checklist)
   - [Continuous Improvement](#continuous-improvement)
@@ -280,9 +282,17 @@ harnessable/
 
 `KNOWLEDGE_GRAPH.yaml` is the authoritative semantic layer for the framework: it declares every concept in the `harnessable` namespace — roles, artifacts, enumerations, and their relationships — as a machine-readable graph that agents and guards reason against, not merely read. The framework graph is vendored unchanged under `docs/harness/vendor/harnessable/`; project-specific concepts extend it in a separate `docs/knowledge-graph.yaml`. When two platforms use the same label for different concepts, an alignment entry marks `safe_assumption: false` — an active instruction to any agent working across those platforms to treat the concepts as distinct regardless of shared labels.
 
-The knowledge graph is also the pipeline's second output. Every mandate produces working software and an enriched graph — both are required for DONE. Every role is a scout: the Engineer amends the graph during recon, the Coder and QA file `ONTOLOGY_GAP` when they encounter undeclared concepts, and the Architect grounds mandate intent in the graph before the DMT is finalised and confirms enrichment before closure. A concept discovered during any stage that is not in the graph halts work until declared.
+The knowledge graph is also the pipeline's second output. Every mandate produces working software and an enriched graph — both are required for DONE. Every role is a scout: the Engineer amends the graph during recon, the Coder and QA file `ONTOLOGY_GAP` when they encounter undeclared concepts, and the Architect grounds mandate intent in the graph before the DMT is finalised and confirms enrichment before closure. A concept discovered during any stage that is not in the graph halts work until declared. ONTOLOGY_GAP resolutions and graph enrichment are also prerequisites for framework improvement — when the same gap class recurs across three mandates, it triggers a MetaMandate.
 
 Full model and extension guide: [framework/vendor/harnessable/references/knowledge-graph.md](framework/vendor/harnessable/references/knowledge-graph.md)
+
+### Context Continuity
+
+The PreCompact hook pair fires before every compaction event, preserving operational state before the context window is truncated. `transcript_archive.py` compresses the full session transcript and indexes it in `.harness/transcripts/` — nothing is auto-purged; operators set the retention policy. `mandate_snapshot.py` writes `.harness/compaction-handover.md`, a structured document capturing board status, open discoveries, active role, and git state across all configured codebases. The next session loads this handover document and resumes with full operational context rather than starting from the compaction summary. Codebase paths are configured in `.harness/config.json`.
+
+### Recursive Self-Improvement
+
+Every role performs a Framework Observation at the end of every session — unconditionally, not only when something fails. Observations are filed as `HARNESS_IMPROVEMENT` discoveries with structured fields: `gap`, `stage`, and `proposal` common to all roles, plus `upstream_opportunity` for QA and `propagation` for the Architect. `PropagationDistance` — the number of pipeline stages a gap traveled before detection — determines improvement priority. When the same `gap_class` appears in three or more `ImprovementSignal` entries, the Architect creates a MetaMandate: a mandate whose codebase is the framework itself, running through the full four-role pipeline. The framework improves itself by governing itself.
 
 ### Field Discoveries
 
@@ -395,6 +405,8 @@ cp -r framework/. path/to/your-project/docs/harness/
 ```
 
 The directory is already organized. Tier 1 files (`agents/`, `hooks/`, `templates/`) are ready to customize. Tier 2 files (`vendor/harnessable/`) define the framework semantics — do not modify them.
+
+The PreCompact hooks in `framework/hooks/pre_compact/` require wiring in `.claude/settings.json` to activate — add them alongside the PreToolUse and Stop hooks. The settings template at `framework/hooks/claude_code_settings_template.json` already includes the PreCompact block. Configure `.harness/config.json` with your project's codebase paths if the agent works across multiple repositories.
 
 Update `docs/harness/vendor/harnessable/HARNESSABLE_VERSION` with the release tag or commit SHA you copied from.
 
