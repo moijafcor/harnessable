@@ -597,7 +597,7 @@ concepts:
       The append-only NDJSON file that accumulates all ImprovementSignal
       entries across all mandates and sessions. Never truncated by the
       framework. Operators decide purging policy.
-    path_convention: .harnessable/improvement-signals.jsonl
+    path_convention: .harness/improvement-signals.jsonl
     format: NDJSON
     properties:
       append_only: true

@@ -120,7 +120,7 @@ sequence:
 4. **Observe and aggregate** — before setting DONE, review all
    `HARNESS_IMPROVEMENT` discoveries filed across this mandate's full
    lifecycle by any role. For each one, confirm it is recorded in
-   `.harnessable/improvement-signals.jsonl` (the PreCompact hook writes
+   `.harness/improvement-signals.jsonl` (the PreCompact hook writes
    this automatically; verify it caught them or append manually).
 
    Then check the signal log for recurrence: if the same gap class has
