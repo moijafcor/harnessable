@@ -19,7 +19,7 @@
 11. Failure Handling
 12. Observability & Auditability
 13. Production Readiness Checklist
-14. Architect → Engineer → Coder → QA Workflow
+14. Architect → Engineer → Coder / SRE → QA Workflow
 15. Implementation Anti-Patterns
 16. Quick Reference
 
@@ -717,9 +717,9 @@ Architect
    ↓
 Engineer
    ↓
-Coder
-   ↓
-QA
+Coder (code mandates)   or   SRE (infrastructure mandates)
+   ↓                              ↓
+QA ←──────────────────────────────┘
 ```
 
 The implementer should not approve their own work.
@@ -996,7 +996,7 @@ DIP was authored, distinct from what training data claimed.
 
 ---
 
-## Architect → Engineer → Coder → QA Workflow
+## Architect → Engineer → Coder / SRE → QA Workflow
 
 ### Architect
 
@@ -1030,6 +1030,21 @@ Produces the **Task Implementation Report (TIR)**, containing:
 - Deviation records
 - Verification output (tests, checks, health probes, or domain-specific validators)
 - Known limitations
+
+---
+
+### SRE
+
+Executes infrastructure and operational mandates. Produces the **SRE Implementation Report (SIR)**, containing:
+
+- Pre-change baseline (captured before any system is touched)
+- Change execution log (actual command output, in real time)
+- Incident notes (if anything went wrong during execution)
+- Observation window evidence (logs and metrics post-change)
+- Rollback status (still viable / not viable / was executed)
+
+The SRE must not proceed without a documented rollback procedure and blast
+radius declaration in the DIP.
 
 ---
 

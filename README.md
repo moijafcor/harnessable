@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents doing high-stakes production work: four roles, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: five roles, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -14,7 +14,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
 - [What This Is Not](#what-this-is-not)
 - [The Harness Engineering Manifesto](#the-harness-engineering-manifesto)
 - [The Framework](#the-framework)
-  - [Four Roles](#four-roles)
+  - [Roles](#roles)
   - [The Artifact Chain](#the-artifact-chain)
   - [The State Machine](#the-state-machine)
   - [Harness Layers](#harness-layers)
@@ -98,7 +98,7 @@ Traditional agent development often falls into the trap of "vibe coding" — rep
 
 ## The Framework
 
-### Four Roles
+### Roles
 
 Roles are **functional**, not personal. One human or one agent session may perform multiple roles, but the active role must be explicit and role boundaries must be preserved.
 
@@ -106,10 +106,11 @@ Roles are **functional**, not personal. One human or one agent session may perfo
 | --- | --- | --- |
 | **Architect** | Define intent. Own the mandate. Review outcomes. | Design Mandate Task (DMT) |
 | **Engineer** | Translate intent into an implementable plan. | Design Implementation Plan (DIP) |
-| **Coder** | Execute the plan exactly as designed. | Task Implementation Report (TIR) |
+| **Coder** | Execute code mandates exactly as designed. | Task Implementation Report (TIR) |
+| **SRE** | Execute infrastructure and operational mandates against live systems. | SRE Implementation Report (SIR) |
 | **QA** | Verify independently. Treat implementation claims as unverified until checked. | QA Verdict |
 
-No role approves its own work. The Coder cannot be the QA. The Engineer must not write code.
+No role approves its own work. The Coder cannot be the QA. The SRE cannot be the QA for the same mandate. The Engineer must not write code.
 
 ---
 
@@ -124,18 +125,22 @@ Engineer authors DIP
     │
     │  Recon findings, architecture decisions, ordered steps,
     │  verification checklists, and containment plan.
-    ▼
-Coder implements + streams TIR
-    │
-    │  Completed work with evidence: verification output,
-    │  deviations filed, and gates checked.
-    ▼
-QA verifies + issues verdict
-    │
-    │  Independently executed checks and verdict:
-    │  PASS / CONDITIONAL_PASS / FAIL.
-    ▼
-Architect accepts → DONE
+    ├─ code mandate ──────────────────────────────────────────┐
+    │  Coder implements + streams TIR                         │
+    │  Completed work with evidence: verification output,     │
+    │  deviations filed, and gates checked.                   │
+    │                                                         │
+    └─ infrastructure mandate ───────────────────────────────►┤
+       SRE executes + streams SIR                             │
+       Pre-change baseline, change log, observation window,   │
+       rollback status.                                       │
+                                                              ▼
+                                               QA verifies + issues verdict
+                                                   │
+                                                   │  Independently executed checks and verdict:
+                                                   │  PASS / CONDITIONAL_PASS / FAIL.
+                                                   ▼
+                                               Architect accepts → DONE
 ```
 
 Artifacts are append-only after their stage closes. A closed mandate's DIP is immutable except for `## Post-Close Notes`.
@@ -240,6 +245,7 @@ harnessable/
 │   ├── agents/                    Tier 1 (copy and own) — role-specific agent protocols
 │   │   ├── engineer.md            Recon passes, DIP authoring standards, sub-agent delegation
 │   │   ├── coder.md               Build discipline, pre-completion hook runner, exit gate
+│   │   ├── sre.md                 Pre-change capture, blast radius, incident response, SIR
 │   │   └── qa.md                  Adversarial verification protocol, verdict criteria
 │   │
 │   ├── hooks/                     Tier 1 (copy and own) — Enforcement Layer
@@ -293,7 +299,7 @@ The PreCompact hook pair fires before every compaction event, preserving operati
 
 ### Recursive Self-Improvement
 
-Every role performs a Framework Observation at the end of every session — unconditionally, not only when something fails. Observations are filed as `HARNESS_IMPROVEMENT` discoveries with structured fields: `gap`, `stage`, and `proposal` common to all roles, plus `upstream_opportunity` for QA and `propagation` for the Architect. `PropagationDistance` — the number of pipeline stages a gap traveled before detection — determines improvement priority. When the same `gap_class` appears in three or more `ImprovementSignal` entries, the Architect creates a MetaMandate: a mandate whose codebase is the framework itself, running through the full four-role pipeline. The framework improves itself by governing itself.
+Every role performs a Framework Observation at the end of every session — unconditionally, not only when something fails. Observations are filed as `HARNESS_IMPROVEMENT` discoveries with structured fields: `gap`, `stage`, and `proposal` common to all roles, plus `upstream_opportunity` for QA and `propagation` for the Architect. The SRE's observation is recorded in the SIR `## SRE Sign-Off` as Phase 5 of the Verification Protocol. `PropagationDistance` — the number of pipeline stages a gap traveled before detection — determines improvement priority. When the same `gap_class` appears in three or more `ImprovementSignal` entries, the Architect creates a MetaMandate: a mandate whose codebase is the framework itself, running through the full pipeline. The framework improves itself by governing itself.
 
 ### External Fact Verification
 
@@ -334,7 +340,7 @@ If a step has no answer for any of these, the DIP has a design gap.
 
 ### Continuous Improvement
 
-Each failure should be reviewed for missing or ineffective controls. The framework treats its own protocol files as a codebase: any agent may file a `HARNESS_IMPROVEMENT` discovery, which creates a child task and eventually flows through the same four-role pipeline as any other mandate.
+Each failure should be reviewed for missing or ineffective controls. The framework treats its own protocol files as a codebase: any agent may file a `HARNESS_IMPROVEMENT` discovery, which creates a child task and eventually flows through the same pipeline as any other mandate.
 
 Incident review should focus on the control gap, not only the model output.
 
@@ -504,11 +510,11 @@ Every agent protocol loads this file at session start. If it does not exist when
 At the start of each agent session, tell the agent which role it is playing and point it to the relevant files:
 
 ```text
-You are operating as the [Engineer | Coder | QA].
+You are operating as the [Engineer | Coder | SRE | QA].
 
 Role definition and permissions: docs/harness/vendor/harnessable/references/roles.md
 State machine: docs/harness/vendor/harnessable/references/state-machine.md
-Your protocol: docs/harness/agents/[engineer|coder|qa].md
+Your protocol: docs/harness/agents/[engineer|coder|sre|qa].md
 ```
 
 ### 4. Create your first DMT

@@ -6,10 +6,11 @@ This repository uses Harnessable: operational governance for autonomous
 agents. Full documentation: framework/vendor/harnessable/references/
 
 Before non-trivial work:
-1. Identify active role: Architect, Engineer, Coder, or QA.
-2. Do not combine Coder and QA in the same pass.
+
+1. Identify active role: Architect, Engineer, Coder, SRE, or QA.
+2. Do not combine Coder and QA, or SRE and QA, in the same pass.
 3. For implementation work, require a Design Implementation Plan before
-   editing code.
+   editing code or touching live systems.
 4. Record deviations, blockers, and verification evidence.
 5. Do not claim completion without running the stated checks.
 
@@ -34,6 +35,7 @@ encountered that is not declared in the graph.
 ## Completion gate
 
 Before final response, report:
+
 - Files changed
 - Commands run
 - Verification result

@@ -62,6 +62,17 @@ codex "$(cat codex/examples/engineer.prompt.md)"
 codex "$(cat codex/examples/coder.prompt.md)"
 ```
 
+### SRE
+
+```bash
+codex "Use the harnessable skill. Act as SRE.
+Read the DIP at docs/mandates/[path]. Execute the infrastructure mandate."
+```
+
+The SRE protocol is at `docs/harness/agents/sre.md`. Key requirements before
+starting: the DIP must have a `## Rollback Procedure` section and a blast
+radius declaration, or the SRE must file a BLOCKER before proceeding.
+
 ### QA
 
 ```bash
@@ -112,7 +123,8 @@ namespaces:
 ```
 
 Reference it in each prompt:
-```
+
+```text
 Project knowledge graph: docs/knowledge-graph.yaml
 ```
 

@@ -10,9 +10,10 @@ description: >
 
 Follow the Harnessable role chain:
 
-Architect → Engineer → Coder → QA → Architect acceptance
+Architect → Engineer → Coder (or SRE) → QA → Architect acceptance
 
 No role approves its own work. The Coder cannot be the QA.
+The SRE cannot be the QA for the same mandate.
 The Engineer must not write implementation code.
 
 ## Role rules
@@ -28,18 +29,25 @@ are a protocol violation if the concept is absent from the graph.
 **Coder** implements only what the approved DIP specifies. Files a
 Discovery before deviating. Produces a TIR with evidence, not claims.
 
+**SRE** executes infrastructure and operational mandates against live
+systems. Captures pre-change state before acting, confirms rollback is
+documented, respects blast radius, and verifies system health — not test
+suites. Produces a SIR with actual command output and observation window
+evidence, not claims.
+
 **QA** verifies independently. Re-executes checks — does not inherit
-them from the Coder. A passing verdict over unresolved ONTOLOGY_GAP
+them from the Coder or SRE. A passing verdict over unresolved ONTOLOGY_GAP
 discoveries is a protocol violation.
 
 ## Required outputs
 
-| Stage       | Output                                      |
-|-------------|---------------------------------------------|
-| Planning    | Design Mandate Task (DMT)                   |
-| Engineering | Design Implementation Plan (DIP)            |
-| Coding      | Task Implementation Report (TIR)            |
-| Review      | QA Verdict: PASS / CONDITIONAL_PASS / FAIL  |
+| Stage                  | Output                                      |
+| ---------------------- | ------------------------------------------- |
+| Planning               | Design Mandate Task (DMT)                   |
+| Engineering            | Design Implementation Plan (DIP)            |
+| Coding                 | Task Implementation Report (TIR)            |
+| Infrastructure / Ops   | SRE Implementation Report (SIR)             |
+| Review                 | QA Verdict: PASS / CONDITIONAL_PASS / FAIL  |
 
 ## Discovery classes
 
