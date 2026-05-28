@@ -30,11 +30,10 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
 - [Core Principles](#core-principles)
 - [Getting Started](#getting-started)
   - [1. Set up your project tracker](#1-set-up-your-project-tracker)
-  - [2. Copy the framework directory](#2-copy-the-framework-directory)
-  - [2a. Wire the enforcement hooks](#2a-wire-the-enforcement-hooks)
-  - [2b. Add `.harnessable/` to `.gitignore`](#2b-add-harnessable-to-gitignore)
+  - [2. Install the framework](#2-install-the-framework)
+  - [2a. After install: configure skills](#2a-after-install-configure-skills)
+  - [2b. Verify the enforcement layer](#2b-verify-the-enforcement-layer)
   - [2c. Seed the project knowledge graph](#2c-seed-the-project-knowledge-graph)
-  - [2d. Install agent skills](#2d-install-agent-skills)
   - [3. Load agent context at session start](#3-load-agent-context-at-session-start)
   - [4. Create your first DMT](#4-create-your-first-dmt)
   - [5. Run the workflow](#5-run-the-workflow)
@@ -432,37 +431,83 @@ If the board already has a Status field with existing options, this mutation rep
 
 Declare the tool and integration method in your project's `AGENTS.md` under `## Project Tracker` so every agent session knows how to read and update board state.
 
-### 2. Copy the framework directory
+### 2. Install the framework
 
-All installable files are pre-structured under `framework/`. Copy the directory into your project:
+Run the installer from the harnessable repository root, pointing it at your project:
+
+```bash
+bash install.sh /path/to/your-project
+```
+
+The installer is idempotent — safe to re-run after framework updates or once you have added tracker configuration. It installs:
+
+| What | Where | Tier |
+| --- | --- | --- |
+| `KNOWLEDGE_GRAPH.yaml`, `references/`, `templates/`, `HARNESSABLE_VERSION` | `docs/harness/vendor/harnessable/` | 2 — never modify |
+| `agents/`, `hooks/`, `tools/web_verify.py`, `templates/` | `docs/harness/` | 1 — copy and own |
+| Six role skills | `.claude/commands/` | 1 — copy and own |
+| Hook dispatcher wired | `.claude/settings.json` | config |
+| Runtime output excluded | `.gitignore` | config |
+| Audit defaults | `.harnessable/config.json` | config |
+
+**Output prefixes** during a run:
+
+| Prefix | Meaning |
+| --- | --- |
+| `NEW` | File created for the first time |
+| `OK` | File already current, no change |
+| `UPD` | File updated (was outdated or uncustomised) |
+| `SKIP` | Customised file left untouched |
+| `WARN` | Needs attention; install continues |
+| `ACTION` | Operator must act before next session |
+
+**Tracker auto-fill:** if your project's `AGENTS.md` already has a `## Project Tracker` section before you run the installer, the skills are auto-filled with your tracker tool, URL pattern, and integration method. If it does not, the skills install with a `# REPLACE` marker and the installer prints an `ACTION` item — add the section and re-run.
+
+**Manual install (alternative):** Copy the framework directory, wire the settings template, add `.harnessable/` to `.gitignore`, and copy the skills — then fill in the two `# REPLACE` markers in each skill file:
 
 ```bash
 cp -r framework/. path/to/your-project/docs/harness/
+cp docs/harness/hooks/claude_code_settings_template.json .claude/settings.json
+echo '.harnessable/' >> .gitignore
+mkdir -p .claude/commands
+cp docs/harness/templates/skills/*.md .claude/commands/
 ```
 
-The directory is already organized. Tier 1 files (`agents/`, `hooks/`, `templates/`) are ready to customize. Tier 2 files (`vendor/harnessable/`) define the framework semantics — do not modify them.
+### 2a. After install: configure skills
 
-The PreCompact hooks in `framework/hooks/pre_compact/` require wiring in `.claude/settings.json` to activate — add them alongside the PreToolUse and Stop hooks. The settings template at `framework/hooks/claude_code_settings_template.json` already includes the PreCompact block. Configure `.harness/config.json` with your project's codebase paths if the agent works across multiple repositories.
+The installer writes six skill files to `.claude/commands/`. If tracker detection succeeded, they are ready to use. If the `## Project Tracker` section was absent from `AGENTS.md`, each skill has one remaining marker:
 
-Update `docs/harness/vendor/harnessable/HARNESSABLE_VERSION` with the release tag or commit SHA you copied from.
+```text
+# REPLACE: project tracker URL pattern and fetch command
+```
 
-See [framework/vendor/harnessable/references/knowledge-graph.md](framework/vendor/harnessable/references/knowledge-graph.md) for the full extension model.
+Add the tracker section to `AGENTS.md`:
 
-### 2a. Wire the enforcement hooks
+```markdown
+## Project Tracker
+Tool: GitHub Projects
+Integration: gh CLI
+Task URL pattern: https://github.com/YOUR_ORG/YOUR_REPO/issues/{id}
+```
 
-Copy `framework/hooks/claude_code_settings_template.json` to `.claude/settings.json` at the root of your project (or merge it into an existing settings file). Update the base path if you placed `framework/` somewhere other than `docs/harness/`.
+Then re-run the installer — it will fill in the marker automatically and show `UPD` for each skill.
 
-This registers `hooks/run.py` as the dispatcher for three lifecycle events:
+Invoke any role with:
 
-| Event | Subdirectory | What runs |
-| --- | --- | --- |
-| PreToolUse | `hooks/pre_tool_use/` | `bouncer.py`, `secrets_guard.py`, `database_guard.py`, `git_guard.py`, `communication_guard.py` |
-| PostToolUse | `hooks/post_tool_use/` | `audit_logger.py` |
-| Stop | `hooks/stop/` | `completion_gate.py` |
+```text
+/project:engineer "docs/mandates/my-feature.md"
+/project:engineer 190778951
+/project:coder "docs/mandates/auth/login_implementation_plan.md"
+/project:qa 190778951
+/project:sre "docs/mandates/ops/deploy-vhost.md"
+/project:security "docs/mandates/auth/login_implementation_plan.md"
+```
 
-Adding a new check later requires only dropping a `.py` file into the relevant subdirectory — no further changes to `settings.json`.
+`$ARGUMENTS` accepts a board item ID, a local file path, or an inline description. See [framework/vendor/harnessable/references/skills.md](framework/vendor/harnessable/references/skills.md) for the full pattern and customisation guide.
 
-To verify the enforcement layer is live after wiring, run these three checks. Pipe each payload as a **standalone command** — do not embed them in a compound shell script. Guards inspect the outer command string: a compound script containing `git push --force` will be blocked by the bouncer on the test invocation itself, before the JSON payload is evaluated.
+### 2b. Verify the enforcement layer
+
+After install, confirm the hooks are wired and the guards are active. Pipe each payload as a **standalone command** — do not embed them in a compound shell script. Guards inspect the outer command string: a compound script containing `git push --force` will be blocked by the bouncer on the test invocation itself.
 
 ```bash
 # 1. Safe command — must exit 0, no output
@@ -476,32 +521,24 @@ printf '{"tool_name":"Bash","tool_input":{"command":"git push origin main --forc
 echo "Exit: $?"
 
 # 3. WHERE-less DELETE guard — must exit 2 with a DatabaseGuard message
-# Use printf '%s' so the argument is printed as-is; bare printf interprets \" as " and produces invalid JSON.
 printf '%s' '{"tool_name":"Bash","tool_input":{"command":"psql -c \"DELETE FROM users\""}}' \
   | python3 docs/harness/hooks/run.py pre_tool_use 2>&1
 echo "Exit: $?"
 ```
 
-### 2b. Add `.harnessable/` to `.gitignore`
-
-`audit_logger.py` begins writing to `.harnessable/logs/audit.YYYY-MM-DD.jsonl` on the first tool call after hooks are wired, rotated daily and compressed to `.gz`. Add the directory to `.gitignore` before your first `git add`:
-
-```text
-# .gitignore
-.harnessable/
-```
-
-Ignoring the directory (not just the log file) protects all runtime output the framework may write there. If a specific artifact later needs to be versioned, add a negation entry (`!.harnessable/filename`).
+The dispatcher (`hooks/run.py`) discovers `*.py` files in each event subdirectory and runs them in alphabetical order. Adding a new check requires only dropping a `.py` file into the relevant subdirectory — no `settings.json` edit needed.
 
 ### 2c. Seed the project knowledge graph
 
-Copy the bootstrap template into your project and fill in the two placeholder values:
+This step is not handled by the installer — it requires project-specific values.
+
+Copy the bootstrap template and fill in the two placeholders:
 
 ```bash
 cp docs/harness/templates/knowledge-graph.yaml docs/knowledge-graph.yaml
 ```
 
-Then open `docs/knowledge-graph.yaml` and replace:
+Open `docs/knowledge-graph.yaml` and replace:
 
 - `REPLACE_WITH_YOUR_PROJECT_NAME` — a short identifier for your project
 - `REPLACE_WITH_CONTENTS_OF_HARNESSABLE_VERSION_FILE` — copy the exact string from `docs/harness/vendor/harnessable/HARNESSABLE_VERSION`
@@ -514,38 +551,6 @@ git commit -m "chore: bootstrap docs/knowledge-graph.yaml from template"
 ```
 
 Every agent protocol loads this file at session start. If it does not exist when the Architect begins the Forward Scout Obligation, the agent will bootstrap it automatically — but seeding it here, before the first mandate, is the preferred path. See [framework/vendor/harnessable/references/knowledge-graph.md](framework/vendor/harnessable/references/knowledge-graph.md) for the full extension model.
-
-### 2d. Install agent skills
-
-Copy the skill templates to your project's Claude Code commands directory:
-
-```bash
-mkdir -p .claude/commands
-cp docs/harness/templates/skills/*.md \
-   .claude/commands/
-```
-
-Open each file and update the two marked placeholders:
-
-```text
-# REPLACE: project tracker URL pattern and fetch command
-# REPLACE: framework base path (if not docs/harness/)
-```
-
-Invoke any role with:
-
-```text
-/project:engineer "docs/mandates/my-feature.md"
-/project:engineer 190778951
-/project:coder "docs/mandates/auth/login_implementation_plan.md"
-/project:qa 190778951
-/project:sre "docs/mandates/ops/deploy-vhost.md"
-/project:security "docs/mandates/auth/login_implementation_plan.md"
-```
-
-`$ARGUMENTS` accepts a board item ID, a local file path, or an inline description. The skill resolves which case applies and loads the correct protocol automatically.
-
-See `docs/harness/vendor/harnessable/references/skills.md` for the full pattern and customisation guide.
 
 ### 3. Load agent context at session start
 
