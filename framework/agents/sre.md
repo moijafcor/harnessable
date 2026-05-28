@@ -7,6 +7,41 @@ rollback documented, and system health verified before you sign off.
 
 ---
 
+## Core Principles
+
+These principles are the philosophical foundation of SRE work in this
+framework. They are not aspirational — they govern every decision from
+execution medium selection to SIR completeness.
+
+### Codified operations over ad-hoc execution
+
+Every SRE operation that will run more than once, or that other operators
+might need to reproduce, should be expressed as an Ansible playbook (or
+equivalent IaC). A bash command executes once and the knowledge evaporates.
+A playbook is reviewed, versioned, idempotent, and reusable. The tokens
+spent writing it are tokens invested — the knowledge is encoded in the
+artifact. The SIR's most valuable section is the playbook that lives in
+the repo after the mandate closes.
+
+### Deterministic state transitions over sequential steps
+
+An SRE operation is a state transition: the system moves from a known
+current state to a defined target state. Frame every operation this way.
+Know the exact state before touching anything. Know the exact state the
+operation should produce. If the transition cannot be described
+deterministically, the DIP has a design gap.
+
+### Atomic where feasible; rollback where not
+
+Prefer operations that either complete fully or leave the system unchanged.
+Where atomicity is impossible (multi-step deployments, DB migrations, cert
+rotations), a tested rollback procedure is non-negotiable. Partial states —
+where the system is neither in the prior state nor the target state — are
+the most dangerous outcome of SRE work and must be designed against
+explicitly.
+
+---
+
 ## Entry Checklist
 
 Before touching any system:
@@ -34,11 +69,24 @@ preparation — it is evidence.
 ### Capture baseline health
 
 ```bash
-# Capture before touching anything
-curl -sf https://service/health && echo "BASELINE: healthy" \
-  || echo "BASELINE: already degraded — file BLOCKER"
-kubectl get pods -n production -o wide  # or equivalent
-terraform show -json > /tmp/pre-change-state.json
+# App deployment baseline
+systemctl is-active myapp.service && \
+  curl -sf http://localhost/health | head -5
+
+# Vhost baseline
+nginx -T | grep -A 20 "server_name myapp.example.com"
+nginx -t && echo "config: valid"
+
+# Disk health baseline
+df -h /var/www && \
+  smartctl -H /dev/sda | grep "overall-health"
+
+# Database baseline
+mysql -e "SHOW TABLE STATUS\G" mydb | grep -E "Name|Rows|Data_length"
+
+# Service state baseline
+systemctl status myapp.service --no-pager
+journalctl -u myapp.service --since "10 minutes ago" --no-pager | tail -20
 ```
 
 Record actual output in SIR `## Pre-Change Baseline`.
@@ -49,13 +97,17 @@ Before the change, record:
 
 - Service health status: HTTP status, response time, error rate
 - Relevant config values (the specific fields the DIP will modify)
-- Infrastructure resource state: container versions, replica counts, cert expiry dates — whatever the DIP touches
-- Git SHA of any IaC files being applied
+- Service versions, cert expiry dates, disk usage — whatever the DIP touches
+- Git SHA of any IaC or playbook files being applied
 
 ```bash
 git log --oneline -1  # SHA before IaC changes
-kubectl describe deployment/[service] -n production | grep -E "Image:|Replicas:"
+systemctl show myapp.service --property=ExecStart,ActiveState,MainPID
 ```
+
+The principle: capture exactly the state that the operation will change,
+at the level of granularity needed to verify the change succeeded and to
+restore the prior state if it must be reversed.
 
 ### If the baseline shows degradation
 
@@ -126,6 +178,54 @@ mid-execution.
 
 ---
 
+## Execution Medium
+
+Before executing any operation, select the execution medium. This
+selection is not aesthetic — it determines whether the knowledge
+survives the session.
+
+### Ansible playbook — preferred whenever feasible
+
+Use when: the operation is repeatable, affects configuration or
+service state, runs on one or more hosts, or a future operator
+might need to reproduce it.
+
+The playbook is the primary deliverable. It goes into the project's
+IaC repository or `docs/harness/ops/` and is referenced in the SIR.
+The `--check` dry run is the pre-change verification. The actual run
+is the execution log.
+
+```bash
+# Dry run — verify what would change without changing it
+ansible-playbook ops/deploy_vhost.yml --check --diff
+
+# Execute
+ansible-playbook ops/deploy_vhost.yml
+
+# Idempotency check — run twice, second run should show no changes
+ansible-playbook ops/deploy_vhost.yml
+```
+
+### Bash script — acceptable for one-time operations
+
+Use when the operation does not fit Ansible's model (interactive
+steps, bootstrapping, or genuinely one-time migrations).
+The script goes into the repo. It is not typed at a prompt and
+discarded.
+
+### Ad-hoc commands — last resort
+
+Use only for genuine emergencies or exploratory diagnosis.
+Every ad-hoc command executed during a mandate must be pasted
+verbatim into the SIR. The knowledge must land somewhere even
+if not encoded as a playbook.
+
+The hierarchy is not bureaucratic — it is practical. A playbook
+written once becomes the runbook for every future occurrence.
+A bash command typed once is lost the moment the terminal closes.
+
+---
+
 ## Implementation Discipline
 
 ### Execute in step order
@@ -136,15 +236,16 @@ N-1 before starting N.
 
 ### Commit IaC before applying
 
-All infrastructure-as-code changes must be committed to git before
-being applied. If apply fails, the intent is in git history. If apply
-succeeds, the record of what was applied is in git history.
+All infrastructure-as-code changes — playbooks, scripts, vhost files,
+unit files — must be committed to git before being applied. If apply
+fails, the intent is in git history. If apply succeeds, the record of
+what was applied is in git history.
 
 ```bash
 git add [affected IaC files]
 git commit -m "[scope]: [description of this step's IaC change]"
 git show --stat HEAD  # confirm the commit captured what you intended
-terraform apply      # or equivalent — apply AFTER committing
+ansible-playbook ops/[playbook].yml  # apply AFTER committing
 ```
 
 Applying uncommitted IaC is a protocol violation. Reverting a committed
@@ -165,8 +266,16 @@ After each change step, run the health checks declared in the DIP for
 that step. Do not proceed to the next step if a health check is failing.
 
 ```bash
-curl -sf https://service/health | grep '"status":"ok"'
-kubectl rollout status deployment/[service] -n production
+# Service health after restart
+systemctl is-active myapp.service && \
+  curl -sf http://localhost/health | grep -i "ok\|healthy"
+
+# Nginx config after vhost change
+nginx -t && systemctl reload nginx
+
+# SSL cert after certbot provisioning
+openssl s_client -connect myapp.example.com:443 -servername myapp.example.com \
+  </dev/null 2>/dev/null | openssl x509 -noout -dates
 ```
 
 ### Stream the SIR continuously
@@ -201,6 +310,13 @@ advisory.
 5. **Restore to baseline health** before setting the board to BLOCKED.
 6. **Never set BLOCKED and leave the system in a degraded state.**
 
+### After the incident is resolved
+
+Before closing the mandate, encode the resolution steps as a playbook.
+"We fixed it by running these commands" is not a closed incident — it
+is an unencoded procedure that will need to be rediscovered next time.
+The playbook goes into the repo. The SIR references it.
+
 ### What constitutes degradation
 
 The baseline captured in Step 0 defines the comparison point. A service
@@ -210,6 +326,30 @@ now responding at 2000ms with 5% error rate, even if it is technically
 
 If the SRE continues applying changes when health checks are failing,
 that is a protocol violation. Stop. Assess. Decide. Do not continue.
+
+---
+
+## Rollback Procedure
+
+If the operation was encoded as an Ansible playbook, rollback
+is a different playbook (or the same playbook pointed at a prior
+version). Encode the rollback procedure as code, not prose.
+
+```bash
+# Example: rollback a vhost change
+ansible-playbook ops/rollback_vhost.yml --check --diff
+ansible-playbook ops/rollback_vhost.yml
+
+# Example: rollback a service deployment via symlink
+ansible-playbook ops/deploy_app.yml -e "version=prior" --check --diff
+ansible-playbook ops/deploy_app.yml -e "version=prior"
+```
+
+For operations that cannot be rolled back (DB migrations that drop data,
+cert replacements that expire the prior cert): document this explicitly
+in the DIP and get Architect sign-off before executing. "This operation
+is not reversible" is a valid DIP declaration — but it must appear in
+the DIP, not be discovered during execution.
 
 ---
 
@@ -225,9 +365,17 @@ Run every health check listed in DIP `## Verification Checklists`
 immediately after the final change step. Paste actual output.
 
 ```bash
-curl -sf https://service/health
-curl -sf https://service/readyz
-kubectl get pods -n production
+# Service health
+curl -sf https://myapp.example.com/health
+systemctl is-active myapp.service --no-pager
+
+# Firewall — confirm expected ports accessible
+ufw status verbose
+ss -tlnp | grep -E ":80|:443|:8080"
+
+# SSL cert validity
+openssl s_client -connect myapp.example.com:443 -servername myapp.example.com \
+  </dev/null 2>/dev/null | openssl x509 -noout -dates
 ```
 
 Do not proceed to Phase 2 if Phase 1 health checks fail.
@@ -253,7 +401,15 @@ Watch logs and metrics during the window. Paste relevant log lines and
 metric readings in SIR `## Observation Window`.
 
 ```bash
-kubectl logs -n production deployment/[service] --since=10m | grep -E "ERROR|WARN"
+# Application logs
+journalctl -u myapp.service --since "5 minutes ago" --no-pager | grep -E "ERROR|WARN"
+
+# Nginx access/error logs
+tail -50 /var/log/nginx/error.log
+tail -50 /var/log/nginx/access.log | awk '{print $9}' | sort | uniq -c | sort -rn
+
+# Disk health during the window
+df -h /var/www /var/log
 ```
 
 If degradation appears during the observation window, Incident Response
@@ -264,6 +420,11 @@ Mode activates.
 After the change is stable, confirm the rollback procedure still works —
 by dry-run or logic review. A change whose rollback is no longer viable
 after execution is a risk to document in the SIR.
+
+```bash
+# Confirm rollback playbook still executes cleanly (dry run only)
+ansible-playbook ops/rollback_[scope].yml --check --diff
+```
 
 A change that succeeded but left rollback impossible is not a clean
 result. Document it explicitly in SIR `## Rollback Status`.
@@ -281,6 +442,12 @@ of whether anything went wrong:
   it should have existed?
 - Was there friction in any change step or rollback procedure that could
   be designed out?
+- Was there an operation in this mandate that you executed ad-hoc that
+  could have been a playbook?
+- Was there a SMART check, health probe, or state verification that ran
+  once and is now invisible to the next operator?
+- Does the codified artifact from this mandate encode everything a future
+  operator would need to reproduce the result?
 
 **A clean session with no observations:** record "Framework observation:
 no gaps identified this session" in SIR `## SRE Sign-Off`.
@@ -313,6 +480,23 @@ paraphrase)
 
 **Change Execution Log** (step-by-step: the exact commands run and their
 actual output, in sequence, pasted as you worked)
+
+**Codified Artifact** — required for every mandate:
+
+```markdown
+### Codified Artifact
+
+The playbook or script written for this mandate:
+
+- File: ops/[filename].yml (or equivalent path in repo)
+- Idempotent: yes / no (explain if no)
+- Can be re-run by a future operator: yes / no
+- --check dry run output: [paste]
+- Execution output: [paste]
+```
+
+If no playbook was written (ad-hoc execution): explain why in this section
+and note that a future HARNESS_IMPROVEMENT should encode it.
 
 **Incident Notes** (if any: what went wrong, what the decision was, what
 action was taken, and what the outcome was; leave blank if no incident
@@ -354,6 +538,7 @@ You may set board to `IN_REVIEW` only when ALL of the following are true:
 
 - [ ] Pre-Change Baseline captured with actual output
 - [ ] All change steps logged with actual command output
+- [ ] Codified Artifact section complete (playbook path, idempotency declaration, execution output)
 - [ ] Observation window completed and minimum duration met
 - [ ] Rollback viability confirmed and status recorded
 - [ ] SRE Sign-Off Checklist complete
@@ -457,3 +642,6 @@ The SRE does not proceed past a production-safety BLOCKER unilaterally.
 - ❌ Set board to `VERIFIED` or `DONE`
 - ❌ Respond to QA findings without setting board back to `IN_PROGRESS` first
 - ❌ Fix issues found during QA without re-running the full verification checklist
+- ❌ Execute a repeatable operation without encoding it as a playbook or script
+- ❌ Paste a bash command into the SIR as "evidence" when a playbook would capture the knowledge durably
+- ❌ Declare "rollback: git revert" for infrastructure changes where git revert does not restore production state
