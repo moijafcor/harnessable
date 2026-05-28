@@ -497,7 +497,7 @@ stdin payload:
                     ├── git_guard.py           (force push / hard reset / branch destruction)
                     └── communication_guard.py (email / Slack / SMS without approval)
   PostToolUse → python3 docs/harness/hooks/run.py post_tool_use
-                    └── audit_logger.py        (.harnessable/audit.log)
+                    └── audit_logger.py        (.harnessable/logs/audit.YYYY-MM-DD.jsonl)
   Stop        → python3 docs/harness/hooks/run.py stop
                     └── completion_gate.py     (AGENTS.md ## Completion Gate)
 ```
@@ -854,9 +854,11 @@ Record:
 - Deployments
 
 `hooks/post_tool_use/audit_logger.py` covers tool invocations automatically —
-every tool call is appended to `.harnessable/audit.log` (one JSON object per
-line) via the PostToolUse dispatcher. Add scripts to `hooks/post_tool_use/`
-to capture additional signals (metrics, external alerting, ticket creation).
+every tool call is appended to `.harnessable/logs/audit.YYYY-MM-DD.jsonl`,
+rotated daily and compressed to `.gz`. Large fields (file contents, command
+output) are truncated to 512 bytes by default. Add scripts to
+`hooks/post_tool_use/` to capture additional signals (metrics, external
+alerting, ticket creation).
 
 Add `.harnessable/` to `.gitignore` immediately after wiring the hooks — the
 audit logger starts writing on the next tool call, and the directory will appear

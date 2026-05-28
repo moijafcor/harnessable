@@ -250,7 +250,7 @@ harnessable/
 │   │   │   ├── git_guard.py       Blocks force push, hard reset, branch and history destruction
 │   │   │   └── communication_guard.py  Blocks unauthorized email, Slack, SMS, and calendar writes
 │   │   ├── post_tool_use/         Scripts run on PostToolUse (add files here to extend)
-│   │   │   └── audit_logger.py    Appends every tool call to .harnessable/audit.log
+│   │   │   └── audit_logger.py    Appends every tool call to .harnessable/logs/audit.YYYY-MM-DD.jsonl
 │   │   ├── stop/                  Scripts run on Stop (add files here to extend)
 │   │   │   └── completion_gate.py Runs AGENTS.md ## Completion Gate commands; blocks if any fail
 │   │   └── claude_code_settings_template.json  Drop-in .claude/settings.json — all events wired through run.py
@@ -448,7 +448,7 @@ echo "Exit: $?"
 
 ### 2b. Add `.harnessable/` to `.gitignore`
 
-`audit_logger.py` begins writing to `.harnessable/audit.log` on the first tool call after hooks are wired. Add the directory to `.gitignore` before your first `git add`:
+`audit_logger.py` begins writing to `.harnessable/logs/audit.YYYY-MM-DD.jsonl` on the first tool call after hooks are wired, rotated daily and compressed to `.gz`. Add the directory to `.gitignore` before your first `git add`:
 
 ```text
 # .gitignore
