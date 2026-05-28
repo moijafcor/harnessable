@@ -18,7 +18,8 @@ Engineer cannot misinterpret your intent.]
 You are a forward scout. Before stating intent, probe what you do not
 yet know:
 
-1. Load `docs/knowledge-graph.yaml` if present.
+1. Load `docs/knowledge-graph.yaml`; if it is absent, bootstrap it from
+   the project template before writing the DMT.
 2. Identify every domain concept this mandate will reference.
 3. For any concept not declared in the graph, file an `ONTOLOGY_GAP`
    discovery now. Do not write the DMT until every concept it uses is

@@ -21,19 +21,19 @@ bash codex/install.sh /path/to/your-project
 ```
 
 The script installs `AGENTS.md` and the harnessable skill. It will not
-overwrite an existing `AGENTS.md` — instead it prints the blocks to merge
-manually, which is the right behaviour for projects that already have
-repo-level instructions.
+overwrite a customised `AGENTS.md`; it reports an `ACTION` item so you can
+merge the Harnessable blocks into the existing repo-level instructions.
 
 To install the full enforcement layer (hooks, guards, audit logger,
-completion gate):
+completion gate), run the root installer from this checkout:
 
 ```bash
-cp -r framework/ /path/to/your-project/docs/harness/
+bash install.sh /path/to/your-project
 ```
 
-See the root Getting Started section for wiring hooks into Codex when
-lifecycle hooks are available in your runtime.
+That installer currently wires Claude Code lifecycle hooks. Codex uses the
+protocol through `AGENTS.md`, the Harnessable skill, prompt templates, and
+explicit verification commands in the DIP.
 
 ## Invoking roles
 
@@ -65,13 +65,13 @@ codex "$(cat codex/examples/coder.prompt.md)"
 ### SRE
 
 ```bash
-codex "Use the harnessable skill. Act as SRE.
-Read the DIP at docs/mandates/[path]. Execute the infrastructure mandate."
+codex "$(cat codex/examples/sre.prompt.md)"
 ```
 
-The SRE protocol is at `docs/harness/agents/sre.md`. Key requirements before
-starting: the DIP must have a `## Rollback Procedure` section and a blast
-radius declaration, or the SRE must file a BLOCKER before proceeding.
+If the full enforcement layer is installed, the SRE protocol is at
+`docs/harness/agents/sre.md`. Key requirements before starting: the DIP must
+have a `## Rollback Procedure` section and a blast radius declaration, or the
+SRE must file a BLOCKER before proceeding.
 
 ### QA
 
@@ -85,15 +85,13 @@ Security review is invoked only when the Architect flagged the mandate for Secur
 review in the DMT. It runs after QA PASS or CONDITIONAL_PASS.
 
 ```bash
-codex "Use the harnessable skill. Act as Security reviewer.
-The Architect has flagged this mandate for Security review.
-QA verdict is [PASS|CONDITIONAL_PASS]. Read the DIP at docs/mandates/[path].
-Execute the Security review protocol."
+codex "$(cat codex/examples/security.prompt.md)"
 ```
 
-The Security protocol is at `docs/harness/agents/security.md`. Before starting:
-confirm QA has already issued PASS or CONDITIONAL_PASS, and confirm the Architect
-explicitly flagged the mandate in the DMT.
+If the full enforcement layer is installed, the Security protocol is at
+`docs/harness/agents/security.md`. Before starting: confirm QA has already
+issued PASS or CONDITIONAL_PASS, and confirm the Architect explicitly flagged
+the mandate in the DMT.
 
 ## What AGENTS.md does automatically
 
@@ -122,7 +120,8 @@ alone may be sufficient.
 
 For projects with domain-specific terminology (multiple ad platforms,
 regulated industries, unfamiliar codebases), create a project knowledge
-graph before running mandates:
+graph before running mandates. The Codex installer warns when this file is
+missing.
 
 ```yaml
 # docs/knowledge-graph.yaml
@@ -144,8 +143,10 @@ Reference it in each prompt:
 Project knowledge graph: docs/knowledge-graph.yaml
 ```
 
-Agents will file `ONTOLOGY_GAP` discoveries for any concept they encounter
-that is not declared in the graph.
+If the full enforcement layer is not installed, set `extends` to the location
+where your project vendors the Harnessable framework graph, or to the graph in
+this checkout. Agents will file `ONTOLOGY_GAP` discoveries for any concept
+they encounter that is not declared in the graph.
 
 ## Guards for Codex
 
@@ -163,16 +164,10 @@ adapted for any runtime that supports pre-execution interception.
 
 ## Updating
 
-To update the harnessable skill after a new release:
+To update the harnessable skill after a new release, rerun:
 
 ```bash
-# Pull the new release into your vendor directory
-cp path/to/harnessable/.agents/skills/harnessable/SKILL.md \
-   your-project/.agents/skills/harnessable/SKILL.md
-
-# Update the version pin
-cat path/to/harnessable/framework/vendor/harnessable/HARNESSABLE_VERSION \
-  > your-project/.agents/skills/harnessable/HARNESSABLE_VERSION
+bash codex/install.sh /path/to/your-project
 ```
 
 Review the changelog for changes to role obligations or discovery classes

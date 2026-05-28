@@ -1,3 +1,6 @@
 .harnessable/
 .harness/
 docs/
+!docs/
+docs/*
+!docs/knowledge-graph.yaml

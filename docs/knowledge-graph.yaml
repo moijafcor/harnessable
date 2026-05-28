@@ -1,0 +1,60 @@
+# docs/knowledge-graph.yaml
+#
+# Project knowledge graph for this Harnessable repository. Framework concepts
+# remain in framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml.
+
+meta:
+  version: "0.1.0"
+  layer: project
+  extends: framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml
+  harnessable_version: "main"
+  project: "harnessable"
+
+namespaces:
+  harnessable_repo:
+    description: >
+      Repository-specific concepts for the Harnessable distribution,
+      installers, adapters, templates, and runtime integration files.
+    source: internal
+
+concepts:
+  harnessable_repo.RootInstaller:
+    type: concept
+    definition: >
+      The top-level install.sh script that installs the full Harnessable
+      framework into a target git repository, including vendor references,
+      scaffold files, Claude Code commands, hooks, and runtime config.
+    see: install.sh
+
+  harnessable_repo.CodexAdapter:
+    type: concept
+    definition: >
+      The Codex-specific distribution layer under codex/ that installs
+      AGENTS.md and the Harnessable Codex skill into a target repository
+      and provides role prompt templates for Codex sessions.
+    see: codex/README.md
+
+  harnessable_repo.CodexInstaller:
+    type: concept
+    definition: >
+      The codex/install.sh script that installs the Harnessable Codex
+      adapter into a target project without installing the full Claude Code
+      enforcement layer.
+    see: codex/install.sh
+
+  harnessable_repo.RolePromptTemplate:
+    type: concept
+    definition: >
+      A Markdown prompt template under codex/ or codex/examples/ that
+      instructs a Codex session to assume one Harnessable role and follow
+      that role's protocol boundaries.
+    see: codex/
+
+  harnessable_repo.ProjectKnowledgeGraph:
+    type: concept
+    definition: >
+      The project-level docs/knowledge-graph.yaml file that declares
+      repository-specific concepts encountered during Harnessable mandates.
+    see: docs/knowledge-graph.yaml
+
+alignments: []

@@ -1,22 +1,26 @@
 #!/usr/bin/env bash
-# harnessable — codex/install.sh
+# harnessable - codex/install.sh
 #
-# Installs the harnessable Codex adapter into a target project.
-# Copies AGENTS.md and the harnessable skill. Does not touch
-# framework/ — vendor that separately if you need the full
-# enforcement layer.
+# Installs the Harnessable Codex adapter into a target project. Idempotent.
 #
 # Usage:
 #   bash codex/install.sh /path/to/your-project
 #
 # What this installs:
-#   <target>/AGENTS.md                                — repo-level instructions
-#   <target>/.agents/skills/harnessable/SKILL.md     — harnessable skill
-#   <target>/.agents/skills/harnessable/HARNESSABLE_VERSION — pinned version
+#   <target>/AGENTS.md
+#   <target>/.agents/skills/harnessable/SKILL.md
+#   <target>/.agents/skills/harnessable/HARNESSABLE_VERSION
+#
+# Output prefixes:
+#   NEW    file created for the first time
+#   OK     file already current, no change
+#   UPD    file updated
+#   SKIP   customised file left untouched
+#   WARN   something needs attention but install continues
+#   ACTION operator follow-up required
+#   ERR    fatal; install halted
 
 set -euo pipefail
-
-# ── Arguments ─────────────────────────────────────────────────────────────────
 
 TARGET="${1:-}"
 
@@ -28,96 +32,170 @@ if [[ -z "$TARGET" ]]; then
   exit 1
 fi
 
-if [[ ! -d "$TARGET" ]]; then
-  echo "Error: target directory does not exist: $TARGET"
-  exit 1
-fi
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
+AGENTS_SRC="$REPO_ROOT/AGENTS.md"
+SKILL_SRC="$REPO_ROOT/.agents/skills/harnessable/SKILL.md"
+VERSION_SRC="$REPO_ROOT/framework/vendor/harnessable/HARNESSABLE_VERSION"
+
+if [[ ! -d "$TARGET" ]]; then
+  echo "ERR  Target directory does not exist: $TARGET"
+  exit 1
+fi
+
+if ! git -C "$TARGET" rev-parse --git-dir &>/dev/null 2>&1; then
+  echo "ERR  Target is not a git repository: $TARGET"
+  exit 2
+fi
+
+if [[ ! -f "$AGENTS_SRC" || ! -f "$SKILL_SRC" ]]; then
+  echo "ERR  Source does not look like a Harnessable checkout:"
+  [[ -f "$AGENTS_SRC" ]] || echo "     Missing: $AGENTS_SRC"
+  [[ -f "$SKILL_SRC" ]] || echo "     Missing: $SKILL_SRC"
+  exit 3
+fi
+
+FRAMEWORK_VERSION="$(cat "$VERSION_SRC" 2>/dev/null || git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+
 echo ""
-echo "Installing harnessable Codex adapter"
+echo "Installing harnessable Codex adapter $FRAMEWORK_VERSION"
 echo "  Source:  $REPO_ROOT"
 echo "  Target:  $TARGET"
 echo ""
 
-# ── AGENTS.md ─────────────────────────────────────────────────────────────────
+ACTION_ITEMS=()
+NEW_COUNT=0
+OK_COUNT=0
+UPD_COUNT=0
+SKIP_COUNT=0
+WARN_COUNT=0
+LAST_STATUS=""
 
-AGENTS_TARGET="$TARGET/AGENTS.md"
+ensure_dir() {
+  mkdir -p "$1"
+}
 
-if [[ -f "$AGENTS_TARGET" ]]; then
-  echo "  ⚠  AGENTS.md already exists at $AGENTS_TARGET"
-  echo "     Harnessable's AGENTS.md will not overwrite it."
-  echo "     Merge the following into your existing file manually:"
-  echo ""
-  echo "     ────────────────────────────────────────"
-  cat "$REPO_ROOT/AGENTS.md"
-  echo "     ────────────────────────────────────────"
-  echo ""
-  AGENTS_STATUS="skipped (merge manually)"
-else
-  cp "$REPO_ROOT/AGENTS.md" "$AGENTS_TARGET"
-  AGENTS_STATUS="created"
-fi
+count_status() {
+  case "$LAST_STATUS" in
+    new)  NEW_COUNT=$((NEW_COUNT + 1)) ;;
+    ok)   OK_COUNT=$((OK_COUNT + 1)) ;;
+    upd)  UPD_COUNT=$((UPD_COUNT + 1)) ;;
+    skip) SKIP_COUNT=$((SKIP_COUNT + 1)) ;;
+    warn) WARN_COUNT=$((WARN_COUNT + 1)) ;;
+  esac
+}
 
-echo "  AGENTS.md — $AGENTS_STATUS"
+copy_if_changed() {
+  local src="$1" dst="$2" label="$3"
+  ensure_dir "$(dirname "$dst")"
 
-# ── Harnessable skill ──────────────────────────────────────────────────────────
+  if [[ ! -f "$dst" ]]; then
+    cp "$src" "$dst"
+    echo "  NEW  $label"
+    LAST_STATUS="new"
+    return 0
+  fi
+
+  if diff -q "$src" "$dst" &>/dev/null; then
+    echo "  OK   $label"
+    LAST_STATUS="ok"
+    return 0
+  fi
+
+  cp "$src" "$dst"
+  echo "  UPD  $label"
+  LAST_STATUS="upd"
+}
+
+install_agents_file() {
+  local dst="$TARGET/AGENTS.md"
+
+  if [[ ! -f "$dst" ]]; then
+    cp "$AGENTS_SRC" "$dst"
+    echo "  NEW  AGENTS.md"
+    LAST_STATUS="new"
+    return 0
+  fi
+
+  if diff -q "$AGENTS_SRC" "$dst" &>/dev/null; then
+    echo "  OK   AGENTS.md"
+    LAST_STATUS="ok"
+    return 0
+  fi
+
+  echo "  SKIP AGENTS.md (customised, not overwritten)"
+  ACTION_ITEMS+=("Merge Harnessable AGENTS.md requirements from $AGENTS_SRC into $dst")
+  LAST_STATUS="skip"
+}
+
+echo "-- Codex adapter ---------------------------------------------------------"
+
+install_agents_file
+count_status
 
 SKILL_DIR="$TARGET/.agents/skills/harnessable"
-mkdir -p "$SKILL_DIR"
-
-cp "$REPO_ROOT/.agents/skills/harnessable/SKILL.md" "$SKILL_DIR/SKILL.md"
-echo "  .agents/skills/harnessable/SKILL.md — created"
-
-# ── Version pin ───────────────────────────────────────────────────────────────
-
-VERSION_SRC="$REPO_ROOT/framework/vendor/harnessable/HARNESSABLE_VERSION"
+copy_if_changed "$SKILL_SRC" "$SKILL_DIR/SKILL.md" ".agents/skills/harnessable/SKILL.md"
+count_status
 
 if [[ -f "$VERSION_SRC" ]]; then
-  cp "$VERSION_SRC" "$SKILL_DIR/HARNESSABLE_VERSION"
-  VERSION=$(cat "$VERSION_SRC")
-  echo "  .agents/skills/harnessable/HARNESSABLE_VERSION — pinned at $VERSION"
+  copy_if_changed "$VERSION_SRC" "$SKILL_DIR/HARNESSABLE_VERSION" ".agents/skills/harnessable/HARNESSABLE_VERSION"
+  count_status
+elif git -C "$REPO_ROOT" rev-parse HEAD &>/dev/null 2>&1; then
+  ensure_dir "$SKILL_DIR"
+  TMP_VERSION="$(mktemp /tmp/harnessable_codex_version.XXXXXX)"
+  trap 'rm -f "$TMP_VERSION"' EXIT
+  git -C "$REPO_ROOT" rev-parse --short HEAD > "$TMP_VERSION"
+  copy_if_changed "$TMP_VERSION" "$SKILL_DIR/HARNESSABLE_VERSION" ".agents/skills/harnessable/HARNESSABLE_VERSION"
+  count_status
+  rm -f "$TMP_VERSION"
+  trap - EXIT
 else
-  # Fall back to current git SHA if HARNESSABLE_VERSION not present
-  if git -C "$REPO_ROOT" rev-parse HEAD &>/dev/null 2>&1; then
-    SHA=$(git -C "$REPO_ROOT" rev-parse --short HEAD)
-    echo "$SHA" > "$SKILL_DIR/HARNESSABLE_VERSION"
-    echo "  .agents/skills/harnessable/HARNESSABLE_VERSION — pinned at $SHA (git SHA)"
-  else
-    echo "  .agents/skills/harnessable/HARNESSABLE_VERSION — skipped (no version source found)"
-  fi
+  echo "  WARN .agents/skills/harnessable/HARNESSABLE_VERSION (no version source found)"
+  ACTION_ITEMS+=("Create .agents/skills/harnessable/HARNESSABLE_VERSION after choosing a release pin")
+  LAST_STATUS="warn"
+  count_status
 fi
 
-# ── Knowledge graph reminder ───────────────────────────────────────────────────
+echo ""
+echo "-- Knowledge graph ------------------------------------------------------"
 
 KG_TARGET="$TARGET/docs/knowledge-graph.yaml"
-
-if [[ ! -f "$KG_TARGET" ]]; then
-  echo ""
-  echo "  ℹ  No project knowledge graph found at docs/knowledge-graph.yaml"
-  echo "     Create one to ground domain concepts before running mandates."
-  echo "     See framework/vendor/harnessable/references/knowledge-graph.md"
+if [[ -f "$KG_TARGET" ]]; then
+  echo "  OK   docs/knowledge-graph.yaml"
+else
+  echo "  WARN docs/knowledge-graph.yaml missing"
+  ACTION_ITEMS+=("Bootstrap docs/knowledge-graph.yaml from framework/templates/knowledge-graph.yaml before the first mandate")
+  LAST_STATUS="warn"
+  count_status
 fi
 
-# ── Done ──────────────────────────────────────────────────────────────────────
+echo ""
+echo "========================================================================="
+echo "  Summary"
+echo "========================================================================="
+echo ""
+printf "  %-12s %d new / %d updated / %d current / %d skipped / %d warnings\n" \
+  "Adapter:" "$NEW_COUNT" "$UPD_COUNT" "$OK_COUNT" "$SKIP_COUNT" "$WARN_COUNT"
+echo ""
 
+if [[ ${#ACTION_ITEMS[@]} -gt 0 ]]; then
+  echo "  ACTION items requiring operator follow-up:"
+  echo ""
+  for item in "${ACTION_ITEMS[@]}"; do
+    echo "  ACTION  $item"
+  done
+  echo ""
+fi
+
+echo "  Next steps:"
 echo ""
-echo "Done. Next steps:"
+echo "  1. Review changes:"
+echo "       git -C $TARGET status"
 echo ""
-echo "  1. If AGENTS.md was skipped above, merge harnessable's blocks"
-echo "     into your existing file (## Knowledge Graph, ## Blocked,"
-echo "     ## Completion Gate)."
+echo "  2. Start a role session with one of the templates in codex/examples/:"
+echo "       codex \"\$(cat $REPO_ROOT/codex/examples/architect.prompt.md)\""
 echo ""
-echo "  2. Create a project knowledge graph:"
-echo "     docs/knowledge-graph.yaml"
-echo "     extends: .agents/skills/harnessable/../../../framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml"
-echo ""
-echo "  3. Start a mandate:"
-echo "     codex \"Use the harnessable skill. Act as Architect.\""
-echo "     (See codex/examples/ for full role prompt templates)"
-echo ""
-echo "  4. To install the full enforcement layer (hooks, guards, templates):"
-echo "     cp -r framework/ path/to/your-project/docs/harness/"
+echo "  3. To install the full Harnessable enforcement layer instead, run:"
+echo "       bash $REPO_ROOT/install.sh $TARGET"
 echo ""

@@ -3,7 +3,7 @@
 Use the harnessable skill. Act as Architect.
 
 Before writing the DMT:
-- Load docs/knowledge-graph.yaml if present
+- Load docs/knowledge-graph.yaml; bootstrap it first if absent
 - Identify any domain concepts the mandate will use
 - File ONTOLOGY_GAP for any concept not declared in the graph
 - Resolve all gaps before proceeding

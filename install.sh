@@ -18,9 +18,12 @@
 #     docs/harness/hooks/  (all hook scripts and settings template)
 #     docs/harness/tools/web_verify.py
 #
-#   CC skills:
+#   Claude Code commands:
 #     .claude/commands/{architect,engineer,coder,qa,sre,security}.md
 #     (customised from AGENTS.md tracker config where detectable)
+#
+#   Codex adapter:
+#     Use codex/install.sh for Codex AGENTS.md + skill installation.
 #
 #   Config:
 #     .claude/settings.json  — PreCompact block wired
@@ -238,7 +241,7 @@ echo ""
 
 # ── Skills install ────────────────────────────────────────────────────────────
 
-echo "── CC Skills ────────────────────────────────────────────────────────────"
+echo "── Claude Code commands ─────────────────────────────────────────────────"
 
 # Detect tracker from target project's AGENTS.md
 TRACKER_TOOL=""
@@ -574,7 +577,7 @@ fi
 
 echo "  Next steps:"
 echo ""
-echo "  1. Review staged changes:"
+echo "  1. Review changes:"
 echo "       git -C $TARGET status"
 echo ""
 echo "  2. Customise any flagged REPLACE markers in .claude/commands/*.md"
@@ -588,4 +591,7 @@ echo "       cp $TARGET/docs/harness/templates/knowledge-graph.yaml \\"
 echo "          $TARGET/docs/knowledge-graph.yaml"
 echo "       # Then fill in REPLACE_WITH_YOUR_PROJECT_NAME"
 echo "       # and REPLACE_WITH_CONTENTS_OF_HARNESSABLE_VERSION_FILE"
+echo ""
+echo "  5. For Codex, install the adapter as well:"
+echo "       bash $FRAMEWORK_ROOT/codex/install.sh $TARGET"
 echo ""
