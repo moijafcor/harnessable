@@ -34,6 +34,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [2a. Wire the enforcement hooks](#2a-wire-the-enforcement-hooks)
   - [2b. Add `.harnessable/` to `.gitignore`](#2b-add-harnessable-to-gitignore)
   - [2c. Seed the project knowledge graph](#2c-seed-the-project-knowledge-graph)
+  - [2d. Install agent skills](#2d-install-agent-skills)
   - [3. Load agent context at session start](#3-load-agent-context-at-session-start)
   - [4. Create your first DMT](#4-create-your-first-dmt)
   - [5. Run the workflow](#5-run-the-workflow)
@@ -514,17 +515,57 @@ git commit -m "chore: bootstrap docs/knowledge-graph.yaml from template"
 
 Every agent protocol loads this file at session start. If it does not exist when the Architect begins the Forward Scout Obligation, the agent will bootstrap it automatically — but seeding it here, before the first mandate, is the preferred path. See [framework/vendor/harnessable/references/knowledge-graph.md](framework/vendor/harnessable/references/knowledge-graph.md) for the full extension model.
 
+### 2d. Install agent skills
+
+Copy the skill templates to your project's Claude Code commands directory:
+
+```bash
+mkdir -p .claude/commands
+cp docs/harness/templates/skills/*.md \
+   .claude/commands/
+```
+
+Open each file and update the two marked placeholders:
+
+```text
+# REPLACE: project tracker URL pattern and fetch command
+# REPLACE: framework base path (if not docs/harness/)
+```
+
+Invoke any role with:
+
+```text
+/project:engineer "docs/mandates/my-feature.md"
+/project:engineer 190778951
+/project:coder "docs/mandates/auth/login_implementation_plan.md"
+/project:qa 190778951
+/project:sre "docs/mandates/ops/deploy-vhost.md"
+/project:security "docs/mandates/auth/login_implementation_plan.md"
+```
+
+`$ARGUMENTS` accepts a board item ID, a local file path, or an inline description. The skill resolves which case applies and loads the correct protocol automatically.
+
+See `docs/harness/vendor/harnessable/references/skills.md` for the full pattern and customisation guide.
+
 ### 3. Load agent context at session start
 
-At the start of each agent session, tell the agent which role it is playing and point it to the relevant files:
+**With CC skills installed (recommended):** invoke the role directly. The skill loads all required context automatically.
+
+```text
+/project:engineer "docs/mandates/my-feature.md"
+```
+
+**Without CC skills** (or for non-Claude Code runtimes): load context manually at session start.
 
 ```text
 You are operating as the [Engineer | Coder | SRE | QA | Security].
 
-Role definition and permissions: docs/harness/vendor/harnessable/references/roles.md
+Role definition: docs/harness/vendor/harnessable/references/roles.md
 State machine: docs/harness/vendor/harnessable/references/state-machine.md
-Your protocol: docs/harness/agents/[engineer|coder|sre|qa|security].md
+Your protocol: docs/harness/agents/[role].md
 ```
+
+For Codex: use the role prompt templates in `codex/examples/`.
 
 ### 4. Create your first DMT
 

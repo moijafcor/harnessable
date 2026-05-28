@@ -598,6 +598,24 @@ concepts:
       settings.json required.
     see: references/hooks.md
 
+  harnessable.CCSkill:
+    type: concept
+    definition: >
+      A Claude Code custom command that encapsulates a harnessable
+      role invocation. Lives at .claude/commands/{role}.md in the
+      project. Accepts $ARGUMENTS as the mandate source and resolves
+      it via three-case detection: board URL/ID, local file path,
+      or inline text. Reads project configuration from AGENTS.md
+      rather than hardcoding project-specific values.
+    install_path: .claude/commands/{role}.md
+    source_template: framework/templates/skills/{role}.md
+    tier: 1
+    arguments_cases: [board_url_or_id, local_file_path, inline_text]
+    customisation_points:
+      - project_tracker_url_pattern_and_fetch_command
+      - framework_base_path
+    see: framework/vendor/harnessable/references/skills.md
+
   harnessable.RCA:
     type: concept
     label: Root Cause Analysis
