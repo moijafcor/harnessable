@@ -33,6 +33,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [2. Copy the framework directory](#2-copy-the-framework-directory)
   - [2a. Wire the enforcement hooks](#2a-wire-the-enforcement-hooks)
   - [2b. Add `.harnessable/` to `.gitignore`](#2b-add-harnessable-to-gitignore)
+  - [2c. Seed the project knowledge graph](#2c-seed-the-project-knowledge-graph)
   - [3. Load agent context at session start](#3-load-agent-context-at-session-start)
   - [4. Create your first DMT](#4-create-your-first-dmt)
   - [5. Run the workflow](#5-run-the-workflow)
@@ -475,6 +476,28 @@ echo "Exit: $?"
 ```
 
 Ignoring the directory (not just the log file) protects all runtime output the framework may write there. If a specific artifact later needs to be versioned, add a negation entry (`!.harnessable/filename`).
+
+### 2c. Seed the project knowledge graph
+
+Copy the bootstrap template into your project and fill in the two placeholder values:
+
+```bash
+cp docs/harness/templates/knowledge-graph.yaml docs/knowledge-graph.yaml
+```
+
+Then open `docs/knowledge-graph.yaml` and replace:
+
+- `REPLACE_WITH_YOUR_PROJECT_NAME` — a short identifier for your project
+- `REPLACE_WITH_CONTENTS_OF_HARNESSABLE_VERSION_FILE` — copy the exact string from `docs/harness/vendor/harnessable/HARNESSABLE_VERSION`
+
+Commit the seeded file before your first mandate:
+
+```bash
+git add docs/knowledge-graph.yaml
+git commit -m "chore: bootstrap docs/knowledge-graph.yaml from template"
+```
+
+Every agent protocol loads this file at session start. If it does not exist when the Architect begins the Forward Scout Obligation, the agent will bootstrap it automatically — but seeding it here, before the first mandate, is the preferred path. See [framework/vendor/harnessable/references/knowledge-graph.md](framework/vendor/harnessable/references/knowledge-graph.md) for the full extension model.
 
 ### 3. Load agent context at session start
 
