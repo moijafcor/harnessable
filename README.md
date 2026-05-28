@@ -294,6 +294,19 @@ The PreCompact hook pair fires before every compaction event, preserving operati
 
 Every role performs a Framework Observation at the end of every session — unconditionally, not only when something fails. Observations are filed as `HARNESS_IMPROVEMENT` discoveries with structured fields: `gap`, `stage`, and `proposal` common to all roles, plus `upstream_opportunity` for QA and `propagation` for the Architect. `PropagationDistance` — the number of pipeline stages a gap traveled before detection — determines improvement priority. When the same `gap_class` appears in three or more `ImprovementSignal` entries, the Architect creates a MetaMandate: a mandate whose codebase is the framework itself, running through the full four-role pipeline. The framework improves itself by governing itself.
 
+### External Fact Verification
+
+An agent's training data ends at a cutoff. Any claim about a
+third-party system's current state — package compatibility, API
+surface, deprecation status, SDK constraints — reflects the world
+as it was at training time, not as it is now. Harnessable treats
+this as an engineering constraint: Engineer Pass 4 requires all
+external dependencies to be verified against live-fetched sources
+at the installed version, with the URL and fetch date cited in Recon
+Findings. A DIP that asserts compatibility based on training knowledge
+alone is incomplete. `tools/web_verify.py` provides a single entry
+point for version resolution, URL fetch, and web search during recon.
+
 ### Field Discoveries
 
 When any acting agent finds something not anticipated in the mandate, they must stop and file a discovery before proceeding. Discoveries are classified:
@@ -333,6 +346,12 @@ Incident review should focus on the control gap, not only the model output.
 3. **Pair capability with controls.** Model capability must be supported by validation, permissions, verification, and observability.
 4. **Require verification.** Claims are not evidence. `"It should work"` is not acceptable. `"I verified it works because [output]"` is.
 5. **Treat failures as control gaps.** Review incidents by asking what control was missing or ineffective.
+6. **External facts expire.** An agent's training data is a snapshot
+   fixed at its cutoff date. Any claim about a third-party system —
+   package compatibility, API surface, deprecation status, rate limits,
+   authentication schemes — must be verified against a live-fetched
+   source at the installed version. Training knowledge tells you where
+   to look; it does not tell you what is true now.
 
 ---
 
@@ -536,6 +555,21 @@ This framework borrows practices from regulated engineering disciplines where fa
 - Every failure produces a root cause analysis and a control improvement
 
 Software teams running AI agents on production work need comparable controls for authorization, verification, deviation handling, and incident review.
+
+There is a constraint specific to AI agents that has no direct
+analogue in traditional engineering: training data ends at a fixed
+point in time. A human engineer reaching for the documentation of a
+third-party library retrieves the current version without thinking
+about it. An AI agent retrieving the same documentation may silently
+fetch a prior version — the one it knew at training time — and reason
+from a compatibility table that is months or years out of date. This
+is not a flaw in the model; it is an epistemic property of how models
+are built. The engineering response is the same one applied to any
+known constraint: design for it explicitly. External facts must be
+verified live, at the installed version, with the source cited. The
+framework encodes this in Engineer Pass 4 and provides tooling to
+make live verification the path of least resistance rather than an
+extra step.
 
 ---
 

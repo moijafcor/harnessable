@@ -114,6 +114,29 @@ Includes:
 
 ---
 
+### The Training Cutoff Constraint
+
+**Applies to:** All eras. A persistent property of the model itself.
+
+An agent's knowledge of external systems is frozen at its training
+cutoff. Unlike internal code — which the agent can read directly —
+external facts (APIs, packages, platform behaviour) cannot be known
+from training data with confidence.
+
+**Engineering response:**
+
+- Treat all external compatibility claims as unverified until fetched live
+- Resolve the installed version before consulting any documentation
+- Use `tools/web_verify.py` during Engineer Pass 4
+
+**The failure mode:**
+
+Agent fetches docs for a version it knew at training time. Installed
+version has a different compatibility table. DIP contains a false
+BLOCKER or false PASS. Hours lost to a stale URL.
+
+---
+
 ## Core Principles
 
 ### Principle 1 — System Reliability Is an Engineering Responsibility
@@ -174,6 +197,24 @@ Frame incident review around missing or ineffective controls:
 ```text
 What control was missing?
 ```
+
+---
+
+### Principle 6 — External Facts Expire
+
+Training data ends at a cutoff.
+
+Any claim about a third-party system — package compatibility, API
+surface, deprecation status — reflects the world at training time.
+
+Verify live:
+
+- Resolve the installed version
+- Fetch the versioned documentation URL
+- Cite the URL and fetch date
+
+Training knowledge tells you where to look.
+It does not tell you what is true now.
 
 ---
 
@@ -877,6 +918,21 @@ Health checks passed
 Approved
 Completed                       ← completion_gate.py passed (Stop)
 ```
+
+---
+
+### External Verification Audit Trail
+
+DIP Recon Findings must cite URL and fetch date for all external
+dependency claims:
+
+```text
+[Laravel Boost compatibility — fetched laravel.com/docs/13.x/boost — 2026-05-27]
+Finding: Boost fully supported in Laravel 13.x. No version restriction.
+```
+
+This creates an auditable record of what was live at the time the
+DIP was authored, distinct from what training data claimed.
 
 ---
 
