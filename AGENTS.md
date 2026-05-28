@@ -7,8 +7,9 @@ agents. Full documentation: framework/vendor/harnessable/references/
 
 Before non-trivial work:
 
-1. Identify active role: Architect, Engineer, Coder, SRE, or QA.
+1. Identify active role: Architect, Engineer, Coder, SRE, QA, or Security.
 2. Do not combine Coder and QA, or SRE and QA, in the same pass.
+   Security must not be the Coder, SRE, or QA for the same mandate.
 3. For implementation work, require a Design Implementation Plan before
    editing code or touching live systems.
 4. Record deviations, blockers, and verification evidence.

@@ -10,11 +10,12 @@ description: >
 
 Follow the Harnessable role chain:
 
-Architect → Engineer → Coder (or SRE) → QA → Architect acceptance
+Architect → Engineer → Coder (or SRE) → QA → Security (when flagged) → Architect acceptance
 
 No role approves its own work. The Coder cannot be the QA.
 The SRE cannot be the QA for the same mandate.
 The Engineer must not write implementation code.
+The Security reviewer must not be the Coder, SRE, or QA for the same mandate.
 
 ## Role rules
 
@@ -39,15 +40,23 @@ evidence, not claims.
 them from the Coder or SRE. A passing verdict over unresolved ONTOLOGY_GAP
 discoveries is a protocol violation.
 
+**Security** is invoked by the Architect on mandates that touch auth, untrusted
+inputs, credentials, external surfaces, data exposure, privilege, or new
+dependencies. Runs after QA PASS or CONDITIONAL_PASS. Maps the attack surface
+before any technical checks, then probes it across seven phases. Records a
+Security Review Report (SRR) in the DIP. A FAIL blocks DONE regardless of QA
+verdict.
+
 ## Required outputs
 
-| Stage                  | Output                                      |
-| ---------------------- | ------------------------------------------- |
-| Planning               | Design Mandate Task (DMT)                   |
-| Engineering            | Design Implementation Plan (DIP)            |
-| Coding                 | Task Implementation Report (TIR)            |
-| Infrastructure / Ops   | SRE Implementation Report (SIR)             |
-| Review                 | QA Verdict: PASS / CONDITIONAL_PASS / FAIL  |
+| Stage                  | Output                                                     |
+| ---------------------- | ---------------------------------------------------------- |
+| Planning               | Design Mandate Task (DMT)                                  |
+| Engineering            | Design Implementation Plan (DIP)                          |
+| Coding                 | Task Implementation Report (TIR)                          |
+| Infrastructure / Ops   | SRE Implementation Report (SIR)                           |
+| Review                 | QA Verdict: PASS / CONDITIONAL_PASS / FAIL                |
+| Security (when flagged)| Security Review Report (SRR): SECURE_PASS / CONDITIONAL_PASS / FAIL |
 
 ## Discovery classes
 

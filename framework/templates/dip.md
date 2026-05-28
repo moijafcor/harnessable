@@ -335,6 +335,41 @@ observed" if the window was clean.]
 
 ---
 
+## Security Review Report
+
+*Security fills this section only when the Architect flagged the mandate for Security review.*
+*Leave this section absent if Security review was not required.*
+
+**Verdict:** [SECURE_PASS | CONDITIONAL_PASS | FAIL]
+**Security Agent:** [identifier]
+**Date:** [ISO date]
+
+### Threat Surface Map
+
+[Phase 1 output: what new inputs and outputs does this change introduce, what trust
+boundaries does it cross, and what assumptions about callers could a motivated adversary
+violate? This section must be complete before any technical checks begin.]
+
+### Security Findings
+
+| ID | Phase | Severity | Description | Evidence | Remediation |
+| --- | --- | --- | --- | --- | --- |
+| — | — | — | *none* | — | — |
+
+### Child Tasks Created
+
+- [MEDIUM, LOW, and INFO findings require child tasks before SECURE_PASS or CONDITIONAL_PASS]
+
+### Framework Observation
+
+[Phase 8 output — gap filed as HARNESS_IMPROVEMENT, or "no gaps identified this session"]
+
+### Security Verdict Rationale
+
+[1–3 sentences explaining the verdict]
+
+---
+
 ## Post-Close Notes
 
 *Append-only after DONE. Do not modify earlier sections.*

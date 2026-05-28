@@ -12,8 +12,8 @@
 | `IN_REVIEW` | Implementation complete; awaiting QA | Coder / SRE |
 | `BLOCKED` | Work halted; requires Architect or external resolution | Any |
 | `NEEDS_REVISION` | QA verdict was FAIL; Coder or SRE must address findings | QA |
-| `VERIFIED` | QA verdict was PASS or CONDITIONAL_PASS | QA |
-| `DONE` | Architect accepted QA verdict; mandate closed | Architect |
+| `VERIFIED` | QA verdict was PASS or CONDITIONAL_PASS; Security review (if required) completed | QA / Security |
+| `DONE` | Architect accepted verdict; mandate closed | Architect |
 
 ---
 
@@ -33,7 +33,9 @@ IN_REVIEW       → NEEDS_REVISION   (QA: FAIL)
 NEEDS_REVISION  → IN_PROGRESS      (Coder or SRE resumes after addressing QA findings)
 NEEDS_REVISION  → IN_RECON         (Findings require DIP revision before reimplementation)
 BLOCKED         → [prior status]   (Blocker resolved; Architect unblocks)
-VERIFIED        → DONE             (Architect accepts)
+VERIFIED        → NEEDS_REVISION   (Security: FAIL — mandate flagged for Security review)
+VERIFIED        → DONE             (Architect accepts; Security SECURE_PASS or CONDITIONAL_PASS
+                                    required first when mandate is flagged for Security review)
 VERIFIED        → NEEDS_REVISION   (Architect rejects despite QA pass — rare)
 ```
 
@@ -82,7 +84,8 @@ These conditions must hold at all times:
 7. **Local track quality gates:** A mandate on the local track must still satisfy DIP-before-code and Report-before-QA invariants. The absence of a board item does not relax any quality gate.
 8. **Graph-before-PLANNED:** All concepts introduced in the DIP must exist in `docs/knowledge-graph.yaml`. DIP concepts that cannot be resolved to a namespaced graph entry block the PLANNED transition.
 9. **Graph-before-DONE:** The Architect must confirm the knowledge graph was enriched with all concepts surfaced during this mandate before setting DONE. Unresolved `ONTOLOGY_GAP` discoveries block the DONE transition.
-10. **Git-clean-before-IN_REVIEW:** The working directory must be clean in every codebase touched by the mandate (`git status` shows nothing to commit) before transitioning to `IN_REVIEW`. All mandate work must be committed with accurate commit messages. No staged or unstaged changes may remain. Cross-codebase mandates must have at least one commit per codebase. For SRE mandates, all IaC changes must have been committed before they were applied. A Coder or SRE who sets `IN_REVIEW` with uncommitted changes has not completed the mandate. QA must run `git status` and `git log` as part of verification.
+10. **Security-gate-before-DONE:** A mandate with `security_review_required: true` in the DMT cannot transition to DONE without a Security Review Report carrying `SECURE_PASS` or `CONDITIONAL_PASS`. A Security `FAIL` moves the mandate to `NEEDS_REVISION` regardless of QA verdict.
+11. **Git-clean-before-IN_REVIEW:** The working directory must be clean in every codebase touched by the mandate (`git status` shows nothing to commit) before transitioning to `IN_REVIEW`. All mandate work must be committed with accurate commit messages. No staged or unstaged changes may remain. Cross-codebase mandates must have at least one commit per codebase. For SRE mandates, all IaC changes must have been committed before they were applied. A Coder or SRE who sets `IN_REVIEW` with uncommitted changes has not completed the mandate. QA must run `git status` and `git log` as part of verification.
 
 ---
 

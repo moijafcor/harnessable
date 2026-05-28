@@ -36,7 +36,8 @@ concepts:
       stage closes. No Artifact may be created unless the preceding
       Artifact in the chain exists and is complete.
     subclasses: [harnessable.DMT, harnessable.DIP, harnessable.TIR,
-                 harnessable.SIR, harnessable.QAVerdict, harnessable.ADR]
+                 harnessable.SIR, harnessable.QAVerdict, harnessable.ADR,
+                 harnessable.SRR]
     properties:
       append_only: true
       requires_predecessor: true
@@ -49,7 +50,8 @@ concepts:
       must be declared explicitly and role boundaries must be preserved at
       all times.
     subclasses: [harnessable.Architect, harnessable.Engineer,
-                 harnessable.Coder, harnessable.SRE, harnessable.QA]
+                 harnessable.Coder, harnessable.SRE, harnessable.QA,
+                 harnessable.Security]
     constraints:
       - no_self_approval: true
         note: No Role may verify or accept work it produced.
@@ -80,6 +82,9 @@ concepts:
       Owns the mandate from creation to closure.
     produces: [harnessable.DMT]
     accepts: [harnessable.QAVerdict]
+    decision_authority:
+      - Accepts harnessable.SRR (SECURE_PASS or CONDITIONAL_PASS) and sets DONE
+      - Invokes Security review by flagging DMT
     triggers_status:
       on_accept: harnessable.BoardStatus.DONE
     prohibited_from:
@@ -233,6 +238,36 @@ concepts:
       recorded_in: QA Verdict section
       prohibited: skipping Phase 8 — verdict without observation is incomplete
 
+  harnessable.Security:
+    type: harnessable.Role
+    definition: >
+      Performs adversarial security review of implementations.
+      Invoked explicitly by the Architect on mandates that touch
+      auth, external inputs, credentials, data exposure, privilege,
+      or external-facing surfaces. Asks not "does it work?" but
+      "can it be made to not work, leak, or be abused?"
+    produces: [harnessable.SRR]
+    consumes: [harnessable.TIR, harnessable.QAVerdict]
+    prerequisite: harnessable.QAVerdict (PASS or CONDITIONAL_PASS)
+    invoked_by: harnessable.Architect
+    invocation_condition: >
+      Architect explicitly flags the DMT for Security review.
+      Not automatic. Triggers on: auth changes, external inputs,
+      credentials, new external surfaces, data exposure changes,
+      privilege changes, new dependencies.
+    prohibited_from:
+      - running_functional_tests
+      - fixing_vulnerabilities_then_passing
+      - reviewing_without_qa_pass
+      - skipping_threat_surface_map
+      - skipping_phase_8
+    rsi_obligations:
+      frequency: every_session
+      conditional_on_failure: false
+      closing_step: Phase 8 Framework Observation
+      unique_field: upstream_opportunity
+      recorded_in: SRR
+
 # ─────────────────────────────────────────────────────────────────────────────
 # ARTIFACTS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -345,6 +380,31 @@ concepts:
         definition: >
           One or more required checks failed, or DMT acceptance criteria not
           met, or TIR evidence insufficient for verification.
+        triggers_status: harnessable.BoardStatus.NEEDS_REVISION
+
+  harnessable.SRR:
+    type: harnessable.Artifact
+    label: Security Review Report
+    definition: >
+      Produced by the Security reviewer after adversarial review
+      of a QA-passed implementation. Contains threat surface map,
+      findings table with severity classification, child task
+      references, and verdict. Appended to the DIP.
+    produced_by: harnessable.Security
+    consumed_by: harnessable.Architect
+    requires: harnessable.QAVerdict
+    embedded_in: harnessable.DIP
+    valid_values:
+      SECURE_PASS:
+        definition: No CRITICAL or HIGH findings.
+        triggers_status: harnessable.BoardStatus.VERIFIED
+      CONDITIONAL_PASS:
+        definition: >
+          No CRITICAL findings. HIGH findings with documented
+          Architect risk acceptance.
+        triggers_status: harnessable.BoardStatus.VERIFIED
+      FAIL:
+        definition: CRITICAL findings or HIGH without risk acceptance.
         triggers_status: harnessable.BoardStatus.NEEDS_REVISION
 
   harnessable.ADR:
@@ -505,6 +565,11 @@ concepts:
         Exactly one of the two is required before the QA Verdict.
     tracked_via: harnessable.BoardStatus
     subclasses: [harnessable.MetaMandate]
+    security_review_required: optional
+    note: >
+      Set by Architect in DMT. When true, Security review runs after
+      QA PASS before DONE. A mandate with security_review_required: true
+      cannot reach DONE without an SRR.
 
   harnessable.Harness:
     type: concept

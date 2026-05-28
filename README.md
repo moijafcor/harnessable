@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents doing high-stakes production work: five roles, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: six roles, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -109,8 +109,9 @@ Roles are **functional**, not personal. One human or one agent session may perfo
 | **Coder** | Execute code mandates exactly as designed. | Task Implementation Report (TIR) |
 | **SRE** | Execute infrastructure and operational mandates against live systems. | SRE Implementation Report (SIR) |
 | **QA** | Verify independently. Treat implementation claims as unverified until checked. | QA Verdict |
+| **Security** | Adversarial review on Architect-flagged mandates. Map the attack surface; probe for exploitable paths. | Security Review Report (SRR) |
 
-No role approves its own work. The Coder cannot be the QA. The SRE cannot be the QA for the same mandate. The Engineer must not write code.
+No role approves its own work. The Coder cannot be the QA. The SRE cannot be the QA for the same mandate. The Engineer must not write code. The Security reviewer must not be the Coder, SRE, or QA for the same mandate.
 
 ---
 
@@ -139,6 +140,12 @@ Engineer authors DIP
                                                    │
                                                    │  Independently executed checks and verdict:
                                                    │  PASS / CONDITIONAL_PASS / FAIL.
+                                                   ▼
+                                       Security review (when Architect flagged mandate)
+                                                   │
+                                                   │  Adversarial review: threat surface map,
+                                                   │  auth/authz, injection, secrets, supply chain.
+                                                   │  SECURE_PASS / CONDITIONAL_PASS / FAIL.
                                                    ▼
                                                Architect accepts → DONE
 ```
@@ -243,10 +250,12 @@ harnessable/
 ├── framework/                     One-command install: cp -r framework/ docs/harness/
 │   │
 │   ├── agents/                    Tier 1 (copy and own) — role-specific agent protocols
+│   │   ├── architect.md           Intent ownership, DMT authoring, mandate closure discipline
 │   │   ├── engineer.md            Recon passes, DIP authoring standards, sub-agent delegation
 │   │   ├── coder.md               Build discipline, pre-completion hook runner, exit gate
 │   │   ├── sre.md                 Pre-change capture, blast radius, incident response, SIR
-│   │   └── qa.md                  Adversarial verification protocol, verdict criteria
+│   │   ├── qa.md                  Adversarial verification protocol, verdict criteria
+│   │   └── security.md            Threat surface mapping, adversarial security review, SRR
 │   │
 │   ├── hooks/                     Tier 1 (copy and own) — Enforcement Layer
 │   │   ├── run.py                 Universal dispatcher: discovers and runs *.py scripts per event
@@ -299,7 +308,7 @@ The PreCompact hook pair fires before every compaction event, preserving operati
 
 ### Recursive Self-Improvement
 
-Every role performs a Framework Observation at the end of every session — unconditionally, not only when something fails. Observations are filed as `HARNESS_IMPROVEMENT` discoveries with structured fields: `gap`, `stage`, and `proposal` common to all roles, plus `upstream_opportunity` for QA and `propagation` for the Architect. The SRE's observation is recorded in the SIR `## SRE Sign-Off` as Phase 5 of the Verification Protocol. `PropagationDistance` — the number of pipeline stages a gap traveled before detection — determines improvement priority. When the same `gap_class` appears in three or more `ImprovementSignal` entries, the Architect creates a MetaMandate: a mandate whose codebase is the framework itself, running through the full pipeline. The framework improves itself by governing itself.
+Every role performs a Framework Observation at the end of every session — unconditionally, not only when something fails. Observations are filed as `HARNESS_IMPROVEMENT` discoveries with structured fields: `gap`, `stage`, and `proposal` common to all roles, plus `upstream_opportunity` for QA and Security and `propagation` for the Architect. The SRE's observation is recorded in the SIR `## SRE Sign-Off` as Phase 5 of the Verification Protocol; Security's is recorded in the SRR as Phase 8. `PropagationDistance` — the number of pipeline stages a gap traveled before detection — determines improvement priority. When the same `gap_class` appears in three or more `ImprovementSignal` entries, the Architect creates a MetaMandate: a mandate whose codebase is the framework itself, running through the full pipeline. The framework improves itself by governing itself.
 
 ### External Fact Verification
 
@@ -510,11 +519,11 @@ Every agent protocol loads this file at session start. If it does not exist when
 At the start of each agent session, tell the agent which role it is playing and point it to the relevant files:
 
 ```text
-You are operating as the [Engineer | Coder | SRE | QA].
+You are operating as the [Engineer | Coder | SRE | QA | Security].
 
 Role definition and permissions: docs/harness/vendor/harnessable/references/roles.md
 State machine: docs/harness/vendor/harnessable/references/state-machine.md
-Your protocol: docs/harness/agents/[engineer|coder|sre|qa].md
+Your protocol: docs/harness/agents/[engineer|coder|sre|qa|security].md
 ```
 
 ### 4. Create your first DMT

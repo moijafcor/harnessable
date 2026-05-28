@@ -79,6 +79,22 @@ radius declaration, or the SRE must file a BLOCKER before proceeding.
 codex "$(cat codex/examples/qa.prompt.md)"
 ```
 
+### Security
+
+Security review is invoked only when the Architect flagged the mandate for Security
+review in the DMT. It runs after QA PASS or CONDITIONAL_PASS.
+
+```bash
+codex "Use the harnessable skill. Act as Security reviewer.
+The Architect has flagged this mandate for Security review.
+QA verdict is [PASS|CONDITIONAL_PASS]. Read the DIP at docs/mandates/[path].
+Execute the Security review protocol."
+```
+
+The Security protocol is at `docs/harness/agents/security.md`. Before starting:
+confirm QA has already issued PASS or CONDITIONAL_PASS, and confirm the Architect
+explicitly flagged the mandate in the DMT.
+
 ## What AGENTS.md does automatically
 
 Codex loads `AGENTS.md` at session start without being asked. This means:

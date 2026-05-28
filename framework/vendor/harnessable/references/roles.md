@@ -190,6 +190,57 @@ for infrastructure mandates).
 
 ---
 
+## Security
+
+**Responsibility:** Adversarial review of implementations on mandates the
+Architect has explicitly flagged for Security review. Ask not "does it work?"
+but "can it be made to not work, leak, or be abused?"
+
+**Invoked by:** Architect. Not automatic. Runs after QA PASS or CONDITIONAL_PASS,
+before the Architect accepts and sets DONE. See `agents/security.md` for the full
+eight-phase review protocol.
+
+**Invocation conditions** — the Architect flags the mandate when the change:
+
+- Touches authentication, authorisation, or session management
+- Accepts input from untrusted sources (user input, API payloads, file uploads, webhooks)
+- Handles credentials, secrets, tokens, or encryption keys
+- Exposes new external-facing surfaces (routes, APIs, webhooks, integrations)
+- Changes data access patterns or adds new data exposure paths
+- Modifies privilege levels or permission structures
+- Introduces new dependencies or upgrades security-relevant ones
+
+**Produces:** Security Review Report (SRR) — appended to the DIP as
+`## Security Review Report`.
+
+**Verdict options:**
+
+- `SECURE_PASS` — no CRITICAL or HIGH findings; all MEDIUM and LOW findings have child tasks
+- `CONDITIONAL_PASS` — no CRITICAL findings; HIGH findings with documented Architect risk acceptance
+- `FAIL` — CRITICAL findings, or HIGH without Architect risk acceptance; blocks DONE
+
+**Permissions:**
+
+- Append SRR to DIP
+- Set board to `NEEDS_REVISION` on FAIL
+- Create child tasks for findings
+- Comment on DMT
+
+**Prohibitions:**
+
+- Must not re-run functional tests — that is QA's role
+- Must not fix vulnerabilities and then issue SECURE_PASS (role collapse)
+- Must not issue SECURE_PASS without completing the threat surface map
+- Must not skip phases because the mandate "looks low-risk" — the Architect decided it needs review
+- Must not review a mandate without QA PASS or CONDITIONAL_PASS already issued
+- Must not be the Coder, SRE, or QA for the same mandate
+- Must not skip Phase 8 — a verdict without a framework observation is incomplete
+
+**Handoff signal:** SRR appended to DIP with SECURE_PASS or CONDITIONAL_PASS =
+Architect may accept and set DONE.
+
+---
+
 ## Solo / Small-Team Operating Mode
 
 ### When It Applies

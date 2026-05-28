@@ -720,6 +720,8 @@ Engineer
 Coder (code mandates)   or   SRE (infrastructure mandates)
    ↓                              ↓
 QA ←──────────────────────────────┘
+   ↓
+Security (when Architect flagged mandate)
 ```
 
 The implementer should not approve their own work.
@@ -1056,6 +1058,22 @@ Produces the **QA Verdict**, containing:
 - Findings (failures with specifics)
 - Out-of-scope findings
 - Verdict: PASS / CONDITIONAL_PASS / FAIL
+
+---
+
+### Security
+
+Invoked by the Architect on mandates that touch auth, untrusted inputs,
+credentials, external surfaces, data exposure, privilege, or new
+dependencies. Runs after QA PASS or CONDITIONAL_PASS. Produces the
+**Security Review Report (SRR)**, containing:
+
+- Threat Surface Map (Phase 1 — mandatory before any technical checks)
+- Findings table with severity classification (CRITICAL / HIGH / MEDIUM / LOW / INFO)
+- Child tasks for MEDIUM, LOW, and INFO findings
+- Verdict: SECURE_PASS / CONDITIONAL_PASS / FAIL
+
+A CRITICAL or HIGH finding without Architect risk acceptance blocks DONE.
 
 ---
 
