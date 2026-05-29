@@ -37,7 +37,7 @@ concepts:
       Artifact in the chain exists and is complete.
     subclasses: [harnessable.DMT, harnessable.DIP, harnessable.TIR,
                  harnessable.SIR, harnessable.QAVerdict, harnessable.ADR,
-                 harnessable.SRR]
+                 harnessable.SRR, harnessable.CRR]
     properties:
       append_only: true
       requires_predecessor: true
@@ -51,7 +51,7 @@ concepts:
       all times.
     subclasses: [harnessable.Architect, harnessable.Engineer,
                  harnessable.Coder, harnessable.SRE, harnessable.QA,
-                 harnessable.Security]
+                 harnessable.Security, harnessable.Reviewer]
     constraints:
       - no_self_approval: true
         note: No Role may verify or accept work it produced.
@@ -268,6 +268,33 @@ concepts:
       unique_field: upstream_opportunity
       recorded_in: SRR
 
+  harnessable.Reviewer:
+    type: harnessable.Role
+    definition: >
+      Reads code for structural correctness: error path completeness,
+      resource lifecycle, boundary validation, and observability
+      adequacy. A quality lifecycle role — not a pipeline gate.
+      Produces findings and child mandates; does not produce verdicts
+      and does not block pipeline stages.
+    produces: [harnessable.CRR]
+    consumes: source_files
+    invoked_by: harnessable.Architect
+    invocation_model: >
+      [REVIEW] mandate with declared scope, depth, time budget,
+      and finding threshold. Architect-discretionary. May run
+      during idle compute. Not attached to any specific core mandate.
+    pipeline_position: quality_lifecycle
+    pipeline_gate: false
+    prohibited_from:
+      - blocking_pipeline_stages
+      - modifying_reviewed_code
+      - filing_must_fix_without_reproducible_condition
+      - continuing_past_time_budget
+    rsi_obligations:
+      frequency: every_session
+      conditional_on_failure: false
+      recorded_in: CRR Framework Observation section
+
 # ─────────────────────────────────────────────────────────────────────────────
 # ARTIFACTS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -406,6 +433,42 @@ concepts:
       FAIL:
         definition: CRITICAL findings or HIGH without risk acceptance.
         triggers_status: harnessable.BoardStatus.NEEDS_REVISION
+
+  harnessable.CRR:
+    type: harnessable.Artifact
+    label: Code Review Report
+    definition: >
+      Produced by the Reviewer after reading code for structural
+      correctness. Standalone document — not embedded in a DIP.
+      Contains findings classified as MUST_FIX, SHOULD_FIX,
+      CONSIDER, or NITPICK, and a log of child mandates filed.
+    produced_by: harnessable.Reviewer
+    consumed_by: harnessable.Architect
+    path_convention: >
+      docs/mandates/review/{component}_{date}_code_review_report.md
+    pipeline_position: quality_lifecycle
+    triggers_child_mandates: true
+    finding_classes:
+      MUST_FIX:
+        definition: >
+          Correctness failure. Will manifest under specific conditions.
+          Creates child mandate unconditionally.
+        creates_mandate: always
+      SHOULD_FIX:
+        definition: >
+          Robustness deficiency. Degrades reliability over time.
+          Creates child mandate at default threshold.
+        creates_mandate: default
+      CONSIDER:
+        definition: >
+          Improvement opportunity. Code is defensible as-is.
+          Creates mandate only if Architect raises threshold.
+        creates_mandate: architect_decision
+      NITPICK:
+        definition: >
+          Style or consistency observation. Never creates a mandate
+          without explicit Architect decision.
+        creates_mandate: never_default
 
   harnessable.ADR:
     type: harnessable.Artifact
@@ -564,12 +627,27 @@ concepts:
         Code mandates produce a TIR; infrastructure mandates produce a SIR.
         Exactly one of the two is required before the QA Verdict.
     tracked_via: harnessable.BoardStatus
-    subclasses: [harnessable.MetaMandate]
+    subclasses: [harnessable.MetaMandate, harnessable.ReviewMandate]
     security_review_required: optional
     note: >
       Set by Architect in DMT. When true, Security review runs after
       QA PASS before DONE. A mandate with security_review_required: true
       cannot reach DONE without an SRR.
+
+  harnessable.ReviewMandate:
+    type: harnessable.Mandate
+    definition: >
+      A mandate that invokes the Reviewer role. Exists on the board as
+      a quality lifecycle item, not a core pipeline mandate. Does not
+      gate any pipeline stage. The Reviewer sets it DONE after filing
+      the CRR — no Architect verdict required.
+    subclass_of: harnessable.Mandate
+    title_prefix: "[REVIEW]"
+    dmt_must_declare: [scope, depth, time_budget, finding_threshold]
+    sets_done: harnessable.Reviewer
+    note: >
+      The Reviewer sets DONE — not the Architect. The output is the
+      CRR and any child mandates, not a verdict awaiting acceptance.
 
   harnessable.Harness:
     type: concept
