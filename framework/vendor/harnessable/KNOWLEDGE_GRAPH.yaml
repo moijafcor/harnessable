@@ -37,7 +37,8 @@ concepts:
       Artifact in the chain exists and is complete.
     subclasses: [harnessable.DMT, harnessable.DIP, harnessable.TIR,
                  harnessable.SIR, harnessable.QAVerdict, harnessable.ADR,
-                 harnessable.SRR, harnessable.CRR, harnessable.PIR]
+                 harnessable.SRR, harnessable.CRR, harnessable.PIR,
+                 harnessable.EIR]
     properties:
       append_only: true
       requires_predecessor: true
@@ -52,10 +53,54 @@ concepts:
     subclasses: [harnessable.Architect, harnessable.Engineer,
                  harnessable.Coder, harnessable.SRE, harnessable.QA,
                  harnessable.Security, harnessable.Reviewer,
-                 harnessable.Inspector]
+                 harnessable.Inspector, harnessable.EmergencyResponder]
     constraints:
       - no_self_approval: true
         note: No Role may verify or accept work it produced.
+
+  harnessable.PipelineRole:
+    type: abstract
+    subclass_of: harnessable.Role
+    definition: >
+      A role that gates pipeline progression. Each pipeline role blocks the
+      next stage until its artifact is complete and accepted. Invoked by board
+      status. Terminates when the next role accepts its artifact.
+    subclasses: [harnessable.Architect, harnessable.Engineer,
+                 harnessable.Coder, harnessable.SRE,
+                 harnessable.QA, harnessable.Security]
+    pipeline_gate: true
+    invocation: board_status_driven
+    output: artifact_that_gates_next_stage
+
+  harnessable.QualityLifecycleRole:
+    type: abstract
+    subclass_of: harnessable.Role
+    definition: >
+      A role that operates asynchronously outside the core pipeline. Does not
+      gate any pipeline stage. Invoked by Architect investment via a [REVIEW]
+      or [INSPECT] mandate. Produces findings and child mandates. Self-closes
+      at DONE without Architect acceptance. May run during idle compute.
+    subclasses: [harnessable.Reviewer, harnessable.Inspector]
+    pipeline_gate: false
+    invocation: architect_investment_mandate
+    output: findings_and_child_mandates
+    compute_scheduling: may_run_during_idle_compute
+
+  harnessable.BreakGlassRole:
+    type: abstract
+    subclass_of: harnessable.Role
+    definition: >
+      A role that bypasses the normal pipeline order when a production system
+      is broken and delay is unacceptable. Does not gate any pipeline stage.
+      Does not require a pre-existing DMT or DIP. Produces an EIR that becomes
+      the input for a mandatory retroactive pipeline pass. Self-closes at
+      NEEDS_REVISION — not DONE. The break-glass designation does not suspend
+      the Safety Floor or Risk Profile.
+    subclasses: [harnessable.EmergencyResponder]
+    pipeline_gate: false
+    invocation: operator_discretion
+    output: harnessable.EIR
+    retroactive_requirement: mandatory_within_24h
 
   harnessable.Enumeration:
     type: abstract
@@ -78,6 +123,7 @@ concepts:
 
   harnessable.Architect:
     type: harnessable.Role
+    track: harnessable.PipelineRole
     definition: >
       Defines intent, authors the DMT, and accepts the final QA verdict.
       Owns the mandate from creation to closure.
@@ -114,6 +160,7 @@ concepts:
 
   harnessable.Engineer:
     type: harnessable.Role
+    track: harnessable.PipelineRole
     definition: >
       Translates the Architect's intent into a complete, implementable plan.
       Runs all recon passes. Must not write implementation code.
@@ -151,6 +198,7 @@ concepts:
 
   harnessable.Coder:
     type: harnessable.Role
+    track: harnessable.PipelineRole
     definition: >
       Executes the DIP exactly as written. Files a Discovery when the plan
       cannot be followed. Produces the TIR with evidence.
@@ -186,6 +234,7 @@ concepts:
 
   harnessable.SRE:
     type: harnessable.Role
+    track: harnessable.PipelineRole
     definition: >
       Executes infrastructure, deployment, and operational mandates
       against live systems. Operates where production state exists
@@ -216,6 +265,7 @@ concepts:
 
   harnessable.QA:
     type: harnessable.Role
+    track: harnessable.PipelineRole
     definition: >
       Independently verifies the implementation against the DIP and DMT.
       Re-executes checks themselves — does not accept TIR or SIR claims as evidence.
@@ -241,6 +291,7 @@ concepts:
 
   harnessable.Security:
     type: harnessable.Role
+    track: harnessable.PipelineRole
     definition: >
       Performs adversarial security review of implementations.
       Invoked explicitly by the Architect on mandates that touch
@@ -271,6 +322,7 @@ concepts:
 
   harnessable.Reviewer:
     type: harnessable.Role
+    track: harnessable.QualityLifecycleRole
     definition: >
       Reads code for structural correctness: error path completeness,
       resource lifecycle, boundary validation, and observability
@@ -298,6 +350,7 @@ concepts:
 
   harnessable.Inspector:
     type: harnessable.Role
+    track: harnessable.QualityLifecycleRole
     definition: >
       Examines code in motion — actual request/response traffic
       flowing across the system's surfaces. Where the Reviewer
@@ -332,6 +385,37 @@ concepts:
       frequency: every_session
       conditional_on_failure: false
       recorded_in: PIR Framework Observation section
+
+  harnessable.EmergencyResponder:
+    type: harnessable.Role
+    track: harnessable.BreakGlassRole
+    definition: >
+      A break-glass role invoked when a production system is broken and the
+      normal pipeline cannot be followed without unacceptable delay. Bypasses
+      the Architect → Engineer → Coder sequence. Fixes first and documents
+      concurrently. Leaves a trail (the EIR board item) as the basis for a
+      mandatory retroactive DIP and QA pass within 24 hours.
+    produces: [harnessable.EIR]
+    triggers_status:
+      on_start: harnessable.BoardStatus.IN_PROGRESS
+      on_complete: harnessable.BoardStatus.NEEDS_REVISION
+    pipeline_gate: false
+    invocation: >
+      Any operator may invoke the Emergency Responder when a production
+      system is broken and speed is paramount. No Architect pre-approval
+      required. The EIR substitutes for a DMT+DIP+TIR until the retroactive
+      pass is completed.
+    retroactive_requirements:
+      within_24h:
+        - DIP authored from EIR findings
+        - QA verification of the fix
+        - Child mandates created for every DISCOVERY filed
+    prohibited_from:
+      - ending_session_without_eir
+      - leaving_architectural_findings_as_prose
+      - marking_fix_complete_without_verification_output
+      - creating_child_mandates_during_emergency
+      - bypassing_agents_md_safety_floor
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ARTIFACTS
@@ -530,6 +614,36 @@ concepts:
           request/response excerpt as evidence. Protocol observations
           without traffic evidence are CONSIDER at most.
 
+  harnessable.EIR:
+    type: harnessable.Artifact
+    label: Emergency Investigation Report
+    definition: >
+      Produced by the Emergency Responder during and after a break-glass fix.
+      Lives as a board item (title prefixed [EMERGENCY]) or as a local file
+      at docs/mandates/emergency/{date}_{slug}_eir.md when no tracker is
+      available. Combines the roles of DMT, DIP, and TIR under time pressure.
+      Must contain: symptom, hypothesis, root cause, every command run with
+      verbatim output, files changed with rationale, and verification output.
+      Triggers a mandatory retroactive DIP and QA pass within 24 hours.
+    produced_by: harnessable.EmergencyResponder
+    consumed_by: harnessable.Engineer
+    embedded_in: board_item_or_local_file
+    triggers_status: harnessable.BoardStatus.NEEDS_REVISION
+    path_convention: docs/mandates/emergency/{YYYY-MM-DD}_{slug}_eir.md
+    constraints:
+      - root_cause_required: true
+      - verification_output_required: true
+      - retroactive_note_required: true
+        note: >
+          Board item must be appended with "[RETROACTIVE] DIP and QA
+          verification required within 24h. Findings above require child
+          mandates." before the session ends.
+      - discovery_classification_required: true
+        note: >
+          Every finding beyond the immediate bug must be classified as a
+          DISCOVERY before the session ends. Unclassified findings in prose
+          are a protocol violation.
+
   harnessable.ADR:
     type: harnessable.Artifact
     label: Architecture Decision Record
@@ -688,7 +802,7 @@ concepts:
         Exactly one of the two is required before the QA Verdict.
     tracked_via: harnessable.BoardStatus
     subclasses: [harnessable.MetaMandate, harnessable.ReviewMandate,
-                 harnessable.InspectMandate]
+                 harnessable.InspectMandate, harnessable.EmergencyMandate]
     security_review_required: optional
     note: >
       Set by Architect in DMT. When true, Security review runs after
@@ -726,6 +840,31 @@ concepts:
     note: >
       The Inspector sets DONE — not the Architect. The output is the
       PIR and any child mandates, not a verdict awaiting acceptance.
+
+  harnessable.EmergencyMandate:
+    type: harnessable.Mandate
+    definition: >
+      A mandate opened by the Emergency Responder during a production
+      incident. Created under time pressure; skips the BACKLOG → MANDATED →
+      IN_RECON → PLANNED sequence and opens directly at IN_PROGRESS. The EIR
+      is the sole artifact produced during the emergency session. The mandate
+      ends at NEEDS_REVISION to signal that a retroactive DIP and QA pass
+      is required before the mandate can reach DONE.
+    subclass_of: harnessable.Mandate
+    title_prefix: "[EMERGENCY]"
+    created_by: harnessable.EmergencyResponder
+    first_status: harnessable.BoardStatus.IN_PROGRESS
+    terminal_emergency_status: harnessable.BoardStatus.NEEDS_REVISION
+    retroactive_requirement:
+      within: 24h
+      steps:
+        - DIP authored from EIR content by Engineer
+        - QA verification of the fix
+        - Child mandates created for every DISCOVERY filed during the emergency
+    note: >
+      An EmergencyMandate cannot reach DONE without completing the retroactive
+      DIP and QA pass. The NEEDS_REVISION status is intentional — it signals
+      that the mandate is not yet fully governed, not that the fix failed.
 
   harnessable.Harness:
     type: concept

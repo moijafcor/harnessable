@@ -102,14 +102,23 @@ Traditional agent development often falls into the trap of "vibe coding" — rep
 
 Roles are **functional**, not personal. One human or one agent session may perform multiple roles, but the active role must be explicit and role boundaries must be preserved.
 
-| Role | Responsibility | Produces |
-| --- | --- | --- |
-| **Architect** | Define intent. Own the mandate. Review outcomes. | Design Mandate Task (DMT) |
-| **Engineer** | Translate intent into an implementable plan. | Design Implementation Plan (DIP) |
-| **Coder** | Execute code mandates exactly as designed. | Task Implementation Report (TIR) |
-| **SRE** | Execute infrastructure and operational mandates against live systems. | SRE Implementation Report (SIR) |
-| **QA** | Verify independently. Treat implementation claims as unverified until checked. | QA Verdict |
-| **Security** | Adversarial review on Architect-flagged mandates. Map the attack surface; probe for exploitable paths. | Security Review Report (SRR) |
+**Core Pipeline roles** — gate-based, sequential, each role blocks the next stage:
+
+| Role | Responsibility | Produces | Track |
+| --- | --- | --- | --- |
+| **Architect** | Define intent. Own the mandate. Review outcomes. | Design Mandate Task (DMT) | Core |
+| **Engineer** | Translate intent into an implementable plan. | Design Implementation Plan (DIP) | Core |
+| **Coder** | Execute code mandates exactly as designed. | Task Implementation Report (TIR) | Core |
+| **SRE** | Execute infrastructure and operational mandates against live systems. | SRE Implementation Report (SIR) | Core |
+| **QA** | Verify independently. Treat implementation claims as unverified until checked. | QA Verdict | Core |
+| **Security** | Adversarial review on Architect-flagged mandates. Map the attack surface; probe for exploitable paths. | Security Review Report (SRR) | Core |
+
+**Quality Lifecycle roles** — asynchronous, investment-based, produce findings not verdicts:
+
+| Role | Responsibility | Produces | Track |
+| --- | --- | --- | --- |
+| **Reviewer** | Read code for structural correctness. | Code Review Report (CRR) | Quality |
+| **Inspector** | Examine traffic for protocol correctness. | Protocol Inspection Report (PIR) | Quality |
 
 No role approves its own work. The Coder cannot be the QA. The SRE cannot be the QA for the same mandate. The Engineer must not write code. The Security reviewer must not be the Coder, SRE, or QA for the same mandate.
 
@@ -152,9 +161,13 @@ Engineer authors DIP
 
 Artifacts are append-only after their stage closes. A closed mandate's DIP is immutable except for `## Post-Close Notes`.
 
+The quality lifecycle produces parallel artifacts outside this chain: CRR (Code Review Report) and PIR (Protocol Inspection Report). These feed back into the pipeline as child mandates at BACKLOG.
+
 ---
 
 ### The State Machine
+
+Core pipeline (Track 1 — gate-based):
 
 ```text
 BACKLOG → MANDATED → IN_RECON → PLANNED → IN_PROGRESS → IN_REVIEW → VERIFIED → DONE
@@ -162,6 +175,14 @@ BACKLOG → MANDATED → IN_RECON → PLANNED → IN_PROGRESS → IN_REVIEW → 
                                                            BLOCKED
                                                               ↕
                                                         NEEDS_REVISION
+```
+
+Quality lifecycle (Track 2 — asynchronous):
+
+```text
+BACKLOG → MANDATED → IN_PROGRESS → DONE
+                          ↕
+                       BLOCKED (Inspector only)
 ```
 
 Every transition has a defined owner, a trigger condition, and invariants that must hold. Illegal jumps (e.g. `PLANNED → IN_REVIEW` with no implementation) are protocol violations that any agent must refuse.
@@ -309,6 +330,10 @@ The PreCompact hook pair fires before every compaction event, preserving operati
 ### Recursive Self-Improvement
 
 Every role performs a Framework Observation at the end of every session — unconditionally, not only when something fails. Observations are filed as `HARNESS_IMPROVEMENT` discoveries with structured fields: `gap`, `stage`, and `proposal` common to all roles, plus `upstream_opportunity` for QA and Security and `propagation` for the Architect. The SRE's observation is recorded in the SIR `## SRE Sign-Off` as Phase 5 of the Verification Protocol; Security's is recorded in the SRR as Phase 8. `PropagationDistance` — the number of pipeline stages a gap traveled before detection — determines improvement priority. When the same `gap_class` appears in three or more `ImprovementSignal` entries, the Architect creates a MetaMandate: a mandate whose codebase is the framework itself, running through the full pipeline. The framework improves itself by governing itself.
+
+### Quality Lifecycle
+
+The Reviewer and Inspector operate outside the core pipeline on a separate clock. They are invoked by Architect investment decision — via a [REVIEW] or [INSPECT] mandate — independently of any specific core mandate. They do not gate pipeline progression. They do not issue verdicts. They produce a Code Review Report or Protocol Inspection Report containing findings classified as MUST_FIX through NITPICK, and child mandates for findings above the Architect's declared threshold. Those child mandates re-enter the core pipeline at BACKLOG. The Reviewer may run during idle compute. The Inspector requires a live system or captured traffic. Both self-close at DONE without Architect acceptance. The gap between a finding and its remediation is a mandate cycle — explicit, expected, and Architect-controlled.
 
 ### External Fact Verification
 

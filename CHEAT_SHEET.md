@@ -1000,7 +1000,7 @@ DIP was authored, distinct from what training data claimed.
 
 ## Architect → Engineer → Coder / SRE → QA Workflow
 
-### Architect
+### Architect [Pipeline]
 
 Produces the **Design Mandate Task (DMT)**, containing:
 
@@ -1012,7 +1012,7 @@ Produces the **Design Mandate Task (DMT)**, containing:
 
 ---
 
-### Engineer
+### Engineer [Pipeline]
 
 Produces the **Design Implementation Plan (DIP)**, containing:
 
@@ -1024,7 +1024,7 @@ Produces the **Design Implementation Plan (DIP)**, containing:
 
 ---
 
-### Coder
+### Coder [Pipeline]
 
 Produces the **Task Implementation Report (TIR)**, containing:
 
@@ -1035,7 +1035,7 @@ Produces the **Task Implementation Report (TIR)**, containing:
 
 ---
 
-### SRE
+### SRE [Pipeline]
 
 Executes infrastructure and operational mandates. Produces the **SRE Implementation Report (SIR)**, containing:
 
@@ -1050,7 +1050,7 @@ radius declaration in the DIP.
 
 ---
 
-### QA
+### QA [Pipeline]
 
 Produces the **QA Verdict**, containing:
 
@@ -1061,7 +1061,7 @@ Produces the **QA Verdict**, containing:
 
 ---
 
-### Security
+### Security [Pipeline]
 
 Invoked by the Architect on mandates that touch auth, untrusted inputs,
 credentials, external surfaces, data exposure, privilege, or new
@@ -1082,6 +1082,50 @@ A CRITICAL or HIGH finding without Architect risk acceptance blocks DONE.
 Artifacts move only when approved by the next stage.
 
 No self-certification.
+
+---
+
+## Quality Lifecycle Workflow
+
+Parallel to the core pipeline. Architect-discretionary.
+
+```text
+[REVIEW] mandate  → Reviewer reads code at rest  → CRR + child mandates
+[INSPECT] mandate → Inspector reads traffic       → PIR + child mandates
+
+Child mandates → Core pipeline BACKLOG → Architect prioritises
+```
+
+Properties:
+
+- Asynchronous: not attached to any specific core mandate
+- Non-blocking: does not gate DONE on any core work
+- Self-terminating: Reviewer/Inspector sets DONE without Architect
+- Schedulable during idle compute (Reviewer)
+
+---
+
+## State Machine Quick Reference
+
+Core pipeline (Track 1 — gate-based):
+
+```text
+BACKLOG → MANDATED → IN_RECON → PLANNED → IN_PROGRESS → IN_REVIEW → VERIFIED → DONE
+                                                              ↕
+                                                           BLOCKED
+                                                              ↕
+                                                        NEEDS_REVISION
+```
+
+Quality lifecycle (Track 2 — asynchronous):
+
+```text
+BACKLOG → MANDATED → IN_PROGRESS → DONE
+                          ↕
+                       BLOCKED (Inspector only)
+```
+
+Full transition tables and invariants: `framework/vendor/harnessable/references/state-machine.md`
 
 ---
 
