@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents doing high-stakes production work: six roles, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: nine roles across three tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -120,7 +120,13 @@ Roles are **functional**, not personal. One human or one agent session may perfo
 | **Reviewer** | Read code for structural correctness. | Code Review Report (CRR) | Quality |
 | **Inspector** | Examine traffic for protocol correctness. | Protocol Inspection Report (PIR) | Quality |
 
-No role approves its own work. The Coder cannot be the QA. The SRE cannot be the QA for the same mandate. The Engineer must not write code. The Security reviewer must not be the Coder, SRE, or QA for the same mandate.
+**Break-glass roles** — invoked outside the normal pipeline when a live system is failing:
+
+| Role | Responsibility | Produces | Track |
+| --- | --- | --- | --- |
+| **Emergency Responder** | Fix a production incident. Create the EIR before the first change. Document concurrent. Hand off to retroactive Engineer + QA. | Emergency Investigation Report (EIR) | Break-glass |
+
+No role approves its own work. The Coder cannot be the QA. The SRE cannot be the QA for the same mandate. The Engineer must not write code. The Security reviewer must not be the Coder, SRE, or QA for the same mandate. The Emergency Responder cannot self-QA the retroactive pass.
 
 ---
 
@@ -277,6 +283,8 @@ harnessable/
 │   │   ├── sre.md                 Pre-change capture, blast radius, incident response, SIR
 │   │   ├── qa.md                  Adversarial verification protocol, verdict criteria
 │   │   ├── security.md            Threat surface mapping, adversarial security review, SRR
+│   │   ├── reviewer.md            Code review protocol, CRR authoring, finding classification
+│   │   ├── inspector.md           Protocol inspection, PIR authoring, traffic analysis
 │   │   └── emergency.md           Break-glass protocol: fix first, document concurrent, EIR
 │   │
 │   ├── hooks/                     Tier 1 (copy and own) — Enforcement Layer
@@ -471,7 +479,7 @@ The installer is idempotent — safe to re-run after framework updates or once y
 | --- | --- | --- |
 | `KNOWLEDGE_GRAPH.yaml`, `references/`, `templates/`, `HARNESSABLE_VERSION` | `docs/harness/vendor/harnessable/` | 2 — never modify |
 | `agents/`, `hooks/`, `tools/web_verify.py`, `templates/` | `docs/harness/` | 1 — copy and own |
-| Six role skills | `.claude/commands/` | 1 — copy and own |
+| Seven role skills | `.claude/commands/` | 1 — copy and own |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |
 | Audit defaults | `.harnessable/config.json` | config |
@@ -501,7 +509,7 @@ cp docs/harness/templates/skills/*.md .claude/commands/
 
 ### 2a. After install: configure skills
 
-The installer writes six skill files to `.claude/commands/`. If tracker detection succeeded, they are ready to use. If the `## Project Tracker` section was absent from `AGENTS.md`, each skill has one remaining marker:
+The installer writes seven skill files to `.claude/commands/`. If tracker detection succeeded, they are ready to use. If the `## Project Tracker` section was absent from `AGENTS.md`, each skill has one remaining marker:
 
 ```text
 # REPLACE: project tracker URL pattern and fetch command

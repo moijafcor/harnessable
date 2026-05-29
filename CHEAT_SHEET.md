@@ -1085,6 +1085,38 @@ No self-certification.
 
 ---
 
+## Break-Glass Workflow
+
+Invoked when a live system is failing and there is no time to author a DIP first.
+
+### Emergency Responder [Break-glass]
+
+Produces the **Emergency Investigation Report (EIR)**, built by appending to a board
+item (or local file at `docs/mandates/emergency/{date}-{slug}.md`) in real time:
+
+- Board item created before the first code change
+- Every command and its output pasted verbatim
+- Root cause stated as soon as identified
+- Every changed file listed with one-line rationale
+- Every finding beyond the bug filed as a `DISCOVERY` with class
+
+Exit gate (before ending the session):
+
+- [ ] Board item exists with root cause stated
+- [ ] All changed files listed with rationale
+- [ ] All findings beyond the bug filed as DISCOVERY
+- [ ] Verification output pasted
+- [ ] Board item appended with retroactive pass declaration
+- [ ] Board status set to `NEEDS_REVISION`
+
+After the session: Engineer authors a retroactive DIP within 24 hours; QA verifies
+independently. The Emergency Responder must not self-QA the retroactive pass.
+
+The `AGENTS.md` Safety Floor applies at all times. The emergency designation changes
+the sequence — fix before DIP — but does not relax any other framework invariant.
+
+---
+
 ## Quality Lifecycle Workflow
 
 Parallel to the core pipeline. Architect-discretionary.
