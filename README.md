@@ -276,7 +276,8 @@ harnessable/
 │   │   ├── coder.md               Build discipline, pre-completion hook runner, exit gate
 │   │   ├── sre.md                 Pre-change capture, blast radius, incident response, SIR
 │   │   ├── qa.md                  Adversarial verification protocol, verdict criteria
-│   │   └── security.md            Threat surface mapping, adversarial security review, SRR
+│   │   ├── security.md            Threat surface mapping, adversarial security review, SRR
+│   │   └── emergency.md           Break-glass protocol: fix first, document concurrent, EIR
 │   │
 │   ├── hooks/                     Tier 1 (copy and own) — Enforcement Layer
 │   │   ├── run.py                 Universal dispatcher: discovers and runs *.py scripts per event
@@ -526,6 +527,7 @@ Invoke any role with:
 /project:qa 190778951
 /project:sre "docs/mandates/ops/deploy-vhost.md"
 /project:security "docs/mandates/auth/login_implementation_plan.md"
+/project:emergency "login service is returning 500s on all POST requests"
 ```
 
 `$ARGUMENTS` accepts a board item ID, a local file path, or an inline description. See [framework/vendor/harnessable/references/skills.md](framework/vendor/harnessable/references/skills.md) for the full pattern and customisation guide.
