@@ -14,12 +14,12 @@
 #     docs/harness/vendor/harnessable/HARNESSABLE_VERSION
 #
 #   Tier 1 (scaffold — copy and own):
-#     docs/harness/agents/{architect,engineer,coder,qa,sre,security}.md
+#     docs/harness/agents/*.md
 #     docs/harness/hooks/  (all hook scripts and settings template)
 #     docs/harness/tools/web_verify.py
 #
 #   Claude Code commands:
-#     .claude/commands/{architect,engineer,coder,qa,sre,security}.md
+#     .claude/commands/*.md
 #     (customised from AGENTS.md tracker config where detectable)
 #
 #   Codex adapter:

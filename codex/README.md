@@ -12,7 +12,8 @@ Harnessable works with Codex through three mechanisms:
    into the active session.
 
 3. **`codex/examples/`** — role prompt templates. Use these as your starting
-   point for each pipeline stage rather than writing prompts from scratch.
+   point for each pipeline, quality lifecycle, or emergency role rather than
+   writing prompts from scratch.
 
 ## Install
 
@@ -36,6 +37,8 @@ protocol through `AGENTS.md`, the Harnessable skill, prompt templates, and
 explicit verification commands in the DIP.
 
 ## Invoking roles
+
+### Core Pipeline
 
 ### Architect
 
@@ -93,6 +96,45 @@ If the full enforcement layer is installed, the Security protocol is at
 issued PASS or CONDITIONAL_PASS, and confirm the Architect explicitly flagged
 the mandate in the DMT.
 
+### Quality Lifecycle
+
+Reviewer and Inspector run outside the core pipeline. They produce findings
+and child mandates, not PASS / FAIL verdicts, and they do not block pipeline
+progress.
+
+#### Reviewer
+
+```bash
+codex "$(cat codex/examples/reviewer.prompt.md)"
+```
+
+Reviewer reads source for structural correctness and files a Code Review Report
+(CRR) at `docs/mandates/review/{component}_{date}_code_review_report.md`.
+
+#### Inspector
+
+```bash
+codex "$(cat codex/examples/inspector.prompt.md)"
+```
+
+Inspector examines traffic or replayed scenarios and files a Protocol
+Inspection Report (PIR) at
+`docs/mandates/inspect/{surface}_{date}_inspection_report.md`.
+
+### Break Glass
+
+#### Emergency Responder
+
+```bash
+codex "$(cat codex/examples/emergency.prompt.md)"
+```
+
+Emergency Responder is for production break-glass work. It does not require a
+pre-existing DMT or DIP. The Emergency Investigation Report (EIR) is created
+before the first change, the `AGENTS.md` Safety Floor still applies, and the
+session ends at `NEEDS_REVISION` with retroactive Engineer and QA work required
+within 24 hours.
+
 ## What AGENTS.md does automatically
 
 Codex loads `AGENTS.md` at session start without being asked. This means:
@@ -111,7 +153,8 @@ The skill loads the full protocol when invoked. This adds:
 - Detailed role rules (what each role must and must not do)
 - The complete discovery classification table including `ONTOLOGY_GAP`
 - Knowledge graph obligations (grounding, amendment, PLANNED and DONE gates)
-- Required output format per stage (DMT, DIP, TIR, QA Verdict)
+- Required output format per role, including DMT, DIP, TIR, SIR, QA Verdict,
+  SRR, CRR, PIR, and EIR
 
 Invoke it for any non-trivial mandate. For simple bounded tasks, `AGENTS.md`
 alone may be sufficient.
