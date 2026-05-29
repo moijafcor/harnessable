@@ -123,6 +123,51 @@ that cannot be reversed (declare explicitly).]
 
 ---
 
+## Instrumentation
+
+*Engineer declares during DIP authoring. Coder implements.
+QA verifies in Phase 4. Reviewer audits in Pass 4.
+Inspector verifies in Pass 6.*
+
+### Structural logs
+
+What must this implementation log, at what level, and with what
+context fields?
+
+| Event | Level | Context fields required |
+| --- | --- | --- |
+| [error condition] | ERROR | [fields] |
+| [state transition] | INFO | [fields] |
+
+### Distributed traces
+
+Does this implementation participate in distributed tracing?
+
+- Trace propagation: [yes / no — if yes, which headers?]
+- New spans created: [list]
+
+### Operational telemetry
+
+What metrics must this implementation emit?
+
+| Metric | Type | Unit | Labels |
+| --- | --- | --- | --- |
+| [name] | counter/gauge/histogram | [unit] | [labels] |
+
+### Business instrumentation
+
+What business events must this implementation emit?
+
+| Event name | Trigger | Required properties |
+| --- | --- | --- |
+| [event] | [when fired] | [properties] |
+
+If this mandate introduces no instrumentation requirements:
+state "None — this mandate does not introduce observable events."
+Do not leave this section blank.
+
+---
+
 ## Verification Checklists
 
 *Coder or SRE must satisfy all REQUIRED items before advancing to IN_REVIEW.*
