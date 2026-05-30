@@ -1092,9 +1092,21 @@ Invoked when a live system is failing and there is no time to author a DIP first
 ### Emergency Responder [Break-glass]
 
 Produces the **Emergency Investigation Report (EIR)**, built by appending to a board
-item (or local file at `docs/mandates/emergency/{date}-{slug}.md`) in real time:
+item (or local file at `docs/mandates/emergency/{YYYY-MM-DD}_{slug}_eir.md`) in real time.
 
-- Board item created before the first code change
+Before the first code change:
+
+1. Arm the emergency gate (activates mechanical enforcement):
+
+   ```bash
+   mkdir -p .harnessable
+   date -u +"%Y-%m-%dT%H:%M:%SZ" > .harnessable/emergency_gate
+   ```
+
+2. Create the EIR board item or local EIR file. The gate blocks all Write/Edit/MultiEdit until the file exists.
+
+While working, append continuously:
+
 - Every command and its output pasted verbatim
 - Root cause stated as soon as identified
 - Every changed file listed with one-line rationale
@@ -1102,7 +1114,7 @@ item (or local file at `docs/mandates/emergency/{date}-{slug}.md`) in real time:
 
 Exit gate (before ending the session):
 
-- [ ] Board item exists with root cause stated
+- [ ] EIR board item or local EIR file exists with root cause stated
 - [ ] All changed files listed with rationale
 - [ ] All findings beyond the bug filed as DISCOVERY
 - [ ] Verification output pasted

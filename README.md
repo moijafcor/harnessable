@@ -294,7 +294,8 @@ harnessable/
 │   │   │   ├── secrets_guard.py   Hardcoded floor: blocks credential reads and exfiltration
 │   │   │   ├── database_guard.py  Blocks DROP, TRUNCATE, and WHERE-less DELETE/UPDATE
 │   │   │   ├── git_guard.py       Blocks force push, hard reset, branch and history destruction
-│   │   │   └── communication_guard.py  Blocks unauthorized email, Slack, SMS, and calendar writes
+│   │   │   ├── communication_guard.py  Blocks unauthorized email, Slack, SMS, and calendar writes
+│   │   │   └── emergency_gate.py  Blocks code edits until EIR exists when emergency gate is armed
 │   │   ├── post_tool_use/         Scripts run on PostToolUse (add files here to extend)
 │   │   │   └── audit_logger.py    Appends every tool call to .harnessable/logs/audit.YYYY-MM-DD.jsonl
 │   │   ├── stop/                  Scripts run on Stop (add files here to extend)
