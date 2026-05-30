@@ -1,5 +1,7 @@
 .harnessable/
 .harness/
+__pycache__/
+*.py[cod]
 docs/
 !docs/
 docs/*
