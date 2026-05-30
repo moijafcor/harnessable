@@ -416,6 +416,15 @@ concepts:
       - marking_fix_complete_without_verification_output
       - creating_child_mandates_during_emergency
       - bypassing_agents_md_safety_floor
+    safety_floor_applies: true
+    note: >
+      The Safety Floor declared in AGENTS.md is never suspended
+      during an emergency. A blocked action is a BLOCKER to
+      escalate, not a constraint to bypass.
+    rsi_obligations:
+      frequency: every_session
+      conditional_on_failure: false
+      recorded_in: EIR DISCOVERY entries
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ARTIFACTS
@@ -643,6 +652,15 @@ concepts:
           Every finding beyond the immediate bug must be classified as a
           DISCOVERY before the session ends. Unclassified findings in prose
           are a protocol violation.
+    retroactive_pass:
+      required: true
+      window: 24h
+      produces: [harnessable.DIP, harnessable.TIR, harnessable.QAVerdict]
+    enforcement:
+      hook: pre_tool_use/emergency_gate.py
+      mechanism: >
+        Gate file arms before first code edit. Hook blocks Write/Edit/
+        MultiEdit until EIR file exists in docs/mandates/emergency/.
 
   harnessable.ADR:
     type: harnessable.Artifact
@@ -861,10 +879,13 @@ concepts:
         - DIP authored from EIR content by Engineer
         - QA verification of the fix
         - Child mandates created for every DISCOVERY filed during the emergency
+    primary_artifact: harnessable.EIR
     note: >
       An EmergencyMandate cannot reach DONE without completing the retroactive
       DIP and QA pass. The NEEDS_REVISION status is intentional — it signals
       that the mandate is not yet fully governed, not that the fix failed.
+      The EIR substitutes for both DMT and DIP during the emergency.
+      The retroactive pass produces a proper DIP and TIR from EIR content.
 
   harnessable.Harness:
     type: concept
