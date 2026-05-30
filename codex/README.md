@@ -121,6 +121,21 @@ Inspector examines traffic or replayed scenarios and files a Protocol
 Inspection Report (PIR) at
 `docs/mandates/inspect/{surface}_{date}_inspection_report.md`.
 
+### Lightweight Track
+
+#### Spike
+
+```bash
+codex "$(cat codex/examples/spike.prompt.md)"
+```
+
+Spike is for micro-fixes, exploratory spikes, impromptu improvements, and
+prototypes that are too small for the full pipeline but still need a trail. It
+arms `.harnessable/spike_gate` when the full enforcement layer is installed,
+creates or resumes a descriptive `spike/*` branch, declares a time box and
+scope boundary, and exits by PR, abandonment note, or escalation to the full
+pipeline.
+
 ### Break Glass
 
 #### Emergency Responder
@@ -156,7 +171,7 @@ The skill loads the full protocol when invoked. This adds:
 - The complete discovery classification table including `ONTOLOGY_GAP`
 - Knowledge graph obligations (grounding, amendment, PLANNED and DONE gates)
 - Required output format per role, including DMT, DIP, TIR, SIR, QA Verdict,
-  SRR, CRR, PIR, and EIR
+  SRR, CRR, PIR, EIR, and Spike Branch
 
 Invoke it for any non-trivial mandate. For simple bounded tasks, `AGENTS.md`
 alone may be sufficient.
