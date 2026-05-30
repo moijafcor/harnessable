@@ -131,9 +131,11 @@ codex "$(cat codex/examples/emergency.prompt.md)"
 
 Emergency Responder is for production break-glass work. It does not require a
 pre-existing DMT or DIP. The Emergency Investigation Report (EIR) is created
-before the first change, the `AGENTS.md` Safety Floor still applies, and the
-session ends at `NEEDS_REVISION` with retroactive Engineer and QA work required
-within 24 hours.
+before the first change. When the full enforcement layer is installed, the
+Emergency prompt arms `.harnessable/emergency_gate`, which blocks code edits
+until a local EIR exists. The `AGENTS.md` Safety Floor still applies, and the
+session ends at `NEEDS_REVISION` with retroactive Engineer, Coder, and QA work
+required within 24 hours.
 
 ## What AGENTS.md does automatically
 
