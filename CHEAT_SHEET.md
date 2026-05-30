@@ -1129,6 +1129,38 @@ the sequence — fix before DIP — but does not relax any other framework invar
 
 ---
 
+### Spike Workflow
+
+Exploratory, impromptu, or micro-fix work. Branch-first. Time-boxed.
+
+Entry (3 steps before first code change):
+  git checkout -b spike/{descriptive-name}   ← trail starts here
+  Declare time box (default 2h, one re-commitment allowed)
+  Declare scope boundary (one sentence)
+
+During:
+  File DISCOVERY in commit messages — not only in conversation
+  Check time box — stop when it expires
+
+Exit — Ship:
+  Commits clean → PR opened (2-4 sentence description) → merge
+  HARNESS_IMPROVEMENT / ONTOLOGY_GAP discoveries → child mandates first
+
+Exit — Abandon:
+  One-sentence note → branch deleted → done (no retroactive DIP)
+
+Exit — Escalate (triggered):
+  Scope expanded / Safety Floor hit / production bug found
+  File DEVIATION → branch becomes full pipeline mandate or Emergency
+
+Never:
+  Merge to main without PR
+  Leave DISCOVERY only in conversation
+  Use non-descriptive branch names (spike/fix, spike/test, etc.)
+  Exceed two time boxes without escalating
+
+---
+
 ## Quality Lifecycle Workflow
 
 Parallel to the core pipeline. Architect-discretionary.

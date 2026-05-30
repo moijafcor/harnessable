@@ -388,6 +388,23 @@ Each failure should be reviewed for missing or ineffective controls. The framewo
 
 Incident review should focus on the control gap, not only the model output.
 
+### Spike
+
+Not every idea needs a DIP. Not every fix needs a mandate. The Spike
+protocol covers impromptu, exploratory, and micro-fix work that is too
+small for the full pipeline but too consequential to run ungoverned.
+Branch-first: `git checkout -b spike/{description}` is the first action,
+and the branch name is the intent statement. A declared time box (default
+two hours, one re-commitment permitted) bounds the scope. DISCOVERY entries
+appear in commit messages — not only in conversation — so the trail survives
+the session. Two valid exits: Ship (PR opened, commits clean) or Abandon
+(one-sentence note, branch deleted, no retroactive DIP). If scope expands
+beyond the declared intent, the Spike escalates to the full pipeline and the
+branch becomes the input to a proper mandate. Spike is not Emergency —
+production incidents use Emergency. Spike is for the idea that arrived
+during other work, the micro-fix that is obviously right, the prototype
+that needs an afternoon.
+
 ---
 
 ## Core Principles
