@@ -39,6 +39,25 @@ A DEVIATION or BLOCKER stops work until resolved.
 An ONTOLOGY_GAP stops work until the concept is declared in
 `docs/knowledge-graph.yaml` with correct namespace and relationships.
 
+### Blocked criterion
+
+If you discover a pre-existing bug that prevents a DMT acceptance
+criterion from being satisfied even when your implementation is correct,
+do not treat that as a normal deviation and do not claim the criterion
+passed. Stop and file:
+
+```text
+BLOCKER: BLOCKED_CRITERION
+Criterion: {exact text of the DMT criterion}
+Pre-existing bug: {description, reproduction steps, evidence}
+Mandated implementation: {what you implemented as written}
+Why it cannot satisfy the criterion: {specific explanation}
+```
+
+Set board status to `BLOCKED`, halt the TIR, and escalate to Architect.
+A TIR that asserts a known `BLOCKED_CRITERION` passed is a false evidence
+claim.
+
 ---
 
 ## TIR format

@@ -46,6 +46,25 @@ Measurable conditions that define done. Each criterion must be
 independently verifiable by QA without asking you what you meant.
 Use checkboxes.
 
+Before setting MANDATED, verify each criterion against the criterion
+validity checklist:
+- Independent verifiability: QA can verify it without Architect
+  interpretation
+- Dependency confirmation: any existing behavior, service, or component
+  it depends on is confirmed working now or declared in Prerequisites
+- No known blocking defect: no open bug prevents the criterion from
+  passing even if this mandate is implemented correctly
+
+A criterion that fails any rule is not ready for MANDATED. Rewrite it,
+scope it out, or file a prerequisite mandate first.
+
+**Prerequisites**
+Any condition that must be true before an acceptance criterion can be
+independently verified. Examples: a blocking bug must be resolved, a
+service must be confirmed working, or a prerequisite mandate must be
+DONE. If none: state explicitly that all criteria have confirmed
+dependencies.
+
 **Constraints**
 What the implementation must not do. Boundaries that must be preserved.
 Technology choices that are fixed. Performance or security floors.

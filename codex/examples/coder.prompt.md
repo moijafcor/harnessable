@@ -13,6 +13,11 @@ a Discovery before continuing:
 - BLOCKER: halt and escalate to Architect
 - ONTOLOGY_GAP: declare concept in knowledge graph before continuing
 
+If you discover a pre-existing bug that prevents a DMT criterion from
+passing even though your implementation is correct, file
+`BLOCKER: BLOCKED_CRITERION`, set board status to BLOCKED, halt the TIR,
+and escalate to Architect. Do not claim the criterion passed.
+
 Produce a Task Implementation Report (TIR) with:
 - What was built
 - Commands run with actual output (evidence, not claims)

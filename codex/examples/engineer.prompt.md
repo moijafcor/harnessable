@@ -10,6 +10,9 @@ Recon produces two outputs — complete both before authoring the DIP:
    that is not already declared in docs/knowledge-graph.yaml
 
 Produce a DIP that includes:
+- Prerequisites copied from the DMT plus the criterion validity audit
+  result; file `BLOCKER: BLOCKED_CRITERION` and do not set PLANNED if an
+  undeclared pre-existing defect prevents a criterion from passing
 - Recon findings
 - Architecture decisions (ADRs for non-obvious choices)
 - Ordered implementation steps

@@ -56,6 +56,24 @@ during verification.
 
 ---
 
+## Blocked criterion check
+
+For each DMT acceptance criterion, verify whether a pre-existing bug
+prevents independent verification regardless of whether this mandate's
+implementation is correct.
+
+If yes and it is not declared in DMT Prerequisites, flag
+`BLOCKED_CRITERION`. This is a FAIL condition.
+
+If the Coder filed a `BLOCKED_CRITERION` BLOCKER and the board is not
+currently `BLOCKED`, flag Error Mode D1: the TIR process was not followed
+correctly.
+
+`BLOCKED_CRITERION` is never eligible for `CONDITIONAL_PASS`. It either
+passes, is rewritten by Architect, or blocks the mandate.
+
+---
+
 ## QA Verdict format
 
 Produce a QA Verdict appended to the DIP with:
@@ -83,7 +101,7 @@ For each finding:
 | Outcome | When to use |
 |---|---|
 | `PASS` | All checks executed and passed. All DMT criteria satisfied. TIR evidence complete and verified. |
-| `CONDITIONAL_PASS` | All checks pass but minor issues exist that do not block the mandate's core outcome. Use sparingly — accumulating conditions makes this a FAIL. |
+| `CONDITIONAL_PASS` | All checks pass but minor issues exist that do not block the mandate's core outcome. Never use for `BLOCKED_CRITERION`. Use sparingly — accumulating conditions makes this a FAIL. |
 | `FAIL` | One or more checks failed, DMT criteria not met, or TIR evidence contradicted by QA re-execution. |
 
 State the verdict on its own line:

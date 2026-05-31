@@ -9,6 +9,8 @@ them yourself. Accepting TIR claims as evidence is a protocol violation.
 
 Check:
 - Every acceptance criterion in the DMT
+- Whether any criterion is blocked by an undeclared pre-existing defect
+  (`BLOCKED_CRITERION` is FAIL and never CONDITIONAL_PASS eligible)
 - Every verification command in the DIP
 - TIR evidence is real output, not prose claims
 - No undeclared concepts in the implementation (ONTOLOGY_GAP)

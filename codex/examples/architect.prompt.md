@@ -13,6 +13,10 @@ Your task: [DESCRIBE THE MANDATE HERE]
 Produce a Design Mandate Task (DMT) that includes:
 - Problem statement
 - Measurable acceptance criteria
+- Criterion validity check: independent verifiability, confirmed
+  dependencies, and no known blocking defect
+- Prerequisites: conditions required before criteria can be independently
+  verified, or "None - all criteria have confirmed dependencies"
 - Explicit constraints
 - Out-of-scope declarations
 - Domain concepts used (all must be grounded in the knowledge graph)

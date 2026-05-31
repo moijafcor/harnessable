@@ -30,6 +30,23 @@ Recon passes to run before writing the DIP:
 - Check for prior art: similar mandates, existing patterns, related code
 - Probe failure modes: what could go wrong, what has gone wrong before
 - Audit the knowledge graph: are all concepts you will reference declared?
+- Run a criterion validity audit: for each DMT acceptance criterion,
+  confirm QA can verify it independently, run or inspect any existing
+  dependency it relies on, and check for known or newly discovered
+  blocking defects
+
+If a blocking defect would prevent a criterion from passing regardless
+of this mandate's implementation and it is not declared in DMT
+Prerequisites, file:
+
+```text
+BLOCKER: BLOCKED_CRITERION - Criterion {N} cannot be satisfied.
+Pre-existing defect: {description and evidence}
+Criterion text: {exact text from DMT}
+```
+
+Do not author the DIP or set PLANNED over a criterion you have confirmed
+is unverifiable.
 
 Do not write implementation code during recon.
 
@@ -38,6 +55,10 @@ Do not write implementation code during recon.
 ## DIP format
 
 Produce a Design Implementation Plan with these sections:
+
+**Prerequisites**
+Copy the DMT prerequisites and record the Pass 7 audit result. If none,
+state explicitly: "None - all criteria have confirmed dependencies."
 
 **Recon findings**
 What you found. Surprises, constraints, prior art, risks.
