@@ -434,6 +434,52 @@ if tracker_tool:
 content = re.sub(r'# REPLACE: framework base path \(if not docs/harness/\)\n', '', content)
 open(dst, 'w').write(content)
 PYEOF
+
+  # Strip base-path REPLACE comment — paths are always correct
+  # for standard installs (docs/harness/ is the default)
+  sed -i '/# REPLACE: update base path if not docs\/harness\//d' "$DST"
+
+  # Fill high-risk surfaces from AGENTS.md ## Ask First
+  python3 << PYEOF
+import pathlib, re, sys
+
+dst    = pathlib.Path("$DST")
+agents = pathlib.Path("$TARGET/AGENTS.md")
+content = dst.read_text()
+
+if '# REPLACE: add project-specific high-risk surface areas' not in content:
+    sys.exit(0)  # already filled
+
+if not agents.exists():
+    print("  REPLACE: high-risk surfaces — AGENTS.md absent, marker left")
+    sys.exit(0)
+
+ask_first = re.search(
+    r'##\s+Ask First\s*\n(.*?)(?=\n##|\Z)',
+    agents.read_text(), re.DOTALL
+)
+
+if not ask_first:
+    print("  REPLACE: high-risk surfaces — no ## Ask First, marker left")
+    sys.exit(0)
+
+items = [
+    l.strip().lstrip('-').strip()
+    for l in ask_first.group(1).strip().splitlines()
+    if l.strip() and not l.strip().startswith('#')
+]
+surfaces = '\n'.join(f'   - {i}' for i in items if i)
+
+content = content.replace(
+    '   configuration: stop and escalate to the full pipeline first.\n'
+    '   # REPLACE: add project-specific high-risk surface areas here\n',
+    f'   configuration: stop and escalate to the full pipeline first.\n'
+    f'   Project-specific high-risk surfaces (from AGENTS.md):\n'
+    f'{surfaces}\n'
+)
+dst.write_text(content)
+print(f"  high-risk surfaces: {len(items)} item(s) from AGENTS.md")
+PYEOF
 }
 
 # ── sync_skills ───────────────────────────────────────────────────────────────
