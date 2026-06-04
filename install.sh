@@ -507,7 +507,7 @@ PYEOF
     fi
 
     if [[ -f "$dst" ]]; then
-      REMAINING="$(grep -c "# REPLACE:" "$dst" 2>/dev/null || echo 0)"
+      REMAINING="$(grep -c "# REPLACE:" "$dst" 2>/dev/null || true)"
       if [[ "$REMAINING" -gt 0 ]]; then
         REPLACE_COUNT=$((REPLACE_COUNT + REMAINING))
         REPLACE_FILES+=("$label ($REMAINING marker(s))")
