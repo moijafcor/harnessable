@@ -52,6 +52,24 @@ is ambiguous; a None declaration is an assertion on record.*
 | --- | --- | --- | --- |
 | [bug / service / mandate] | defect / dependency / mandate | confirmed / open | Criterion N |
 
+### Credential Operations
+
+*SRE mandates only. Architect declares at MANDATED. Enables
+session-scoped verify-only access to declared credential files.
+Content-exposing reads (cat, head, tail) remain blocked always.*
+
+*If none: state "None — this mandate does not handle credential files."*
+
+| File | Operations permitted | Justification |
+| --- | --- | --- |
+| [path] | write, checksum, key-count | [why needed] |
+
+Permitted verify-only operations: `wc -l`, `wc -c`, `md5sum`,
+`sha256sum`, `stat`, `ls -la`, `grep -c "^KEY"`, `grep -q "^KEY="`.
+
+Content-exposing operations never permitted: `cat`, `less`, `head`,
+`tail`, `echo $VAR`, `printenv`.
+
 ---
 
 ## Scope
