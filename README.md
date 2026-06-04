@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents doing high-stakes production work: nine roles across three tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: ten roles across four tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -27,6 +27,8 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Field Discoveries](#field-discoveries)
   - [Containment Checklist](#containment-checklist)
   - [Continuous Improvement](#continuous-improvement)
+  - [Governed Credential Operations](#governed-credential-operations)
+  - [Spike](#spike)
 - [Core Principles](#core-principles)
 - [Getting Started](#getting-started)
   - [1. Set up your project tracker](#1-set-up-your-project-tracker)
@@ -120,6 +122,12 @@ Roles are **functional**, not personal. One human or one agent session may perfo
 | **Reviewer** | Read code for structural correctness. | Code Review Report (CRR) | Quality |
 | **Inspector** | Examine traffic for protocol correctness. | Protocol Inspection Report (PIR) | Quality |
 
+**Lightweight Track roles** — time-boxed, branch-first, outside the full pipeline:
+
+| Role | Responsibility | Produces | Track |
+| --- | --- | --- | --- |
+| **Spike** | Explore, prototype, or micro-fix within a declared scope and time box. Branch-first; exits by PR or abandonment note. | Spike Branch (PR or abandonment note) | Lightweight |
+
 **Break-glass roles** — invoked outside the normal pipeline when a live system is failing:
 
 | Role | Responsibility | Produces | Track |
@@ -209,19 +217,24 @@ Context Layer      ← AGENTS.md: project rules, allowed/blocked actions, comple
 Tool Layer         ← controlled tools with schemas, validation, audit logging
       │
       ▼
-Enforcement Layer  ← PreToolUse: five guards block before execution
+Enforcement Layer  ← PreToolUse: seven guards block before execution
       │                 bouncer.py          AGENTS.md ## Blocked policy
-      │                 secrets_guard.py    credential reads and exfiltration
+      │                 secrets_guard.py    credential reads, exfiltration, and governed exemptions
       │                 database_guard.py   DROP / TRUNCATE / WHERE-less DELETE
       │                 git_guard.py        force push / hard reset / branch destruction
       │                 communication_guard.py  email / Slack / SMS without approval
+      │                 emergency_gate.py   code edits blocked until EIR exists
+      │                 spike_gate.py       Write/Edit blocked until on spike/ branch
       │               PostToolUse: audit_logger.py records every tool call
       ▼
 Execution
       │
       ▼
 Verification Layer ← Stop: completion_gate.py (completion gate before turn completes)
-      │               Independent QA, automated checks, evidence required
+      │               credential_ops_cleanup.py  removes session-scoped credential exemption
+      │               emergency_cleanup.py  removes emergency_gate at session end
+      │               spike_cleanup.py  removes spike_gate at session end
+      │             Independent QA, automated checks, evidence required
       ▼
 Approved Output
 ```
@@ -285,21 +298,26 @@ harnessable/
 │   │   ├── security.md            Threat surface mapping, adversarial security review, SRR
 │   │   ├── reviewer.md            Code review protocol, CRR authoring, finding classification
 │   │   ├── inspector.md           Protocol inspection, PIR authoring, traffic analysis
+│   │   ├── spike.md               Branch-first micro-mandate: time box, scope, Ship/Abandon exits
 │   │   └── emergency.md           Break-glass protocol: fix first, document concurrent, EIR
 │   │
 │   ├── hooks/                     Tier 1 (copy and own) — Enforcement Layer
 │   │   ├── run.py                 Universal dispatcher: discovers and runs *.py scripts per event
 │   │   ├── pre_tool_use/          Scripts run on PreToolUse (add files here to extend)
 │   │   │   ├── bouncer.py         Blocks commands matching AGENTS.md ## Blocked (policy-driven)
-│   │   │   ├── secrets_guard.py   Hardcoded floor: blocks credential reads and exfiltration
+│   │   │   ├── secrets_guard.py   Hardcoded floor: blocks credential reads and exfiltration; allows SRE verify-only exemptions
 │   │   │   ├── database_guard.py  Blocks DROP, TRUNCATE, and WHERE-less DELETE/UPDATE
 │   │   │   ├── git_guard.py       Blocks force push, hard reset, branch and history destruction
 │   │   │   ├── communication_guard.py  Blocks unauthorized email, Slack, SMS, and calendar writes
-│   │   │   └── emergency_gate.py  Blocks code edits until EIR exists when emergency gate is armed
+│   │   │   ├── emergency_gate.py  Blocks code edits until EIR exists when emergency gate is armed
+│   │   │   └── spike_gate.py      Blocks Write/Edit until on a spike/ branch when spike gate is armed
 │   │   ├── post_tool_use/         Scripts run on PostToolUse (add files here to extend)
 │   │   │   └── audit_logger.py    Appends every tool call to .harnessable/logs/audit.YYYY-MM-DD.jsonl
 │   │   ├── stop/                  Scripts run on Stop (add files here to extend)
-│   │   │   └── completion_gate.py Runs AGENTS.md ## Completion Gate commands; blocks if any fail
+│   │   │   ├── completion_gate.py Runs AGENTS.md ## Completion Gate commands; blocks if any fail
+│   │   │   ├── credential_ops_cleanup.py  Removes .harnessable/credential_ops.json at session end
+│   │   │   ├── emergency_cleanup.py  Removes .harnessable/emergency_gate at session end
+│   │   │   └── spike_cleanup.py   Removes .harnessable/spike_gate at session end
 │   │   └── claude_code_settings_template.json  Drop-in .claude/settings.json — all events wired through run.py
 │   │
 │   ├── templates/                 Tier 1 (copy and own)
@@ -387,6 +405,10 @@ If a step has no answer for any of these, the DIP has a design gap.
 Each failure should be reviewed for missing or ineffective controls. The framework treats its own protocol files as a codebase: any agent may file a `HARNESS_IMPROVEMENT` discovery, which creates a child task and eventually flows through the same pipeline as any other mandate.
 
 Incident review should focus on the control gap, not only the model output.
+
+### Governed Credential Operations
+
+The `secrets_guard.py` hardcoded floor blocks all credential reads by default. For SRE mandates that legitimately need to verify credential files — checking line counts, hashes, or key presence — the SRE protocol provides a session-scoped exemption. Before any credential step, the SRE creates `.harnessable/credential_ops.json` declaring the approved file paths, the mandate that authorises access, and a 4-hour expiry. This permits verify-only operations (`wc -l`, `md5sum`, `grep -c`) on the declared files. Content-exposing commands (`cat`, `head`, `tail`) remain blocked regardless of the exemption. The `credential_ops_cleanup.py` stop hook removes the exemption file at session end — exemptions never persist across sessions.
 
 ### Spike
 
@@ -497,7 +519,7 @@ The installer is idempotent — safe to re-run after framework updates or once y
 | --- | --- | --- |
 | `KNOWLEDGE_GRAPH.yaml`, `references/`, `templates/`, `HARNESSABLE_VERSION` | `docs/harness/vendor/harnessable/` | 2 — never modify |
 | `agents/`, `hooks/`, `tools/web_verify.py`, `templates/` | `docs/harness/` | 1 — copy and own |
-| Seven role skills | `.claude/commands/` | 1 — copy and own |
+| Ten role skills | `.claude/commands/` | 1 — copy and own |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |
 | Audit defaults | `.harnessable/config.json` | config |
@@ -527,7 +549,7 @@ cp docs/harness/templates/skills/*.md .claude/commands/
 
 ### 2a. After install: configure skills
 
-The installer writes seven skill files to `.claude/commands/`. If tracker detection succeeded, they are ready to use. If the `## Project Tracker` section was absent from `AGENTS.md`, each skill has one remaining marker:
+The installer writes ten skill files to `.claude/commands/`. If tracker detection succeeded, they are ready to use. If the `## Project Tracker` section was absent from `AGENTS.md`, each skill has one remaining marker:
 
 ```text
 # REPLACE: project tracker URL pattern and fetch command
@@ -547,12 +569,16 @@ Then re-run the installer — it will fill in the marker automatically and show 
 Invoke any role with:
 
 ```text
+/project:architect "docs/mandates/auth/login_feature.md"
 /project:engineer "docs/mandates/my-feature.md"
 /project:engineer 190778951
 /project:coder "docs/mandates/auth/login_implementation_plan.md"
-/project:qa 190778951
 /project:sre "docs/mandates/ops/deploy-vhost.md"
+/project:qa 190778951
 /project:security "docs/mandates/auth/login_implementation_plan.md"
+/project:reviewer "src/auth/"
+/project:inspector "docs/mandates/auth/login_implementation_plan.md"
+/project:spike "add reports menu item"
 /project:emergency "login service is returning 500s on all POST requests"
 ```
 
