@@ -495,15 +495,21 @@ PYEOF
     elif diff -q "$_SKILL_TMP" "$dst" &>/dev/null; then
       echo "  OK      $label"
       SK_OK=$((SK_OK + 1))
-    elif grep -q "# REPLACE:" "$dst" 2>/dev/null; then
+    else
+      # Skills are framework-owned: always sync. Project customisation belongs
+      # in AGENTS.md, not in skill files. Overwrite unconditionally and report
+      # how much project-local content was discarded so the operator can verify.
+      local SK_REMOVED SK_ADDED
+      SK_REMOVED="$(diff "$dst" "$_SKILL_TMP" | grep -c "^<" || true)"
+      SK_ADDED="$(diff  "$dst" "$_SKILL_TMP" | grep -c "^>" || true)"
       cp "$_SKILL_TMP" "$dst"
       apply_tracker "$dst"
-      echo "  SYNCED  $label  (REPLACE markers refreshed)"
+      if [[ "$SK_REMOVED" -gt 0 ]]; then
+        echo "  SYNCED  $label  ($SK_REMOVED project lines replaced, +$SK_ADDED framework lines)"
+      else
+        echo "  SYNCED  $label  (+$SK_ADDED lines)"
+      fi
       SK_SYNCED=$((SK_SYNCED + 1))
-    else
-      echo "  MERGE   $label  ← MANUAL_MERGE_REQUIRED"
-      SK_MERGE=$((SK_MERGE + 1))
-      MERGE_FILES+=("$label")
     fi
 
     if [[ -f "$dst" ]]; then
@@ -737,8 +743,8 @@ report() {
     "Tools ($(( TL_SYNCED + TL_OK ))):" "$TL_SYNCED" "$TL_OK"
   printf "  %-24s %d synced / %d current\n" \
     "Templates ($(( TM_SYNCED + TM_OK ))):" "$TM_SYNCED" "$TM_OK"
-  printf "  %-24s %d synced / %d current / %d manual merge\n" \
-    "Skills ($(( SK_SYNCED + SK_OK + SK_MERGE ))):" "$SK_SYNCED" "$SK_OK" "$SK_MERGE"
+  printf "  %-24s %d synced / %d current\n" \
+    "Skills ($(( SK_SYNCED + SK_OK ))):" "$SK_SYNCED" "$SK_OK"
   printf "  %-24s settings=%s  .gitignore=%s  config=%s\n" \
     "Config:" "$CFG_SETTINGS" "$CFG_GITIGNORE" "$CFG_CONFIG"
   printf "  %-24s %s\n" "Audit:" "$AUDIT_RESULT"
