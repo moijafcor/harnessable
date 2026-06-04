@@ -439,6 +439,14 @@ PYEOF
 # ── sync_skills ───────────────────────────────────────────────────────────────
 
 sync_skills() {
+  # Skills are framework-owned — same tier as hooks.
+  # They are overwritten unconditionally on every sync.
+  # No MANUAL_MERGE path exists for skill files.
+  # All project-specific configuration flows through AGENTS.md.
+  # The apply_tracker() function fills customisation points
+  # automatically from AGENTS.md ## Project Tracker.
+  # Rationale: June 2026 audit found zero legitimate skill
+  # customisations — all were tracker config belonging in AGENTS.md.
   echo "── Claude Code commands ─────────────────────────────────────────────────"
 
   detect_tracker

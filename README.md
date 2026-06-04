@@ -519,10 +519,18 @@ The installer is idempotent — safe to re-run at any time. It installs:
 | --- | --- | --- |
 | `KNOWLEDGE_GRAPH.yaml`, `references/`, `templates/`, `HARNESSABLE_VERSION` | `docs/harness/vendor/harnessable/` | 2 — never modify |
 | `agents/`, `hooks/`, `tools/web_verify.py`, `templates/` | `docs/harness/` | 1 — copy and own |
-| Ten role skills | `.claude/commands/` | 1 — copy and own |
+| Ten role skills | `.claude/commands/` | framework-owned — do not edit |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |
 | Audit defaults | `.harnessable/config.json` | config |
+
+**Ownership tiers:**
+
+| Tier | Examples | Sync behaviour | Can project customise? |
+| --- | --- | --- | --- |
+| Tier 2 — vendor | KNOWLEDGE_GRAPH, references/ | Unconditional replace | Never |
+| Tier 1 — scaffold | Agent files, dip.md | Replace if not customised; MANUAL_MERGE if customised | Yes — project owns after copy |
+| Framework-owned | Hooks, tools, skills | Unconditional replace | No — AGENTS.md only |
 
 **Output prefixes** during a run:
 
@@ -568,22 +576,15 @@ cp docs/harness/templates/skills/*.md .claude/commands/
 
 ### 2a. After install: configure skills
 
-The installer writes ten skill files to `.claude/commands/`. If tracker detection succeeded, they are ready to use. If the `## Project Tracker` section was absent from `AGENTS.md`, each skill has one remaining marker:
+Skill files are framework-owned — do not edit them directly.
+All project-specific configuration belongs in `AGENTS.md`.
+`install.sh` reads `AGENTS.md ## Project Tracker` and fills
+skill placeholders automatically on every sync.
 
-```text
-# REPLACE: project tracker URL pattern and fetch command
-```
+The two items that always require manual configuration:
 
-Add the tracker section to `AGENTS.md`:
-
-```markdown
-## Project Tracker
-Tool: GitHub Projects
-Integration: gh CLI
-Task URL pattern: https://github.com/YOUR_ORG/YOUR_REPO/issues/{id}
-```
-
-Then re-run with `--update` — it will fill in the marker automatically and show `SYNCED` for each skill that still had `# REPLACE` markers.
+1. Add `## Project Tracker` to `AGENTS.md` if not present
+2. Fill spike.md high-risk surfaces (line marked `# REPLACE`)
 
 Invoke any role with:
 

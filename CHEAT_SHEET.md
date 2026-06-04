@@ -1280,6 +1280,16 @@ Observability
 
 ---
 
+### CC Skills
+
+Skills: framework-owned (not Tier 1). Overwritten on every sync.
+Customise via AGENTS.md ## Project Tracker only.
+
+Invoke with `/project:{role} $ARGUMENTS` — board URL/ID, local file path,
+or inline description. See references/skills.md for the full pattern.
+
+---
+
 ### Final Reference
 
 Models should be deployed with explicit controls.
