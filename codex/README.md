@@ -22,7 +22,7 @@ bash codex/install.sh /path/to/your-project
 ```
 
 The script installs `AGENTS.md` and the harnessable skill. It will not
-overwrite a customised `AGENTS.md`; it reports an `ACTION` item so you can
+overwrite a customised `AGENTS.md`; it reports `MERGE` so you can
 merge the Harnessable blocks into the existing repo-level instructions.
 
 To install the full enforcement layer (hooks, guards, audit logger,
@@ -227,11 +227,25 @@ adapted for any runtime that supports pre-execution interception.
 
 ## Updating
 
-To update the harnessable skill after a new release, rerun:
+To update the harnessable skill after a new release, start with a clean
+working tree in the target project, then run:
 
 ```bash
-bash codex/install.sh /path/to/your-project
+bash codex/install.sh --update /path/to/your-project
 ```
 
-Review the changelog for changes to role obligations or discovery classes
-before updating — these affect active mandates.
+`--update` refuses to run over uncommitted target changes. It syncs the
+Harnessable skill and version pin, reports `OK` for current files, and
+reports `MERGE` if `AGENTS.md` has project customisations that need manual
+review.
+
+After updating:
+
+```bash
+git -C /path/to/your-project status
+git -C /path/to/your-project add -A
+git -C /path/to/your-project commit -m "chore: sync harnessable Codex adapter"
+```
+
+Review release notes for changes to role obligations or discovery classes
+before updating active mandates.
