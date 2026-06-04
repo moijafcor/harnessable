@@ -74,7 +74,10 @@ codex "$(cat codex/examples/sre.prompt.md)"
 If the full enforcement layer is installed, the SRE protocol is at
 `docs/harness/agents/sre.md`. Key requirements before starting: the DIP must
 have a `## Rollback Procedure` section and a blast radius declaration, or the
-SRE must file a BLOCKER before proceeding.
+SRE must file a BLOCKER before proceeding. If the DIP declares credential
+files in `## Credential Operations`, the SRE must create the session-scoped
+`.harnessable/credential_ops.json` before credential steps; it permits only
+verify-only operations and is removed by the Stop hook.
 
 ### QA
 

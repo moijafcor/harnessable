@@ -17,6 +17,8 @@ Produce a Design Mandate Task (DMT) that includes:
   dependencies, and no known blocking defect
 - Prerequisites: conditions required before criteria can be independently
   verified, or "None - all criteria have confirmed dependencies"
+- Credential operations for SRE mandates that handle credential files:
+  exact files, permitted verify-only operations, and justification
 - Explicit constraints
 - Out-of-scope declarations
 - Domain concepts used (all must be grounded in the knowledge graph)

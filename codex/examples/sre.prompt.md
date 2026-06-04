@@ -10,10 +10,18 @@ live systems, confirm:
 - DIP status is PLANNED
 - Rollback procedure exists
 - Blast radius is declared
+- Credential Operations is reviewed; if credential files are declared,
+  create `.harnessable/credential_ops.json` for the declared paths only
+  before credential steps
 - Pre-change baseline can be captured
 
 If any condition is missing or baseline health is degraded, file BLOCKER
 and halt.
+
+Credential exemptions permit verify-only operations such as checksums,
+counts, metadata, and anchored key-presence checks. They never permit
+content-exposing commands such as `cat`, `head`, `tail`, `less`,
+`echo $VAR`, or `printenv`.
 
 Produce an SRE Implementation Report (SIR) with:
 

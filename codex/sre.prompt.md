@@ -21,10 +21,18 @@ Before touching live systems:
 1. Confirm the DIP status is `PLANNED`.
 2. Confirm the DIP contains a `## Rollback Procedure`.
 3. Confirm the DIP contains a blast radius declaration.
-4. Capture pre-change state and baseline health.
-5. File a `BLOCKER` if any required safety condition is absent.
+4. Read the DIP `## Credential Operations` section. If it declares
+   credential files, create `.harnessable/credential_ops.json` before any
+   credential step with only the declared paths and a max four-hour
+   expiry.
+5. Capture pre-change state and baseline health.
+6. File a `BLOCKER` if any required safety condition is absent.
 
 If the baseline is degraded, halt before applying changes.
+Credential exemptions are verify-only: checksums, counts, metadata, and
+anchored key-presence checks. They never permit content-exposing commands
+such as `cat`, `head`, `tail`, `less`, `echo $VAR`, or `printenv`.
+The Stop hook removes `.harnessable/credential_ops.json` at session end.
 
 ---
 

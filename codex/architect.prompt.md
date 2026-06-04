@@ -65,6 +65,11 @@ service must be confirmed working, or a prerequisite mandate must be
 DONE. If none: state explicitly that all criteria have confirmed
 dependencies.
 
+For SRE mandates that will write, verify, or transfer credential files,
+also declare credential operations at MANDATED: the exact files, the
+permitted verify-only operations, and the justification. Content-exposing
+reads are never permitted.
+
 **Constraints**
 What the implementation must not do. Boundaries that must be preserved.
 Technology choices that are fixed. Performance or security floors.

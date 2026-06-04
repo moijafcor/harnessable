@@ -13,6 +13,9 @@ Produce a DIP that includes:
 - Prerequisites copied from the DMT plus the criterion validity audit
   result; file `BLOCKER: BLOCKED_CRITERION` and do not set PLANNED if an
   undeclared pre-existing defect prevents a criterion from passing
+- Credential Operations for SRE mandates: declare credential files,
+  permitted verify-only operations, and justification; if none, state
+  "None - this mandate does not handle credential files"
 - Recon findings
 - Architecture decisions (ADRs for non-obvious choices)
 - Ordered implementation steps

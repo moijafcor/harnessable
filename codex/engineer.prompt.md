@@ -60,6 +60,15 @@ Produce a Design Implementation Plan with these sections:
 Copy the DMT prerequisites and record the Pass 7 audit result. If none,
 state explicitly: "None - all criteria have confirmed dependencies."
 
+**Credential Operations**
+For SRE mandates only, add a subsection immediately after Prerequisites.
+If the mandate handles credential files, declare each file, the permitted
+operations, and why the access is needed. Use `harnessable.CredentialOps`
+and permit only `harnessable.VerifyOnlyPattern` operations such as
+`wc -l`, `wc -c`, `md5sum`, `sha256sum`, `stat`, `ls -la`,
+`grep -c "^KEY"`, or `grep -q "^KEY="`. If none, state explicitly:
+"None - this mandate does not handle credential files."
+
 **Recon findings**
 What you found. Surprises, constraints, prior art, risks.
 If you filed any discoveries during recon, list them here with
