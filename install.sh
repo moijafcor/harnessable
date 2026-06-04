@@ -1,153 +1,96 @@
 #!/usr/bin/env bash
 # harnessable — install.sh
 #
-# Installs harnessable into a target project. Idempotent.
+# Installs or syncs harnessable into a target project. Idempotent.
 #
 # Usage:
-#   bash install.sh /path/to/your-project
-#
-# What this installs:
-#   Tier 2 (vendor — never modify):
-#     docs/harness/vendor/harnessable/KNOWLEDGE_GRAPH.yaml
-#     docs/harness/vendor/harnessable/references/
-#     docs/harness/vendor/harnessable/templates/
-#     docs/harness/vendor/harnessable/HARNESSABLE_VERSION
-#
-#   Tier 1 (scaffold — copy and own):
-#     docs/harness/agents/*.md
-#     docs/harness/hooks/  (all hook scripts and settings template)
-#     docs/harness/tools/web_verify.py
-#
-#   Claude Code commands:
-#     .claude/commands/*.md
-#     (customised from AGENTS.md tracker config where detectable)
-#
-#   Codex adapter:
-#     Use codex/install.sh for Codex AGENTS.md + skill installation.
-#
-#   Config:
-#     .claude/settings.json  — PreCompact block wired
-#     .gitignore             — .harnessable/ entry, exceptions
-#     .harnessable/config.json — audit block
+#   bash install.sh /path/to/project           # fresh install
+#   bash install.sh --update /path/to/project  # full sync update
+#   bash install.sh --update                   # sync in current directory
+#   bash install.sh --help
 #
 # Output prefixes:
-#   NEW    — file created for the first time
-#   OK     — file already current, no change
-#   UPD    — file updated (was outdated)
-#   SKIP   — customised file left untouched (diff logged)
-#   WARN   — something needs attention but install continues
-#   ACTION — operator must do something before next session
-#   ERR    — fatal; install halted
+#   SYNCED  — file installed or updated from framework
+#   OK      — file already current, no change
+#   MERGE   — customised file skipped; MANUAL_MERGE_REQUIRED
+#   PATCHED — config file updated
+#   ERR     — fatal; halted
 
 set -euo pipefail
 
-# ── Arguments ─────────────────────────────────────────────────────────────────
-
-TARGET="${1:-}"
-
-if [[ -z "$TARGET" ]]; then
-  echo "Usage: bash install.sh /path/to/your-project"
-  echo ""
-  echo "  Installs harnessable into the target project directory."
-  exit 1
-fi
-
 FRAMEWORK_ROOT="$(dirname "$(realpath "$0")")"
+MODE="fresh"
+TARGET=""
+FRAMEWORK_VERSION=""
 
-KG_SRC="$FRAMEWORK_ROOT/framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml"
-if [[ ! -f "$KG_SRC" ]]; then
-  echo "ERR  FRAMEWORK_ROOT does not look like harnessable:"
-  echo "     Missing: $KG_SRC"
-  exit 1
-fi
-
-if ! git -C "$TARGET" rev-parse --git-dir &>/dev/null 2>&1; then
-  echo "ERR  Target is not a git repository: $TARGET"
-  exit 2
-fi
-
-FRAMEWORK_VERSION="$(git -C "$FRAMEWORK_ROOT" rev-parse --short HEAD 2>/dev/null \
-  || cat "$FRAMEWORK_ROOT/framework/vendor/harnessable/HARNESSABLE_VERSION")"
-
-echo ""
-echo "Installing harnessable $FRAMEWORK_VERSION"
-echo "  Source:  $FRAMEWORK_ROOT"
-echo "  Target:  $TARGET"
-echo ""
-
-# ── Counters ──────────────────────────────────────────────────────────────────
-
-T2_NEW=0; T2_OK=0
-T1_NEW=0; T1_OK=0; T1_SKIP=0
-SK_NEW=0; SK_OK=0; SK_MERGE=0
+# Counters
+T2_SYNCED=0; T2_OK=0
+AG_SYNCED=0; AG_OK=0; AG_MERGE=0
+HK_SYNCED=0; HK_OK=0
+TL_SYNCED=0; TL_OK=0
+TM_SYNCED=0; TM_OK=0
+SK_SYNCED=0; SK_OK=0; SK_MERGE=0
 REPLACE_COUNT=0
 REPLACE_FILES=()
 MERGE_FILES=()
 ACTION_ITEMS=()
-LAST_STATUS=""
 
 CFG_SETTINGS="—"; CFG_GITIGNORE="—"; CFG_CONFIG="—"
+AUDIT_RESULT="—"
+
+# Tracker (populated by detect_tracker)
+TRACKER_TOOL=""
+TRACKER_URL=""
+TRACKER_INTEGRATION=""
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 ensure_dir() { mkdir -p "$1"; }
 
-# Sets LAST_STATUS: new | upd | ok
-copy_if_changed() {
-  local SRC="$1" DST="$2" LABEL="$3"
-  ensure_dir "$(dirname "$DST")"
-  if [[ ! -f "$DST" ]]; then
-    cp "$SRC" "$DST"
-    echo "  NEW  $LABEL"
-    LAST_STATUS="new"; return 0
+py_validate() {
+  local file="$1" label="$2"
+  if ! python3 -m py_compile "$file" 2>/dev/null; then
+    echo "  ERR  $label — Python syntax error; halting"
+    exit 1
   fi
-  if ! diff -q "$SRC" "$DST" &>/dev/null; then
-    cp "$SRC" "$DST"
-    echo "  UPD  $LABEL"
-    LAST_STATUS="upd"; return 0
-  fi
-  echo "  OK   $LABEL"
-  LAST_STATUS="ok"; return 0
 }
 
-# Sets LAST_STATUS: new | upd | skip
-# Treats a file with REPLACE markers as uncustomised and overwrites it.
-copy_scaffold() {
-  local SRC="$1" DST="$2" LABEL="$3"
-  ensure_dir "$(dirname "$DST")"
-  if [[ ! -f "$DST" ]]; then
-    cp "$SRC" "$DST"
-    echo "  NEW  $LABEL"
-    LAST_STATUS="new"; return 0
+# ── parse_args ────────────────────────────────────────────────────────────────
+
+parse_args() {
+  if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage:"
+    echo "  bash install.sh /path/to/project           # fresh install"
+    echo "  bash install.sh --update /path/to/project  # full sync update"
+    echo "  bash install.sh --update                   # sync in current directory"
+    exit 0
   fi
-  if grep -q "# REPLACE:" "$DST" 2>/dev/null; then
-    cp "$SRC" "$DST"
-    echo "  UPD  $LABEL (uncustomised)"
-    LAST_STATUS="upd"; return 0
+
+  if [[ "${1:-}" == "--update" ]]; then
+    MODE="update"
+    TARGET="${2:-$(pwd)}"
+  elif [[ -n "${1:-}" ]]; then
+    MODE="fresh"
+    TARGET="$1"
+  else
+    echo "Usage: bash install.sh /path/to/project"
+    echo "       bash install.sh --update [/path/to/project]"
+    exit 1
   fi
-  local DIFF_LINES
-  DIFF_LINES="$(diff "$SRC" "$DST" 2>/dev/null | wc -l | tr -d '[:space:]')"
-  echo "  SKIP $LABEL ($DIFF_LINES diff lines — customised, not overwritten)"
-  LAST_STATUS="skip"; return 0
+  TARGET="$(realpath "$TARGET")"
 }
 
-t1_count() {
-  case "$LAST_STATUS" in
-    new|upd) T1_NEW=$((T1_NEW + 1)) ;;
-    skip)    T1_SKIP=$((T1_SKIP + 1)) ;;
-    *)       T1_OK=$((T1_OK + 1)) ;;
-  esac
-}
+# ── check_framework ───────────────────────────────────────────────────────────
 
-# ── Tier 2 install ────────────────────────────────────────────────────────────
+check_framework() {
+  local KG_SRC="$FRAMEWORK_ROOT/framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml"
+  if [[ ! -f "$KG_SRC" ]]; then
+    echo "ERR  FRAMEWORK_ROOT does not look like harnessable:"
+    echo "     Missing: $KG_SRC"
+    exit 1
+  fi
 
-echo "── Tier 2 (vendor) ──────────────────────────────────────────────────────"
-
-SRC_VENDOR="$FRAMEWORK_ROOT/framework/vendor/harnessable"
-DST_VENDOR="$TARGET/docs/harness/vendor/harnessable"
-
-# Validate KNOWLEDGE_GRAPH.yaml before proceeding
-python3 - "$KG_SRC" <<'PYEOF'
+  python3 - "$KG_SRC" <<'PYEOF'
 import yaml, sys
 try:
     yaml.safe_load(open(sys.argv[1]))
@@ -156,100 +99,286 @@ except Exception as e:
     sys.exit(1)
 PYEOF
 
-ensure_dir "$DST_VENDOR"
+  FRAMEWORK_VERSION="$(git -C "$FRAMEWORK_ROOT" rev-parse --short HEAD 2>/dev/null \
+    || cat "$FRAMEWORK_ROOT/framework/vendor/harnessable/HARNESSABLE_VERSION")"
+}
 
-# references/ — rsync with --delete (never diverge from source)
-rsync -a --delete "$SRC_VENDOR/references/" "$DST_VENDOR/references/"
-REF_COUNT="$(find "$DST_VENDOR/references" -type f | wc -l | tr -d '[:space:]')"
-echo "  OK   docs/harness/vendor/harnessable/references/ ($REF_COUNT files)"
-T2_OK=$((T2_OK + REF_COUNT))
+# ── check_target ──────────────────────────────────────────────────────────────
 
-# templates/ — vendor copy of framework templates (skills/ excluded — those go to .claude/commands/)
-SRC_TEMPLATES="$FRAMEWORK_ROOT/framework/templates"
-if [[ -d "$SRC_TEMPLATES" ]]; then
-  ensure_dir "$DST_VENDOR/templates"
-  rsync -a --delete --exclude 'skills/' "$SRC_TEMPLATES/" "$DST_VENDOR/templates/"
-  TMPL_COUNT="$(find "$DST_VENDOR/templates" -type f | wc -l | tr -d '[:space:]')"
-  echo "  OK   docs/harness/vendor/harnessable/templates/ ($TMPL_COUNT files)"
-  T2_OK=$((T2_OK + TMPL_COUNT))
-fi
+check_target() {
+  if [[ ! -d "$TARGET" ]]; then
+    echo "ERR  Target directory does not exist: $TARGET"
+    exit 2
+  fi
 
-# KNOWLEDGE_GRAPH.yaml
-copy_if_changed "$KG_SRC" "$DST_VENDOR/KNOWLEDGE_GRAPH.yaml" \
-  "docs/harness/vendor/harnessable/KNOWLEDGE_GRAPH.yaml"
-[[ "$LAST_STATUS" == "new" || "$LAST_STATUS" == "upd" ]] && T2_NEW=$((T2_NEW+1)) || T2_OK=$((T2_OK+1))
+  if ! git -C "$TARGET" rev-parse --git-dir &>/dev/null; then
+    echo "ERR  Target is not a git repository: $TARGET"
+    exit 2
+  fi
 
-# HARNESSABLE_VERSION
-copy_if_changed "$SRC_VENDOR/HARNESSABLE_VERSION" "$DST_VENDOR/HARNESSABLE_VERSION" \
-  "docs/harness/vendor/harnessable/HARNESSABLE_VERSION"
-[[ "$LAST_STATUS" == "new" || "$LAST_STATUS" == "upd" ]] && T2_NEW=$((T2_NEW+1)) || T2_OK=$((T2_OK+1))
+  if [[ "$MODE" == "update" ]]; then
+    local STATUS
+    STATUS="$(git -C "$TARGET" status --porcelain 2>/dev/null)"
+    if [[ -n "$STATUS" ]]; then
+      echo "ERR  Target has uncommitted changes — commit or stash before updating:"
+      echo "$STATUS" | head -10
+      exit 2
+    fi
+  fi
+}
 
-echo ""
+# ── sync_tier2 ────────────────────────────────────────────────────────────────
 
-# ── Tier 1 scaffold install ───────────────────────────────────────────────────
+sync_tier2() {
+  echo "── Tier 2 (vendor) ──────────────────────────────────────────────────────"
 
-echo "── Tier 1 (scaffold) ────────────────────────────────────────────────────"
+  local SRC_VENDOR="$FRAMEWORK_ROOT/framework/vendor/harnessable"
+  local DST_VENDOR="$TARGET/docs/harness/vendor/harnessable"
+  ensure_dir "$DST_VENDOR"
 
-SRC_FW="$FRAMEWORK_ROOT/framework"
-DST_HARNESS="$TARGET/docs/harness"
+  local REF_CHANGES REF_COUNT
+  REF_CHANGES="$(rsync -a --delete --itemize-changes "$SRC_VENDOR/references/" \
+    "$DST_VENDOR/references/" 2>/dev/null | grep -cE '^[>*<c]' || true)"
+  REF_COUNT="$(find "$DST_VENDOR/references" -type f 2>/dev/null | wc -l | tr -d '[:space:]')"
+  if [[ "$REF_CHANGES" -gt 0 ]]; then
+    echo "  SYNCED  docs/harness/vendor/harnessable/references/ ($REF_COUNT files)"
+    T2_SYNCED=$((T2_SYNCED + 1))
+  else
+    echo "  OK      docs/harness/vendor/harnessable/references/ ($REF_COUNT files)"
+    T2_OK=$((T2_OK + 1))
+  fi
 
-# Agents
-for f in "$SRC_FW/agents/"*.md; do
-  [[ -f "$f" ]] || continue
-  name="$(basename "$f")"
-  copy_scaffold "$f" "$DST_HARNESS/agents/$name" "docs/harness/agents/$name"
-  t1_count
-done
+  local SRC_TEMPLATES="$FRAMEWORK_ROOT/framework/templates"
+  if [[ -d "$SRC_TEMPLATES" ]]; then
+    ensure_dir "$DST_VENDOR/templates"
+    local TMPL_CHANGES TMPL_COUNT
+    TMPL_CHANGES="$(rsync -a --delete --exclude 'skills/' --itemize-changes \
+      "$SRC_TEMPLATES/" "$DST_VENDOR/templates/" 2>/dev/null | grep -cE '^[>*<c]' || true)"
+    TMPL_COUNT="$(find "$DST_VENDOR/templates" -type f 2>/dev/null | wc -l | tr -d '[:space:]')"
+    if [[ "$TMPL_CHANGES" -gt 0 ]]; then
+      echo "  SYNCED  docs/harness/vendor/harnessable/templates/ ($TMPL_COUNT files)"
+      T2_SYNCED=$((T2_SYNCED + 1))
+    else
+      echo "  OK      docs/harness/vendor/harnessable/templates/ ($TMPL_COUNT files)"
+      T2_OK=$((T2_OK + 1))
+    fi
+  fi
 
-# Hooks — dispatcher
-copy_scaffold "$SRC_FW/hooks/run.py" "$DST_HARNESS/hooks/run.py" \
-  "docs/harness/hooks/run.py"
-t1_count
+  _sync_vendor_file "$SRC_VENDOR/KNOWLEDGE_GRAPH.yaml" \
+    "$DST_VENDOR/KNOWLEDGE_GRAPH.yaml" \
+    "docs/harness/vendor/harnessable/KNOWLEDGE_GRAPH.yaml"
 
-# Hooks — settings template
-copy_scaffold "$SRC_FW/hooks/claude_code_settings_template.json" \
-  "$DST_HARNESS/hooks/claude_code_settings_template.json" \
-  "docs/harness/hooks/claude_code_settings_template.json"
-t1_count
+  _sync_vendor_file "$SRC_VENDOR/HARNESSABLE_VERSION" \
+    "$DST_VENDOR/HARNESSABLE_VERSION" \
+    "docs/harness/vendor/harnessable/HARNESSABLE_VERSION → $FRAMEWORK_VERSION"
 
-# Hooks — event subdirectories
-for subdir in pre_tool_use post_tool_use stop pre_compact; do
-  [[ -d "$SRC_FW/hooks/$subdir" ]] || continue
-  for f in "$SRC_FW/hooks/$subdir/"*.py; do
+  echo ""
+}
+
+_sync_vendor_file() {
+  local SRC="$1" DST="$2" LABEL="$3"
+  ensure_dir "$(dirname "$DST")"
+  if [[ ! -f "$DST" ]] || ! diff -q "$SRC" "$DST" &>/dev/null; then
+    cp "$SRC" "$DST"
+    echo "  SYNCED  $LABEL"
+    T2_SYNCED=$((T2_SYNCED + 1))
+  else
+    echo "  OK      $LABEL"
+    T2_OK=$((T2_OK + 1))
+  fi
+}
+
+# ── sync_hooks ────────────────────────────────────────────────────────────────
+# Hooks are framework-owned; replace every file unconditionally.
+
+sync_hooks() {
+  echo "── Hooks ────────────────────────────────────────────────────────────────"
+
+  local SRC_DIR="$FRAMEWORK_ROOT/framework/hooks"
+  local DST_DIR="$TARGET/docs/harness/hooks"
+  ensure_dir "$DST_DIR"
+
+  _sync_hook_file "$SRC_DIR/run.py" "$DST_DIR/run.py" \
+    "docs/harness/hooks/run.py"
+  _sync_hook_file "$SRC_DIR/claude_code_settings_template.json" \
+    "$DST_DIR/claude_code_settings_template.json" \
+    "docs/harness/hooks/claude_code_settings_template.json"
+
+  local subdir f name
+  for subdir in pre_tool_use post_tool_use stop pre_compact; do
+    [[ -d "$SRC_DIR/$subdir" ]] || continue
+    ensure_dir "$DST_DIR/$subdir"
+    for f in "$SRC_DIR/$subdir/"*.py; do
+      [[ -f "$f" ]] || continue
+      name="$(basename "$f")"
+      _sync_hook_file "$f" "$DST_DIR/$subdir/$name" \
+        "docs/harness/hooks/$subdir/$name"
+    done
+  done
+
+  echo ""
+}
+
+_sync_hook_file() {
+  local SRC="$1" DST="$2" LABEL="$3"
+  ensure_dir "$(dirname "$DST")"
+
+  if [[ ! -f "$DST" ]]; then
+    cp "$SRC" "$DST"
+    [[ "$SRC" == *.py ]] && py_validate "$DST" "$LABEL"
+    echo "  SYNCED  $LABEL  (NEW)"
+    HK_SYNCED=$((HK_SYNCED + 1))
+    return
+  fi
+
+  if diff -q "$SRC" "$DST" &>/dev/null; then
+    echo "  OK      $LABEL"
+    HK_OK=$((HK_OK + 1))
+    return
+  fi
+
+  cp "$SRC" "$DST"
+  [[ "$SRC" == *.py ]] && py_validate "$DST" "$LABEL"
+  echo "  SYNCED  $LABEL"
+  HK_SYNCED=$((HK_SYNCED + 1))
+}
+
+# ── sync_agents ───────────────────────────────────────────────────────────────
+# Diff-detect customisation: additive framework updates apply automatically;
+# removals from the framework baseline require a manual merge.
+
+sync_agents() {
+  echo "── Agents ───────────────────────────────────────────────────────────────"
+
+  local SRC_DIR="$FRAMEWORK_ROOT/framework/agents"
+  local DST_DIR="$TARGET/docs/harness/agents"
+  ensure_dir "$DST_DIR"
+
+  local f name dst label REMOVED ADDED
+  for f in "$SRC_DIR/"*.md; do
     [[ -f "$f" ]] || continue
     name="$(basename "$f")"
-    copy_scaffold "$f" "$DST_HARNESS/hooks/$subdir/$name" \
-      "docs/harness/hooks/$subdir/$name"
-    t1_count
+    dst="$DST_DIR/$name"
+    label="docs/harness/agents/$name"
+
+    if [[ ! -f "$dst" ]]; then
+      cp "$f" "$dst"
+      echo "  SYNCED  $label  (NEW)"
+      AG_SYNCED=$((AG_SYNCED + 1))
+      continue
+    fi
+
+    if diff -q "$f" "$dst" &>/dev/null; then
+      echo "  OK      $label"
+      AG_OK=$((AG_OK + 1))
+      continue
+    fi
+
+    # Lines in project not in framework = potential project customisations
+    REMOVED="$(diff "$dst" "$f" | grep -c "^<" || true)"
+    if [[ "$REMOVED" -eq 0 ]]; then
+      ADDED="$(diff "$dst" "$f" | grep -c "^>" || true)"
+      cp "$f" "$dst"
+      echo "  SYNCED  $label  (+$ADDED lines)"
+      AG_SYNCED=$((AG_SYNCED + 1))
+    else
+      echo "  MERGE   $label  ← MANUAL_MERGE_REQUIRED ($REMOVED lines removed)"
+      AG_MERGE=$((AG_MERGE + 1))
+      MERGE_FILES+=("$label")
+    fi
   done
-done
 
-# Tools
-copy_scaffold "$SRC_FW/tools/web_verify.py" "$DST_HARNESS/tools/web_verify.py" \
-  "docs/harness/tools/web_verify.py"
-t1_count
+  echo ""
+}
 
-# Templates (editable Tier 1 copies — vendor has the pristine reference)
-for f in "$SRC_FW/templates/"*.md "$SRC_FW/templates/"*.yaml; do
-  [[ -f "$f" ]] || continue
-  name="$(basename "$f")"
-  copy_scaffold "$f" "$DST_HARNESS/templates/$name" "docs/harness/templates/$name"
-  t1_count
-done
+# ── sync_tools ────────────────────────────────────────────────────────────────
+# Tools are framework-owned; replace unconditionally.
 
-echo ""
+sync_tools() {
+  echo "── Tools ────────────────────────────────────────────────────────────────"
 
-# ── Skills install ────────────────────────────────────────────────────────────
+  local SRC_DIR="$FRAMEWORK_ROOT/framework/tools"
+  local DST_DIR="$TARGET/docs/harness/tools"
+  ensure_dir "$DST_DIR"
 
-echo "── Claude Code commands ─────────────────────────────────────────────────"
+  local f name dst label existed
+  for f in "$SRC_DIR/"*.py "$SRC_DIR/"*.sh; do
+    [[ -f "$f" ]] || continue
+    name="$(basename "$f")"
+    dst="$DST_DIR/$name"
+    label="docs/harness/tools/$name"
+    existed=false
+    [[ -f "$dst" ]] && existed=true
 
-# Detect tracker from target project's AGENTS.md
-TRACKER_TOOL=""
-TRACKER_URL=""
-TRACKER_INTEGRATION=""
-AGENTS_FILE="$TARGET/AGENTS.md"
+    if ! $existed || ! diff -q "$f" "$dst" &>/dev/null; then
+      cp "$f" "$dst"
+      if $existed; then
+        echo "  SYNCED  $label"
+      else
+        echo "  SYNCED  $label  (NEW)"
+      fi
+      TL_SYNCED=$((TL_SYNCED + 1))
+    else
+      echo "  OK      $label"
+      TL_OK=$((TL_OK + 1))
+    fi
+  done
 
-if [[ -f "$AGENTS_FILE" ]]; then
+  echo ""
+}
+
+# ── sync_templates ────────────────────────────────────────────────────────────
+# Diff-detect: additive framework updates apply; project customisations
+# (lines removed from framework) require a manual merge.
+
+sync_templates() {
+  echo "── Templates ────────────────────────────────────────────────────────────"
+
+  local SRC_DIR="$FRAMEWORK_ROOT/framework/templates"
+  local DST_DIR="$TARGET/docs/harness/templates"
+  ensure_dir "$DST_DIR"
+
+  local f name dst label REMOVED ADDED
+  for f in "$SRC_DIR/"*.md "$SRC_DIR/"*.yaml; do
+    [[ -f "$f" ]] || continue
+    name="$(basename "$f")"
+    dst="$DST_DIR/$name"
+    label="docs/harness/templates/$name"
+
+    if [[ ! -f "$dst" ]]; then
+      cp "$f" "$dst"
+      echo "  SYNCED  $label  (NEW)"
+      TM_SYNCED=$((TM_SYNCED + 1))
+      continue
+    fi
+
+    if diff -q "$f" "$dst" &>/dev/null; then
+      echo "  OK      $label"
+      TM_OK=$((TM_OK + 1))
+      continue
+    fi
+
+    REMOVED="$(diff "$dst" "$f" | grep -c "^<" || true)"
+    if [[ "$REMOVED" -eq 0 ]]; then
+      ADDED="$(diff "$dst" "$f" | grep -c "^>" || true)"
+      cp "$f" "$dst"
+      echo "  SYNCED  $label  (+$ADDED lines)"
+      TM_SYNCED=$((TM_SYNCED + 1))
+    else
+      echo "  MERGE   $label  ← MANUAL_MERGE_REQUIRED ($REMOVED lines removed)"
+      MERGE_FILES+=("$label")
+    fi
+  done
+
+  echo ""
+}
+
+# ── detect_tracker / apply_tracker ────────────────────────────────────────────
+
+detect_tracker() {
+  local AGENTS_FILE="$TARGET/AGENTS.md"
+  [[ -f "$AGENTS_FILE" ]] || return 0
+
   TRACKER_TOOL="$(python3 - "$AGENTS_FILE" <<'PYEOF'
 import re, sys
 content = open(sys.argv[1]).read()
@@ -279,34 +408,16 @@ im = re.search(r'Integration:\s*(.+)', m.group(1))
 print(im.group(1).strip() if im else '', end='')
 PYEOF
   2>/dev/null || true)"
-fi
+}
 
-if [[ -n "$TRACKER_TOOL" ]]; then
-  echo "  INFO Tracker detected: $TRACKER_TOOL"
-  [[ -n "$TRACKER_URL" ]] && echo "       Task URL pattern: $TRACKER_URL"
-  [[ -n "$TRACKER_INTEGRATION" ]] && echo "       Integration: $TRACKER_INTEGRATION"
-else
-  echo "  WARN No tracker detected in AGENTS.md ## Project Tracker"
-  ACTION_ITEMS+=("Add ## Project Tracker to AGENTS.md and re-run install.sh to auto-fill tracker block in skills")
-fi
+apply_tracker() {
+  local DST="$1"
+  [[ -f "$DST" ]] || return 0
 
-ensure_dir "$TARGET/.claude/commands"
-
-SRC_SKILLS="$SRC_FW/templates/skills"
-_SKILL_TMP="$(mktemp /tmp/harnessable_skill.XXXXXX)"
-trap 'rm -f "$_SKILL_TMP"' EXIT
-
-for f in "$SRC_SKILLS/"*.md; do
-  [[ -f "$f" ]] || continue
-  name="$(basename "$f")"
-  DST_SKILL="$TARGET/.claude/commands/$name"
-
-  # Compute expected (processed) content: apply tracker block + base-path removal
-  python3 - "$f" "$TRACKER_TOOL" "$TRACKER_URL" "$TRACKER_INTEGRATION" \
-    > "$_SKILL_TMP" <<'PYEOF'
+  python3 - "$DST" "$TRACKER_TOOL" "$TRACKER_URL" "$TRACKER_INTEGRATION" <<'PYEOF'
 import re, sys
-src, tracker_tool, tracker_url, tracker_integration = sys.argv[1:5]
-content = open(src).read()
+dst, tracker_tool, tracker_url, tracker_integration = sys.argv[1:5]
+content = open(dst).read()
 
 if tracker_tool:
     block_lines = [f'# Tracker: {tracker_tool}']
@@ -321,64 +432,111 @@ if tracker_tool:
     )
 
 content = re.sub(r'# REPLACE: framework base path \(if not docs/harness/\)\n', '', content)
+open(dst, 'w').write(content)
+PYEOF
+}
+
+# ── sync_skills ───────────────────────────────────────────────────────────────
+
+sync_skills() {
+  echo "── Claude Code commands ─────────────────────────────────────────────────"
+
+  detect_tracker
+
+  if [[ -n "$TRACKER_TOOL" ]]; then
+    echo "  INFO  Tracker: $TRACKER_TOOL"
+    [[ -n "$TRACKER_URL" ]] && echo "        URL pattern: $TRACKER_URL"
+    [[ -n "$TRACKER_INTEGRATION" ]] && echo "        Integration: $TRACKER_INTEGRATION"
+  else
+    echo "  WARN  No tracker detected in AGENTS.md ## Project Tracker"
+    ACTION_ITEMS+=("Add ## Project Tracker to AGENTS.md and re-run install to auto-fill tracker block")
+  fi
+
+  ensure_dir "$TARGET/.claude/commands"
+
+  local SRC_SKILLS="$FRAMEWORK_ROOT/framework/templates/skills"
+  local _SKILL_TMP
+  _SKILL_TMP="$(mktemp /tmp/harnessable_skill.XXXXXX)"
+  # shellcheck disable=SC2064
+  trap "rm -f '$_SKILL_TMP'" EXIT
+
+  local f name dst label REMAINING
+  for f in "$SRC_SKILLS/"*.md; do
+    [[ -f "$f" ]] || continue
+    name="$(basename "$f")"
+    dst="$TARGET/.claude/commands/$name"
+    label=".claude/commands/$name"
+
+    python3 - "$f" "$TRACKER_TOOL" "$TRACKER_URL" "$TRACKER_INTEGRATION" \
+      > "$_SKILL_TMP" <<'PYEOF'
+import re, sys
+src, tracker_tool, tracker_url, tracker_integration = sys.argv[1:5]
+content = open(src).read()
+if tracker_tool:
+    block_lines = [f'# Tracker: {tracker_tool}']
+    if tracker_url:
+        block_lines.append(f'# Task URL pattern: {tracker_url}')
+    if tracker_integration:
+        block_lines.append(f'# Integration: {tracker_integration}')
+    content = re.sub(
+        r'# REPLACE: project tracker URL pattern and fetch command',
+        '\n'.join(block_lines),
+        content
+    )
+content = re.sub(r'# REPLACE: framework base path \(if not docs/harness/\)\n', '', content)
 sys.stdout.write(content)
 PYEOF
 
-  if [[ ! -f "$DST_SKILL" ]]; then
-    ensure_dir "$(dirname "$DST_SKILL")"
-    cp "$_SKILL_TMP" "$DST_SKILL"
-    echo "  NEW  .claude/commands/$name"
-    SK_NEW=$((SK_NEW + 1))
-    LAST_STATUS="new"
-  elif diff -q "$_SKILL_TMP" "$DST_SKILL" &>/dev/null; then
-    echo "  OK   .claude/commands/$name"
-    SK_OK=$((SK_OK + 1))
-    LAST_STATUS="ok"
-  elif grep -q "# REPLACE:" "$DST_SKILL" 2>/dev/null; then
-    # Destination still has REPLACE markers — not yet customised; update it
-    cp "$_SKILL_TMP" "$DST_SKILL"
-    echo "  UPD  .claude/commands/$name (uncustomised)"
-    SK_NEW=$((SK_NEW + 1))
-    LAST_STATUS="upd"
-  else
-    # No REPLACE markers but content differs — user has customised
-    DIFF_LINES="$(diff "$_SKILL_TMP" "$DST_SKILL" 2>/dev/null | wc -l | tr -d '[:space:]')"
-    echo "  SKIP .claude/commands/$name ($DIFF_LINES diff lines — customised)"
-    SK_MERGE=$((SK_MERGE + 1))
-    MERGE_FILES+=(".claude/commands/$name")
-    LAST_STATUS="skip"
-  fi
+    if [[ ! -f "$dst" ]]; then
+      cp "$_SKILL_TMP" "$dst"
+      apply_tracker "$dst"
+      echo "  SYNCED  $label  (NEW)"
+      SK_SYNCED=$((SK_SYNCED + 1))
+    elif diff -q "$_SKILL_TMP" "$dst" &>/dev/null; then
+      echo "  OK      $label"
+      SK_OK=$((SK_OK + 1))
+    elif grep -q "# REPLACE:" "$dst" 2>/dev/null; then
+      cp "$_SKILL_TMP" "$dst"
+      apply_tracker "$dst"
+      echo "  SYNCED  $label  (REPLACE markers refreshed)"
+      SK_SYNCED=$((SK_SYNCED + 1))
+    else
+      echo "  MERGE   $label  ← MANUAL_MERGE_REQUIRED"
+      SK_MERGE=$((SK_MERGE + 1))
+      MERGE_FILES+=("$label")
+    fi
 
-  # Count remaining REPLACE markers
-  if [[ -f "$DST_SKILL" ]]; then
-    REMAINING="$(grep -c "# REPLACE:" "$DST_SKILL" 2>/dev/null || echo 0)"
-    if [[ "$REMAINING" -gt 0 ]]; then
-      REPLACE_COUNT=$((REPLACE_COUNT + REMAINING))
-      REPLACE_FILES+=(".claude/commands/$name ($REMAINING marker(s))")
+    if [[ -f "$dst" ]]; then
+      REMAINING="$(grep -c "# REPLACE:" "$dst" 2>/dev/null || echo 0)"
+      if [[ "$REMAINING" -gt 0 ]]; then
+        REPLACE_COUNT=$((REPLACE_COUNT + REMAINING))
+        REPLACE_FILES+=("$label ($REMAINING marker(s))")
+      fi
+    fi
+  done
+
+  rm -f "$_SKILL_TMP"
+  trap - EXIT
+
+  echo ""
+}
+
+# ── merge_settings ────────────────────────────────────────────────────────────
+
+merge_settings() {
+  echo "── Config: .claude/settings.json ────────────────────────────────────────"
+
+  local SETTINGS_FILE="$TARGET/.claude/settings.json"
+  ensure_dir "$TARGET/.claude"
+
+  local HAS_PRECOMPACT="false"
+  if [[ -d "$FRAMEWORK_ROOT/framework/hooks/pre_compact" ]]; then
+    if find "$FRAMEWORK_ROOT/framework/hooks/pre_compact" -name "*.py" | grep -q .; then
+      HAS_PRECOMPACT="true"
     fi
   fi
-done
 
-rm -f "$_SKILL_TMP"
-trap - EXIT
-
-echo ""
-
-# ── .claude/settings.json ─────────────────────────────────────────────────────
-
-echo "── Config: .claude/settings.json ────────────────────────────────────────"
-
-SETTINGS_FILE="$TARGET/.claude/settings.json"
-ensure_dir "$TARGET/.claude"
-
-HAS_PRECOMPACT="false"
-if [[ -d "$SRC_FW/hooks/pre_compact" ]]; then
-  if find "$SRC_FW/hooks/pre_compact" -name "*.py" | grep -q .; then
-    HAS_PRECOMPACT="true"
-  fi
-fi
-
-SETTINGS_RESULT="$(python3 - "$SETTINGS_FILE" "$HAS_PRECOMPACT" <<'PYEOF'
+  CFG_SETTINGS="$(python3 - "$SETTINGS_FILE" "$HAS_PRECOMPACT" <<'PYEOF'
 import json, sys, os
 
 settings_path = sys.argv[1]
@@ -423,80 +581,71 @@ with open(settings_path, 'w') as f:
     json.dump(settings, f, indent=2)
     f.write('\n')
 
-# Validate write
 json.loads(open(settings_path).read())
-print('NEW' if changed else 'OK')
+print('PATCHED' if changed else 'OK')
 PYEOF
 )"
 
-echo "  $SETTINGS_RESULT  .claude/settings.json"
-CFG_SETTINGS="$SETTINGS_RESULT"
+  echo "  $CFG_SETTINGS  .claude/settings.json"
 
-echo ""
+  git -C "$TARGET" add -f "$TARGET/.claude/settings.json" 2>/dev/null || true
+  git -C "$TARGET" add -f "$TARGET/.claude/commands/" 2>/dev/null || true
 
-# ── .gitignore ────────────────────────────────────────────────────────────────
+  echo ""
+}
 
-echo "── Config: .gitignore ───────────────────────────────────────────────────"
+# ── patch_gitignore ───────────────────────────────────────────────────────────
 
-GITIGNORE_FILE="$TARGET/.gitignore"
-GITIGNORE_STATUS=""
+patch_gitignore() {
+  echo "── Config: .gitignore ───────────────────────────────────────────────────"
 
-if [[ ! -f "$GITIGNORE_FILE" ]]; then
-  # Absent — create with required entry
-  {
-    echo "# harnessable runtime output"
-    echo ".harnessable/"
-  } > "$GITIGNORE_FILE"
-  echo "  NEW  .gitignore (created with .harnessable/ entry)"
-  GITIGNORE_STATUS="NEW"
-elif grep -qxF ".harnessable/" "$GITIGNORE_FILE" 2>/dev/null; then
-  # Directory-level entry already correct
-  echo "  OK   .gitignore (.harnessable/ entry present)"
-  GITIGNORE_STATUS="OK"
-elif grep -qxF ".harnessable/*" "$GITIGNORE_FILE" 2>/dev/null; then
-  # Glob entry present — replace with directory-level entry
-  python3 - "$GITIGNORE_FILE" <<'PYEOF'
-import sys
-path = sys.argv[1]
-lines = open(path).readlines()
-out = []
-for line in lines:
-    if line.rstrip('\n') == '.harnessable/*':
-        out.append('.harnessable/\n')
-    else:
-        out.append(line)
-open(path, 'w').writelines(out)
-PYEOF
-  echo "  UPD  .gitignore (replaced .harnessable/* glob with .harnessable/ directory entry)"
-  GITIGNORE_STATUS="UPD"
-else
-  # No entry at all — append
-  echo "" >> "$GITIGNORE_FILE"
-  echo "# harnessable runtime output" >> "$GITIGNORE_FILE"
-  echo ".harnessable/" >> "$GITIGNORE_FILE"
-  echo "  UPD  .gitignore (appended .harnessable/ entry)"
-  GITIGNORE_STATUS="UPD"
-fi
+  local GITIGNORE_FILE="$TARGET/.gitignore"
+  [[ -f "$GITIGNORE_FILE" ]] || touch "$GITIGNORE_FILE"
 
-# Verify with git check-ignore
-if git -C "$TARGET" check-ignore -q ".harnessable/test" 2>/dev/null; then
-  echo "  OK   git check-ignore verified: .harnessable/ is ignored"
-else
-  echo "  WARN git check-ignore did not confirm .harnessable/ — check .gitignore manually"
-  ACTION_ITEMS+=("Verify .harnessable/ is properly ignored by git in $TARGET")
-fi
+  local PATCHED=false
 
-CFG_GITIGNORE="$GITIGNORE_STATUS"
-echo ""
+  if _ensure_gitignore_pattern "$GITIGNORE_FILE" ".harness/";            then PATCHED=true; fi
+  if _ensure_gitignore_pattern "$GITIGNORE_FILE" ".claude/*";            then PATCHED=true; fi
+  if _ensure_gitignore_pattern "$GITIGNORE_FILE" "!.claude/settings.json"; then PATCHED=true; fi
+  if _ensure_gitignore_pattern "$GITIGNORE_FILE" "!.claude/commands/";   then PATCHED=true; fi
+  if _ensure_gitignore_pattern "$GITIGNORE_FILE" ".harnessable/logs/";   then PATCHED=true; fi
 
-# ── .harnessable/config.json ──────────────────────────────────────────────────
+  if $PATCHED; then
+    echo "  PATCHED  .gitignore"
+    CFG_GITIGNORE="PATCHED"
+  else
+    echo "  OK       .gitignore"
+    CFG_GITIGNORE="OK"
+  fi
 
-echo "── Config: .harnessable/config.json ─────────────────────────────────────"
+  if git -C "$TARGET" check-ignore -q ".harnessable/test" 2>/dev/null; then
+    echo "  OK       git check-ignore verified: .harnessable/ is ignored"
+  else
+    echo "  WARN     git check-ignore did not confirm .harnessable/ — check .gitignore"
+    ACTION_ITEMS+=("Verify .harnessable/ is properly ignored by git in $TARGET")
+  fi
 
-CONFIG_FILE="$TARGET/.harnessable/config.json"
-ensure_dir "$TARGET/.harnessable"
+  echo ""
+}
 
-CONFIG_RESULT="$(python3 - "$CONFIG_FILE" <<'PYEOF'
+_ensure_gitignore_pattern() {
+  local FILE="$1" PATTERN="$2"
+  if ! grep -qF "$PATTERN" "$FILE" 2>/dev/null; then
+    echo "$PATTERN" >> "$FILE"
+    return 0
+  fi
+  return 1
+}
+
+# ── merge_config ──────────────────────────────────────────────────────────────
+
+merge_config() {
+  echo "── Config: .harnessable/config.json ─────────────────────────────────────"
+
+  local CONFIG_FILE="$TARGET/.harnessable/config.json"
+  ensure_dir "$TARGET/.harnessable"
+
+  CFG_CONFIG="$(python3 - "$CONFIG_FILE" <<'PYEOF'
 import json, sys, os
 
 config_path = sys.argv[1]
@@ -511,15 +660,12 @@ else:
 
 changed = False
 
-# Ensure audit block
 audit = config.setdefault('audit', {})
-defaults = {'log_dir': '.harnessable/logs', 'max_field_bytes': 512, 'rotate': True}
-for key, val in defaults.items():
+for key, val in {'log_dir': '.harnessable/logs', 'max_field_bytes': 512, 'rotate': True}.items():
     if key not in audit:
         audit[key] = val
         changed = True
 
-# Ensure codebases list
 if 'codebases' not in config:
     config['codebases'] = []
     changed = True
@@ -529,69 +675,148 @@ with open(config_path, 'w') as f:
     f.write('\n')
 
 json.loads(open(config_path).read())
-print('NEW' if changed else 'OK')
+print('PATCHED' if changed else 'OK')
 PYEOF
 )"
 
-echo "  $CONFIG_RESULT  .harnessable/config.json"
-CFG_CONFIG="$CONFIG_RESULT"
-echo ""
-
-# ── Final report ──────────────────────────────────────────────────────────────
-
-echo "═══════════════════════════════════════════════════════════════════════════"
-echo "  Summary"
-echo "═══════════════════════════════════════════════════════════════════════════"
-echo ""
-printf "  %-22s %d installed / %d current\n" "Tier 2 (vendor):" "$T2_NEW" "$T2_OK"
-printf "  %-22s %d installed / %d current / %d skipped\n" "Tier 1 (scaffold):" "$T1_NEW" "$T1_OK" "$T1_SKIP"
-printf "  %-22s %d installed / %d current / %d manual merge\n" "Skills:" "$SK_NEW" "$SK_OK" "$SK_MERGE"
-printf "  %-22s settings.json=%s  .gitignore=%s  config.json=%s\n" \
-  "Config:" "$CFG_SETTINGS" "$CFG_GITIGNORE" "$CFG_CONFIG"
-printf "  %-22s %d remaining" "REPLACE markers:" "$REPLACE_COUNT"
-if [[ ${#REPLACE_FILES[@]} -gt 0 ]]; then
+  echo "  $CFG_CONFIG  .harnessable/config.json"
   echo ""
-  for f in "${REPLACE_FILES[@]}"; do
-    echo "    • $f"
-  done
-else
-  echo " (none)"
-fi
-echo ""
+}
 
-# ACTION items
-if [[ ${#ACTION_ITEMS[@]} -gt 0 || ${#REPLACE_FILES[@]} -gt 0 || ${#MERGE_FILES[@]} -gt 0 ]]; then
-  echo "  ACTION items requiring operator follow-up:"
-  echo ""
-  for item in "${ACTION_ITEMS[@]}"; do
-    echo "  ACTION  $item"
-  done
-  for f in "${REPLACE_FILES[@]}"; do
-    echo "  ACTION  Edit remaining REPLACE markers in $f"
-  done
-  for f in "${MERGE_FILES[@]}"; do
-    echo "  ACTION  MANUAL_MERGE_REQUIRED: $f (customised — diff and merge upstream changes)"
-  done
-  echo ""
-fi
+# ── migrate_audit_log ─────────────────────────────────────────────────────────
 
-echo "  Next steps:"
-echo ""
-echo "  1. Review changes:"
-echo "       git -C $TARGET status"
-echo ""
-echo "  2. Customise any flagged REPLACE markers in .claude/commands/*.md"
-echo ""
-echo "  3. Commit:"
-echo "       git -C $TARGET add -A"
-echo "       git -C $TARGET commit -m \"chore: install harnessable $FRAMEWORK_VERSION\""
-echo ""
-echo "  4. Seed the project knowledge graph:"
-echo "       cp $TARGET/docs/harness/templates/knowledge-graph.yaml \\"
-echo "          $TARGET/docs/knowledge-graph.yaml"
-echo "       # Then fill in REPLACE_WITH_YOUR_PROJECT_NAME"
-echo "       # and REPLACE_WITH_CONTENTS_OF_HARNESSABLE_VERSION_FILE"
-echo ""
-echo "  5. For Codex, install the adapter as well:"
-echo "       bash $FRAMEWORK_ROOT/codex/install.sh $TARGET"
-echo ""
+migrate_audit_log() {
+  echo "── Audit ────────────────────────────────────────────────────────────────"
+
+  local AUDIT_LOG="$TARGET/.harnessable/audit.log"
+  local MIGRATE_SCRIPT="$FRAMEWORK_ROOT/framework/tools/migrate_audit_log.py"
+
+  if [[ ! -f "$AUDIT_LOG" ]]; then
+    echo "  OK   no legacy audit.log to migrate"
+    AUDIT_RESULT="OK (no legacy log)"
+    echo ""
+    return
+  fi
+
+  local TMP_SCRIPT="$TARGET/.harnessable/_migrate_tmp.py"
+  cp "$MIGRATE_SCRIPT" "$TMP_SCRIPT"
+
+  local OUTPUT EXIT_CODE=0
+  OUTPUT="$(python3 "$TMP_SCRIPT" 2>&1)" || EXIT_CODE=$?
+  rm -f "$TMP_SCRIPT"
+
+  if [[ "$EXIT_CODE" -eq 0 ]]; then
+    local ARCHIVES
+    ARCHIVES="$(echo "$OUTPUT" | grep -oP 'Archives created:\s*\K\d+' || echo '?')"
+    echo "  MIGRATED  .harnessable/audit.log → $ARCHIVES archives"
+    AUDIT_RESULT="MIGRATED ($ARCHIVES archives)"
+  else
+    echo "  WARN  audit.log migration failed:"
+    echo "$OUTPUT" | while IFS= read -r line; do echo "    $line"; done
+    AUDIT_RESULT="FAILED"
+  fi
+
+  echo ""
+}
+
+# ── report ────────────────────────────────────────────────────────────────────
+
+report() {
+  local PROJECT_NAME
+  PROJECT_NAME="$(basename "$TARGET")"
+
+  echo "═══ harnessable sync: $PROJECT_NAME → $FRAMEWORK_VERSION ═══"
+  echo ""
+  printf "  %-24s %d synced / %d current\n" \
+    "Tier 2 (vendor):" "$T2_SYNCED" "$T2_OK"
+  printf "  %-24s %d synced / %d current / %d manual merge\n" \
+    "Agents ($(( AG_SYNCED + AG_OK + AG_MERGE ))):" "$AG_SYNCED" "$AG_OK" "$AG_MERGE"
+  printf "  %-24s %d synced / %d current\n" \
+    "Hooks ($(( HK_SYNCED + HK_OK )) files):" "$HK_SYNCED" "$HK_OK"
+  printf "  %-24s %d synced / %d current\n" \
+    "Tools ($(( TL_SYNCED + TL_OK ))):" "$TL_SYNCED" "$TL_OK"
+  printf "  %-24s %d synced / %d current\n" \
+    "Templates ($(( TM_SYNCED + TM_OK ))):" "$TM_SYNCED" "$TM_OK"
+  printf "  %-24s %d synced / %d current / %d manual merge\n" \
+    "Skills ($(( SK_SYNCED + SK_OK + SK_MERGE ))):" "$SK_SYNCED" "$SK_OK" "$SK_MERGE"
+  printf "  %-24s settings=%s  .gitignore=%s  config=%s\n" \
+    "Config:" "$CFG_SETTINGS" "$CFG_GITIGNORE" "$CFG_CONFIG"
+  printf "  %-24s %s\n" "Audit:" "$AUDIT_RESULT"
+
+  if [[ "$REPLACE_COUNT" -gt 0 ]]; then
+    printf "  %-24s %d remaining\n" "REPLACE markers:" "$REPLACE_COUNT"
+    for f in "${REPLACE_FILES[@]}"; do echo "    • $f"; done
+  else
+    printf "  %-24s none\n" "REPLACE markers:"
+  fi
+
+  if [[ ${#MERGE_FILES[@]} -gt 0 || ${#ACTION_ITEMS[@]} -gt 0 || "$REPLACE_COUNT" -gt 0 ]]; then
+    echo ""
+    echo "  ─── Action required ──────────────────────────────────────────────"
+    if [[ ${#MERGE_FILES[@]} -gt 0 ]]; then
+      echo "  MANUAL_MERGE_REQUIRED (${#MERGE_FILES[@]}):"
+      for f in "${MERGE_FILES[@]}"; do echo "    $f"; done
+    fi
+    if [[ "$REPLACE_COUNT" -gt 0 ]]; then
+      echo "  REPLACE markers remaining ($REPLACE_COUNT):"
+      for f in "${REPLACE_FILES[@]}"; do echo "    $f"; done
+    fi
+    for item in "${ACTION_ITEMS[@]}"; do
+      echo "  ACTION: $item"
+    done
+  fi
+
+  echo ""
+}
+
+# ── next_steps ────────────────────────────────────────────────────────────────
+
+next_steps() {
+  echo "  Next steps:"
+  local step=1
+  if [[ ${#MERGE_FILES[@]} -gt 0 ]]; then
+    echo "  $step. Resolve MANUAL_MERGE files listed above"
+    step=$((step + 1))
+  fi
+  if [[ "$REPLACE_COUNT" -gt 0 ]]; then
+    echo "  $step. Fill remaining REPLACE markers in .claude/commands/*.md"
+    step=$((step + 1))
+  fi
+  echo "  $step. git -C $TARGET add -A"
+  step=$((step + 1))
+  echo "  $step. git -C $TARGET commit -m \"chore: sync harnessable → $FRAMEWORK_VERSION\""
+  echo ""
+}
+
+# ── main ──────────────────────────────────────────────────────────────────────
+
+main() {
+  parse_args "$@"
+  check_framework
+  check_target
+
+  local PROJECT_NAME
+  PROJECT_NAME="$(basename "$TARGET")"
+
+  echo ""
+  echo "harnessable $FRAMEWORK_VERSION  [mode: $MODE]"
+  echo "  Source:  $FRAMEWORK_ROOT"
+  echo "  Target:  $TARGET"
+  echo ""
+
+  sync_tier2
+  sync_hooks
+  sync_agents
+  sync_tools
+  sync_templates
+  sync_skills
+  merge_settings
+  patch_gitignore
+  merge_config
+  migrate_audit_log
+
+  report
+  next_steps
+}
+
+main "$@"

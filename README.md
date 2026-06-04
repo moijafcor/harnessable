@@ -513,7 +513,7 @@ Run the installer from the harnessable repository root, pointing it at your proj
 bash install.sh /path/to/your-project
 ```
 
-The installer is idempotent — safe to re-run after framework updates or once you have added tracker configuration. It installs:
+The installer is idempotent — safe to re-run at any time. It installs:
 
 | What | Where | Tier |
 | --- | --- | --- |
@@ -528,16 +528,35 @@ The installer is idempotent — safe to re-run after framework updates or once y
 
 | Prefix | Meaning |
 | --- | --- |
-| `NEW` | File created for the first time |
+| `SYNCED` | File installed or updated from framework |
 | `OK` | File already current, no change |
-| `UPD` | File updated (was outdated or uncustomised) |
-| `SKIP` | Customised file left untouched |
-| `WARN` | Needs attention; install continues |
-| `ACTION` | Operator must act before next session |
+| `MERGE` | Customised file skipped — MANUAL_MERGE_REQUIRED |
+| `PATCHED` | Config file updated (settings, gitignore, config.json) |
 
-**Tracker auto-fill:** if your project's `AGENTS.md` already has a `## Project Tracker` section before you run the installer, the skills are auto-filled with your tracker tool, URL pattern, and integration method. If it does not, the skills install with a `# REPLACE` marker and the installer prints an `ACTION` item — add the section and re-run.
+**Tracker auto-fill:** if your project's `AGENTS.md` already has a `## Project Tracker` section before you run the installer, the skills are auto-filled with your tracker tool, URL pattern, and integration method. If it does not, the skills install with a `# REPLACE` marker — add the section and re-run with `--update`.
 
-**Manual install (alternative):** Copy the framework directory, wire the settings template, add `.harnessable/` to `.gitignore`, and copy the skills — then fill in the two `# REPLACE` markers in each skill file:
+**Keeping in sync:** as the framework evolves, pull the latest harnessable and sync all installed projects:
+
+```bash
+# Sync a specific project (requires clean working tree)
+bash install.sh --update /path/to/your-project
+
+# Sync the current directory
+bash install.sh --update
+```
+
+Update mode diffs each file before replacing. Framework-only additions apply automatically (`SYNCED`). Files where your project has removed or changed framework lines are flagged `MERGE` and left untouched — resolve those manually. Hooks and tools are framework-owned and always replaced unconditionally.
+
+Commit after each project sync:
+
+```bash
+git -C /path/to/your-project add -A
+git -C /path/to/your-project commit -m "chore: sync harnessable → $(git rev-parse --short HEAD)"
+```
+
+**Back-propagation:** to sync all projects in one pass, use the prompt in [back-propagation-prompt.md](back-propagation-prompt.md).
+
+**Manual install (alternative):** Copy the framework directory, wire the settings template, add `.harnessable/` to `.gitignore`, and copy the skills — then fill in the `# REPLACE` markers in each skill file:
 
 ```bash
 cp -r framework/. path/to/your-project/docs/harness/
@@ -564,7 +583,7 @@ Integration: gh CLI
 Task URL pattern: https://github.com/YOUR_ORG/YOUR_REPO/issues/{id}
 ```
 
-Then re-run the installer — it will fill in the marker automatically and show `UPD` for each skill.
+Then re-run with `--update` — it will fill in the marker automatically and show `SYNCED` for each skill that still had `# REPLACE` markers.
 
 Invoke any role with:
 
