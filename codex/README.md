@@ -101,9 +101,9 @@ the mandate in the DMT.
 
 ### Quality Lifecycle
 
-Reviewer and Inspector run outside the core pipeline. They produce findings
-and child mandates, not PASS / FAIL verdicts, and they do not block pipeline
-progress.
+Reviewer, Inspector, and Analyst run outside the core pipeline. They do not
+produce PASS / FAIL verdicts and do not block pipeline progress. Each
+self-closes at DONE without Architect acceptance.
 
 #### Reviewer
 
@@ -123,6 +123,19 @@ codex "$(cat codex/examples/inspector.prompt.md)"
 Inspector examines traffic or replayed scenarios and files a Protocol
 Inspection Report (PIR) at
 `docs/mandates/inspect/{surface}_{date}_inspection_report.md`.
+
+#### Analyst
+
+```bash
+codex "$(cat codex/examples/analyst.prompt.md)"
+```
+
+Analyst gathers intelligence from outside the codebase — competitor moves,
+user pain signals, practitioner discourse, technology shifts — and synthesises
+it into an Intelligence Brief (IB) at
+`docs/mandates/research/{domain}_{date}_intelligence_brief.md`. The primary
+instrument is `docs/harness/tools/web_verify.py`. Every claim in the IB
+requires a fetched URL and date — training knowledge is not a source.
 
 ### Lightweight Track
 

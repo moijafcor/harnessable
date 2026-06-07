@@ -24,6 +24,8 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Knowledge Graph](#knowledge-graph)
   - [Context Continuity](#context-continuity)
   - [Recursive Self-Improvement](#recursive-self-improvement)
+  - [Quality Lifecycle](#quality-lifecycle)
+  - [Analyst](#analyst)
   - [Field Discoveries](#field-discoveries)
   - [Containment Checklist](#containment-checklist)
   - [Continuous Improvement](#continuous-improvement)
@@ -121,6 +123,7 @@ Roles are **functional**, not personal. One human or one agent session may perfo
 | --- | --- | --- | --- |
 | **Reviewer** | Read code for structural correctness. | Code Review Report (CRR) | Quality |
 | **Inspector** | Examine traffic for protocol correctness. | Protocol Inspection Report (PIR) | Quality |
+| **Analyst** | Gather intelligence from the world outside the codebase. Synthesise competitor moves, user pain, practitioner discourse, and technology shifts into patterns the Architect can act on. | Intelligence Brief (IB) | Quality |
 
 **Lightweight Track roles** — time-boxed, branch-first, outside the full pipeline:
 
@@ -298,6 +301,7 @@ harnessable/
 │   │   ├── security.md            Threat surface mapping, adversarial security review, SRR
 │   │   ├── reviewer.md            Code review protocol, CRR authoring, finding classification
 │   │   ├── inspector.md           Protocol inspection, PIR authoring, traffic analysis
+│   │   ├── analyst.md             External intelligence gathering, IB authoring, signal classification
 │   │   ├── spike.md               Branch-first micro-mandate: time box, scope, Ship/Abandon exits
 │   │   └── emergency.md           Break-glass protocol: fix first, document concurrent, EIR
 │   │
@@ -361,7 +365,25 @@ Every role performs a Framework Observation at the end of every session — unco
 
 ### Quality Lifecycle
 
-The Reviewer and Inspector operate outside the core pipeline on a separate clock. They are invoked by Architect investment decision — via a [REVIEW] or [INSPECT] mandate — independently of any specific core mandate. They do not gate pipeline progression. They do not issue verdicts. They produce a Code Review Report or Protocol Inspection Report containing findings classified as MUST_FIX through NITPICK, and child mandates for findings above the Architect's declared threshold. Those child mandates re-enter the core pipeline at BACKLOG. The Reviewer may run during idle compute. The Inspector requires a live system or captured traffic. Both self-close at DONE without Architect acceptance. The gap between a finding and its remediation is a mandate cycle — explicit, expected, and Architect-controlled.
+The Reviewer, Inspector, and Analyst operate outside the core pipeline on a separate clock. They are invoked by Architect investment decision — via a [REVIEW], [INSPECT], or [RESEARCH] mandate — independently of any specific core mandate. They do not gate pipeline progression. They do not issue verdicts. The Reviewer and Inspector produce a Code Review Report or Protocol Inspection Report containing findings classified as MUST_FIX through NITPICK, and child mandates for findings above the Architect's declared threshold; those child mandates re-enter the core pipeline at BACKLOG. The Reviewer may run during idle compute. The Inspector requires a live system or captured traffic. All three self-close at DONE without Architect acceptance. The gap between a finding and its remediation is a mandate cycle — explicit, expected, and Architect-controlled.
+
+### Analyst
+
+Every other role in the framework operates on the codebase or
+the running system. The Analyst operates on the world outside —
+competitor moves, user pain signals, practitioner discourse,
+technology shifts — and translates them into patterns the
+Architect can act on. This role exists because training data
+expires: every product-relevant fact about the external world
+must be fetched live. The Analyst's primary instrument is
+`tools/web_verify.py`. Every signal is classified by source
+type (VERIFIED_USER, PRACTITIONER, ANALYST_OPINION,
+COMMUNITY_SIGNAL, COMPETITOR_CLAIM) before entering the
+Intelligence Brief. A pattern requires at least three
+independent signals. The Analyst recommends; the Architect
+decides whether to mandate work. No training knowledge may
+appear as a source in an Intelligence Brief — every claim
+requires a fetched URL and a date.
 
 ### External Fact Verification
 
@@ -598,6 +620,7 @@ Invoke any role with:
 /project:security "docs/mandates/auth/login_implementation_plan.md"
 /project:reviewer "src/auth/"
 /project:inspector "docs/mandates/auth/login_implementation_plan.md"
+/project:analyst "Google Ads automated bidding for SMBs, 90 days, competitor moves + user pain"
 /project:spike "add reports menu item"
 /project:emergency "login service is returning 500s on all POST requests"
 ```

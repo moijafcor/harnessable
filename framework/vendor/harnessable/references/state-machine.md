@@ -177,6 +177,16 @@ ANY           → DONE set by Architect  (Reviewer/Inspector self-closes;
                                         no Architect acceptance gate)
 ```
 
+[RESEARCH] mandate path (quality lifecycle):
+  BACKLOG → MANDATED → IN_PROGRESS → DONE
+  (same structure as [REVIEW] and [INSPECT])
+  Analyst self-closes. No Architect acceptance gate.
+
+[RESEARCH] illegal transitions:
+  IN_PROGRESS → DONE without IB filed
+  ANY → DMT created by Analyst (Analyst may recommend; only
+    Architect may create DMTs)
+
 ### Quality Lifecycle Invariants
 
 Continuing the numbering from core pipeline invariants (1–11):
@@ -421,6 +431,10 @@ discovered BLOCKED_CRITERION is a protocol violation.
 not issue CONDITIONAL_PASS on a mandate with an unresolved
 BLOCKED_CRITERION. The only valid verdicts are FAIL or, after
 Architect resolution, a re-run resulting in PASS.
+
+**32. No training knowledge as source:** an IB claim without a
+fetched URL and date is a protocol violation equivalent to
+filing a MUST_FIX finding without a reproducible condition.
 
 ---
 

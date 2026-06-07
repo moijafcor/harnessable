@@ -12,6 +12,11 @@ Follow the Harnessable role chain:
 
 Architect → Engineer → Coder (or SRE) → QA → Security (when flagged) → Architect acceptance
 
+Quality lifecycle (parallel, non-blocking):
+Architect [REVIEW] → Reviewer → CRR + child mandates
+Architect [INSPECT] → Inspector → PIR + child mandates
+Architect [RESEARCH] → Analyst → IB (no child mandates required)
+
 No role approves its own work. The Coder cannot be the QA.
 The SRE cannot be the QA for the same mandate.
 The Engineer must not write implementation code.
@@ -57,6 +62,9 @@ verdict.
 | Infrastructure / Ops   | SRE Implementation Report (SIR)                           |
 | Review                 | QA Verdict: PASS / CONDITIONAL_PASS / FAIL                |
 | Security (when flagged)| Security Review Report (SRR): SECURE_PASS / CONDITIONAL_PASS / FAIL |
+| Code review [quality]  | Code Review Report (CRR) + child mandates                 |
+| Traffic inspection [quality] | Protocol Inspection Report (PIR) + child mandates   |
+| External intelligence [quality] | Intelligence Brief (IB)                          |
 
 ## Discovery classes
 

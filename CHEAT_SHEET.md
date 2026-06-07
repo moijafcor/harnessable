@@ -1166,8 +1166,9 @@ Never:
 Parallel to the core pipeline. Architect-discretionary.
 
 ```text
-[REVIEW] mandate  → Reviewer reads code at rest  → CRR + child mandates
-[INSPECT] mandate → Inspector reads traffic       → PIR + child mandates
+[REVIEW]   mandate → Reviewer reads code at rest   → CRR + child mandates
+[INSPECT]  mandate → Inspector reads traffic        → PIR + child mandates
+[RESEARCH] mandate → Analyst gathers external intel → IB (no child mandates required)
 
 Child mandates → Core pipeline BACKLOG → Architect prioritises
 ```
@@ -1176,8 +1177,16 @@ Properties:
 
 - Asynchronous: not attached to any specific core mandate
 - Non-blocking: does not gate DONE on any core work
-- Self-terminating: Reviewer/Inspector sets DONE without Architect
-- Schedulable during idle compute (Reviewer)
+- Self-terminating: Reviewer / Inspector / Analyst sets DONE without Architect
+- Schedulable during idle compute (Reviewer; Analyst when web access is available)
+
+**Analyst-specific rules:**
+
+- Every IB claim requires a fetched URL and date — training knowledge is not a source
+- Signals are classified before synthesis: VERIFIED_USER, PRACTITIONER, ANALYST_OPINION,
+  COMMUNITY_SIGNAL, or COMPETITOR_CLAIM
+- A pattern requires ≥ 3 independent signals; a single signal is OBSERVED only
+- The Analyst recommends; only the Architect may create DMTs from an IB
 
 ---
 
