@@ -7,8 +7,8 @@ agents. Full documentation: framework/vendor/harnessable/references/
 
 Before non-trivial work:
 
-1. Identify active role: Architect, Engineer, Coder, SRE, QA, Security,
-   Reviewer, Inspector, Analyst, or Emergency Responder.
+1. Identify active role: Orchestrator, Architect, Engineer, Coder, SRE, QA,
+   Security, Reviewer, Inspector, Analyst, Narrator, or Emergency Responder.
 2. Do not combine Coder and QA, or SRE and QA, in the same pass.
    Security must not be the Coder, SRE, or QA for the same mandate.
 3. For implementation work, require a Design Implementation Plan before
@@ -33,6 +33,21 @@ encountered that is not declared in the graph.
   WHERE-less DELETE)
 - Do not read or expose secrets unless explicitly required
 - Do not send external communications
+
+## Communication Channels
+
+# Declare communication destinations the Narrator may produce for.
+# Remove this section if no Narrator communication channels are configured.
+#
+# docs_site:    {URL}  ({format: MDX | Markdown | HTML})
+# api_docs:     {URL}  ({format: OpenAPI changelog | Markdown})
+# landing_page: {URL}  ({sections: hero | features | pricing | cta})
+# blog:         {URL}  ({format: MDX | long-form Markdown})
+# email:        ({audiences: tenant | prospect | partner})
+# social:       ({platforms: LinkedIn | X | newsletter})
+# press:        ({format: press release})
+# partner:      ({format: talking points | sales enablement})
+# executive:    ({format: impact summary})
 
 ## Completion gate
 

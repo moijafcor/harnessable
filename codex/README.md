@@ -11,9 +11,10 @@ Harnessable works with Codex through three mechanisms:
    protocol, discovery classification table, and knowledge graph obligations
    into the active session.
 
-3. **`codex/examples/`** — role prompt templates. Use these as your starting
-   point for each pipeline, quality lifecycle, or emergency role rather than
-   writing prompts from scratch.
+3. **`codex/*.prompt.md` and `codex/examples/`** — role prompt templates. Use
+   these as your starting point for each engagement, pipeline, quality
+   lifecycle, lightweight, or emergency role rather than writing prompts from
+   scratch.
 
 ## Install
 
@@ -38,12 +39,26 @@ explicit verification commands in the DIP.
 
 ## Invoking roles
 
+### Engagement Track
+
+#### Orchestrator
+
+```bash
+codex "$(cat codex/orchestrator.prompt.md)"
+```
+
+Orchestrator receives marketplace signals, classifies the engagement as
+templated or novel, authors or revises Target Outcome Mandates (TOMs),
+commissions domain Architects per constituent TOM, and judges DONE against
+the parent TOM Target Outcomes. It does not implement, write DIPs, or write
+code.
+
 ### Core Pipeline
 
 ### Architect
 
 ```bash
-codex "$(cat codex/examples/architect.prompt.md)"
+codex "$(cat codex/architect.prompt.md)"
 ```
 
 Or inline:
@@ -56,19 +71,19 @@ Define a mandate for: [describe the work here]."
 ### Engineer
 
 ```bash
-codex "$(cat codex/examples/engineer.prompt.md)"
+codex "$(cat codex/engineer.prompt.md)"
 ```
 
 ### Coder
 
 ```bash
-codex "$(cat codex/examples/coder.prompt.md)"
+codex "$(cat codex/coder.prompt.md)"
 ```
 
 ### SRE
 
 ```bash
-codex "$(cat codex/examples/sre.prompt.md)"
+codex "$(cat codex/sre.prompt.md)"
 ```
 
 If the full enforcement layer is installed, the SRE protocol is at
@@ -82,7 +97,7 @@ verify-only operations and is removed by the Stop hook.
 ### QA
 
 ```bash
-codex "$(cat codex/examples/qa.prompt.md)"
+codex "$(cat codex/qa.prompt.md)"
 ```
 
 ### Security
@@ -91,7 +106,7 @@ Security review is invoked only when the Architect flagged the mandate for Secur
 review in the DMT. It runs after QA PASS or CONDITIONAL_PASS.
 
 ```bash
-codex "$(cat codex/examples/security.prompt.md)"
+codex "$(cat codex/security.prompt.md)"
 ```
 
 If the full enforcement layer is installed, the Security protocol is at
@@ -101,14 +116,15 @@ the mandate in the DMT.
 
 ### Quality Lifecycle
 
-Reviewer, Inspector, and Analyst run outside the core pipeline. They do not
-produce PASS / FAIL verdicts and do not block pipeline progress. Each
-self-closes at DONE without Architect acceptance.
+Reviewer, Inspector, Analyst, and Narrator run outside the core pipeline. They
+do not produce PASS / FAIL verdicts and do not block pipeline progress. The
+Reviewer, Inspector, and Analyst self-close at DONE without Architect
+acceptance; Narrator runs when commissioned by the Orchestrator.
 
 #### Reviewer
 
 ```bash
-codex "$(cat codex/examples/reviewer.prompt.md)"
+codex "$(cat codex/reviewer.prompt.md)"
 ```
 
 Reviewer reads source for structural correctness and files a Code Review Report
@@ -117,7 +133,7 @@ Reviewer reads source for structural correctness and files a Code Review Report
 #### Inspector
 
 ```bash
-codex "$(cat codex/examples/inspector.prompt.md)"
+codex "$(cat codex/inspector.prompt.md)"
 ```
 
 Inspector examines traffic or replayed scenarios and files a Protocol
@@ -137,12 +153,23 @@ it into an Intelligence Brief (IB) at
 instrument is `docs/harness/tools/web_verify.py`. Every claim in the IB
 requires a fetched URL and date — training knowledge is not a source.
 
+#### Narrator
+
+```bash
+codex "$(cat codex/narrator.prompt.md)"
+```
+
+Narrator reads finished DIPs and `AGENTS.md ## Communication Channels`, then
+produces a destination-calibrated Communication Package (CP) at
+`narrator-out/{feature-slug}/`. It creates one artifact per declared audience
+without exposing implementation details to non-technical destinations.
+
 ### Lightweight Track
 
 #### Spike
 
 ```bash
-codex "$(cat codex/examples/spike.prompt.md)"
+codex "$(cat codex/spike.prompt.md)"
 ```
 
 Spike is for micro-fixes, exploratory spikes, impromptu improvements, and
@@ -157,7 +184,7 @@ pipeline.
 #### Emergency Responder
 
 ```bash
-codex "$(cat codex/examples/emergency.prompt.md)"
+codex "$(cat codex/emergency.prompt.md)"
 ```
 
 Emergency Responder is for production break-glass work. It does not require a
@@ -186,8 +213,8 @@ The skill loads the full protocol when invoked. This adds:
 - Detailed role rules (what each role must and must not do)
 - The complete discovery classification table including `ONTOLOGY_GAP`
 - Knowledge graph obligations (grounding, amendment, PLANNED and DONE gates)
-- Required output format per role, including DMT, DIP, TIR, SIR, QA Verdict,
-  SRR, CRR, PIR, EIR, and Spike Branch
+- Required output format per role, including TOM, DMT, DIP, TIR, SIR,
+  QA Verdict, SRR, CRR, PIR, IB, CP, EIR, and Spike Branch
 
 Invoke it for any non-trivial mandate. For simple bounded tasks, `AGENTS.md`
 alone may be sufficient.
