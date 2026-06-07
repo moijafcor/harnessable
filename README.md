@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents doing high-stakes production work: ten roles across four tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: twelve roles across six tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -28,6 +28,9 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Recursive Self-Improvement](#recursive-self-improvement)
   - [Quality Lifecycle](#quality-lifecycle)
   - [Analyst](#analyst)
+  - [Orchestrator](#orchestrator)
+  - [Narrator](#narrator)
+  - [External Fact Verification](#external-fact-verification)
   - [Field Discoveries](#field-discoveries)
   - [Containment Checklist](#containment-checklist)
   - [Continuous Improvement](#continuous-improvement)
@@ -119,6 +122,12 @@ Roles are **functional**, not personal. One human or one agent session may perfo
 | **QA** | Verify independently. Treat implementation claims as unverified until checked. | QA Verdict | Core |
 | **Security** | Adversarial review on Architect-flagged mandates. Map the attack surface; probe for exploitable paths. | Security Review Report (SRR) | Core |
 
+**Engagement-level roles** — above the pipeline, scope the full body of work:
+
+| Role | Responsibility | Produces | Track |
+| --- | --- | --- | --- |
+| **Orchestrator** | Receive marketplace signals. Classify work as templated or novel. Commission domain Architects per constituent TOM. Synthesise the discovery loop. Declare engagement DONE when parent TOM outcomes are verifiably met. | Target Outcome Mandate (TOM) | Engagement |
+
 **Quality Lifecycle roles** — asynchronous, investment-based, produce findings not verdicts:
 
 | Role | Responsibility | Produces | Track |
@@ -126,6 +135,7 @@ Roles are **functional**, not personal. One human or one agent session may perfo
 | **Reviewer** | Read code for structural correctness. | Code Review Report (CRR) | Quality |
 | **Inspector** | Examine traffic for protocol correctness. | Protocol Inspection Report (PIR) | Quality |
 | **Analyst** | Gather intelligence from the world outside the codebase. Synthesise competitor moves, user pain, practitioner discourse, and technology shifts into patterns the Architect can act on. | Intelligence Brief (IB) | Quality |
+| **Narrator** | Read the finished DIP and produce destination-calibrated communication for every declared audience — without exposing implementation details. | Communication Package (CP) | Quality |
 
 **Lightweight Track roles** — time-boxed, branch-first, outside the full pipeline:
 
@@ -180,7 +190,9 @@ Engineer authors DIP
 
 Artifacts are append-only after their stage closes. A closed mandate's DIP is immutable except for `## Post-Close Notes`.
 
-The quality lifecycle produces parallel artifacts outside this chain: CRR (Code Review Report) and PIR (Protocol Inspection Report). These feed back into the pipeline as child mandates at BACKLOG.
+The TOM (Target Outcome Mandate), authored by the Orchestrator, is the founding document from which every DMT derives. It lives above this chain — the Orchestrator's DONE triggers DMT creation, not vice versa.
+
+The quality lifecycle produces parallel artifacts outside this chain: CRR (Code Review Report), PIR (Protocol Inspection Report), IB (Intelligence Brief), and — when the Orchestrator commissions the Narrator after DONE — a CP (Communication Package). CRR and PIR findings re-enter the pipeline as child mandates at BACKLOG.
 
 ---
 
@@ -205,6 +217,8 @@ BACKLOG → MANDATED → IN_PROGRESS → DONE
 ```
 
 Every transition has a defined owner, a trigger condition, and invariants that must hold. Illegal jumps (e.g. `PLANNED → IN_REVIEW` with no implementation) are protocol violations that any agent must refuse.
+
+Four additional tracks are documented in the full reference: Track 3 (Break-Glass), Track 4 (Spike), Track 5 (Orchestrator), and Track 6 (Narrator). Each has its own state diagram, legal transitions, and invariants.
 
 Full transition table and invariants: [framework/vendor/harnessable/references/state-machine.md](framework/vendor/harnessable/references/state-machine.md)
 
@@ -295,6 +309,7 @@ harnessable/
 ├── framework/                     One-command install: cp -r framework/ docs/harness/
 │   │
 │   ├── agents/                    Tier 1 (copy and own) — role-specific agent protocols
+│   │   ├── orchestrator.md        Engagement CTO: TOM authoring, templated/novel classification, ACT/SKIP
 │   │   ├── architect.md           Intent ownership, DMT authoring, mandate closure discipline
 │   │   ├── engineer.md            Recon passes, DIP authoring standards, sub-agent delegation
 │   │   ├── coder.md               Build discipline, pre-completion hook runner, exit gate
@@ -304,6 +319,7 @@ harnessable/
 │   │   ├── reviewer.md            Code review protocol, CRR authoring, finding classification
 │   │   ├── inspector.md           Protocol inspection, PIR authoring, traffic analysis
 │   │   ├── analyst.md             External intelligence gathering, IB authoring, signal classification
+│   │   ├── narrator.md            Destination-calibrated communication from DIP: CP authoring, audience personas
 │   │   ├── spike.md               Branch-first micro-mandate: time box, scope, Ship/Abandon exits
 │   │   └── emergency.md           Break-glass protocol: fix first, document concurrent, EIR
 │   │
@@ -319,6 +335,9 @@ harnessable/
 │   │   │   └── spike_gate.py      Blocks Write/Edit until on a spike/ branch when spike gate is armed
 │   │   ├── post_tool_use/         Scripts run on PostToolUse (add files here to extend)
 │   │   │   └── audit_logger.py    Appends every tool call to .harnessable/logs/audit.YYYY-MM-DD.jsonl
+│   │   ├── pre_compact/           Scripts run on PreCompact (context continuity — fires before compaction)
+│   │   │   ├── transcript_archive.py  Compresses session transcript; indexes in .harness/transcripts/
+│   │   │   └── mandate_snapshot.py    Writes .harness/compaction-handover.md with board + git state
 │   │   ├── stop/                  Scripts run on Stop (add files here to extend)
 │   │   │   ├── completion_gate.py Runs AGENTS.md ## Completion Gate commands; blocks if any fail
 │   │   │   ├── credential_ops_cleanup.py  Removes .harnessable/credential_ops.json at session end
@@ -327,7 +346,10 @@ harnessable/
 │   │   └── claude_code_settings_template.json  Drop-in .claude/settings.json — all events wired through run.py
 │   │
 │   ├── templates/                 Tier 1 (copy and own)
-│   │   └── dip.md                 Design Implementation Plan template (all required sections)
+│   │   ├── agents-md.md           AGENTS.md template — all standard sections including Communication Channels
+│   │   ├── dip.md                 Design Implementation Plan template (all required sections)
+│   │   ├── knowledge-graph.yaml   Project knowledge graph bootstrap template
+│   │   └── skills/                Role skill wrappers (installed as .claude/commands/ — framework-owned)
 │   │
 │   └── vendor/                    Tier 2 (pin and never modify)
 │       └── harnessable/
@@ -502,6 +524,38 @@ decides whether to mandate work. No training knowledge may
 appear as a source in an Intelligence Brief — every claim
 requires a fetched URL and a date.
 
+### Orchestrator
+
+The Orchestrator is the CTO of the engagement. It sits above the
+pipeline — commissioning domain Architects, not implementing
+alongside them. It receives signals from the marketplace (raw,
+incomplete, politically loaded), classifies the work as templated
+or novel, dispatches Analysts when facing genuine unknowns, and
+synthesises everything the discovery loop produces into a Target
+Outcome Mandate. One Architect is commissioned per constituent TOM.
+As Architects surface feedback, the Orchestrator decides to ACT
+(revise the TOM, dispatch another Analyst, create a new
+constituent) or SKIP (the Architect has authority to resolve it
+within their existing scope). The Orchestrator declares DONE when
+all constituent TOMs are achieved and the parent TOM's Target
+Outcomes are verifiably met.
+
+### Narrator
+
+The Narrator is the voice of the finished work to the marketplace.
+It reads the DIP — the finished good — and produces destination-
+aware communication for every audience that needs to understand
+what was built, without ever explaining how it was built. It is
+simultaneously a technical writer, SEO copywriter, marketer, PR
+spokesperson, and outreach ambassador, calibrated per destination.
+The same engagement produces API changelog entries for developers,
+feature guides for end users, landing page copy for prospects,
+launch blog posts, and email blasts — all from a single DIP
+collection. The project's declared communication channels live in
+AGENTS.md ## Communication Channels. The output is a Communication
+Package: one file per destination, shaped for its audience and
+format.
+
 ### External Fact Verification
 
 An agent's training data ends at a cutoff. Any claim about a
@@ -658,7 +712,7 @@ The installer is idempotent — safe to re-run at any time. It installs:
 | --- | --- | --- |
 | `KNOWLEDGE_GRAPH.yaml`, `references/`, `templates/`, `HARNESSABLE_VERSION` | `docs/harness/vendor/harnessable/` | 2 — never modify |
 | `agents/`, `hooks/`, `tools/web_verify.py`, `templates/` | `docs/harness/` | 1 — copy and own |
-| Ten role skills | `.claude/commands/` | framework-owned — do not edit |
+| Twelve role skills | `.claude/commands/` | framework-owned — do not edit |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |
 | Audit defaults | `.harnessable/config.json` | config |
@@ -738,6 +792,8 @@ Invoke any role with:
 /project:reviewer "src/auth/"
 /project:inspector "docs/mandates/auth/login_implementation_plan.md"
 /project:analyst "Google Ads automated bidding for SMBs, 90 days, competitor moves + user pain"
+/project:orchestrator "docs/toms/tenant-platform/TOM-1.0-product.md"
+/project:narrator "docs/mandates/feature/tenant-activation-dip.md → docs-site,email,social"
 /project:spike "add reports menu item"
 /project:emergency "login service is returning 500s on all POST requests"
 ```

@@ -182,6 +182,51 @@ ANY           → DONE set by Architect  (Reviewer/Inspector/Analyst self-closes
   ANY → DMT created by Analyst (Analyst may recommend; only
     Architect may create DMTs)
 
+---
+
+## Track 5 — Orchestrator State Machine
+
+```text
+Orchestrator state machine:
+INITIALISING → (templated) → AUTHORING
+INITIALISING → (novel)     → RESEARCHING → AUTHORING
+AUTHORING    → EXECUTING
+EXECUTING    → (ACT)       → AUTHORING (TOM revision)
+             → (SKIP)      → EXECUTING (continues)
+             → (all DONE)  → DONE
+```
+
+Orchestrator illegal transitions:
+
+```text
+AUTHORING    → DONE without EXECUTING
+EXECUTING    → DONE without verifying parent TOM outcomes
+ANY          → authoring a DIP (Orchestrator does not write DIPs)
+RESEARCHING  → mandatory (Analyst use is always discretionary)
+```
+
+---
+
+## Track 6 — Narrator State Machine
+
+```text
+Narrator state machine:
+READING DIPs → CALIBRATING per destination
+             → PRODUCING (one file per destination)
+             → CP-SUMMARY
+             → DONE
+```
+
+Narrator illegal transitions:
+
+```text
+ANY → exposing implementation details to non-technical audiences
+ANY → producing without reading ## Communication Channels
+ANY → producing generic content without destination shaping
+```
+
+---
+
 ### Quality Lifecycle Invariants
 
 Continuing the numbering from core pipeline invariants (1–11):

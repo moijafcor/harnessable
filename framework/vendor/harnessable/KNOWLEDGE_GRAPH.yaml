@@ -418,6 +418,102 @@ concepts:
       conditional_on_failure: false
       recorded_in: IB Framework Observation section
 
+  harnessable.Orchestrator:
+    type: harnessable.Role
+    definition: >
+      The CTO of the engagement. Receives marketplace signals,
+      classifies work as templated or novel, commissions domain
+      Architects per constituent TOM, dispatches Analysts when
+      facing genuine unknowns, synthesises feedback into TOM
+      versions, and judges when outcomes are achieved. The only
+      role with authority over the full engagement portfolio.
+      Does not implement, write DIPs, or write code.
+    produces: [harnessable.TOM]
+    state_machine: [INITIALISING, RESEARCHING, AUTHORING,
+                    EXECUTING, DONE]
+    analyst_use: discretionary
+    narrator_use: discretionary
+    pipeline_position: above_pipeline
+    pipeline_gate: false
+
+  harnessable.TOM:
+    type: harnessable.Artifact
+    label: Target Outcome Mandate
+    definition: >
+      The founding document of any body of work. Authored by the
+      Orchestrator. Declares target outcomes in business language,
+      domain context, constraints, and success metrics. Every DMT
+      derives from a TOM. The TOM is not written once — it is the
+      current best synthesis of everything the discovery loop has
+      produced so far. Each version is a snapshot of accumulated
+      discovery.
+    produced_by: harnessable.Orchestrator
+    consumed_by: harnessable.Architect
+    path_convention: docs/toms/{slug}/TOM-{version}-{domain}.md
+    slug_format: TOM-{version}-{domain}
+    versioning: >
+      Each pivot increments the version. TOM v1.0 → v1.1 → v2.0
+      is the business decision record.
+    hierarchy:
+      parent: TOM-{version}-{product}
+      constituent: TOM-{version}-{fleet-member}
+
+  harnessable.TemplatedEngagement:
+    type: concept
+    definition: >
+      An engagement the Orchestrator recognises from prior completed
+      TOMs. No Analyst dispatch needed. The Orchestrator proceeds
+      directly to AUTHORING from pattern. What is novel today
+      becomes templated tomorrow.
+
+  harnessable.NovelEngagement:
+    type: concept
+    definition: >
+      An engagement containing genuine unknowns the Orchestrator
+      cannot resolve from pattern. Requires RESEARCHING phase.
+      Analyst dispatched per gap or hypothesis.
+
+  harnessable.Narrator:
+    type: harnessable.QualityLifecycleRole
+    definition: >
+      The voice of the finished work to the marketplace. Reads
+      DIPs (the finished good) and produces destination-aware
+      communication calibrated to each audience. Simultaneously
+      a technical writer, SEO copywriter, marketer, PR spokesperson,
+      and outreach ambassador. Never exposes implementation details
+      to non-technical audiences. Produces a Communication Package.
+    produces: [harnessable.CP]
+    raw_material: harnessable.DIP
+    invoked_by: harnessable.Orchestrator
+    invocation_model: >
+      discretionary — not every DONE warrants a Narrator run
+    personas: [technical_writer, seo_copywriter, marketer,
+               pr_spokesperson, outreach_ambassador]
+    pipeline_position: quality_lifecycle
+    pipeline_gate: false
+
+  harnessable.CP:
+    type: harnessable.Artifact
+    label: Communication Package
+    definition: >
+      Produced by the Narrator. A collection of audience-specific
+      communication artifacts, one per declared destination.
+      Each artifact is shaped for its destination's format,
+      audience, and register. Contains no implementation details
+      for non-technical audiences.
+    produced_by: harnessable.Narrator
+    path_convention: narrator-out/{feature-slug}/
+    summary: narrator-out/{feature-slug}/CP-SUMMARY.md
+
+  harnessable.CommunicationChannel:
+    type: concept
+    definition: >
+      A declared destination in AGENTS.md ## Communication Channels.
+      Specifies the channel URL, format, and audience. The Narrator
+      reads the channel registry before producing any output.
+    declared_in: AGENTS.md ## Communication Channels
+    consumed_by: harnessable.Narrator
+
   harnessable.IB:
     type: harnessable.Artifact
     label: Intelligence Brief
