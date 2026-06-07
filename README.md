@@ -434,6 +434,36 @@ Architect feedback. At that point the TOM is not finished — it is
 stable enough to execute against. The next marketplace signal will
 start the loop again.
 
+**What is novel today becomes templated tomorrow. Every completed
+TOM is a pattern the Orchestrator can recognise in the next
+engagement.**
+
+Not every engagement requires research. The Orchestrator's first
+decision on receiving a stakeholder signal is a classification:
+
+  Novel      — the problem space contains genuine unknowns.
+               The Orchestrator dispatches Analysts per gap
+               before authoring the TOM.
+
+  Templated  — the Orchestrator has seen this pattern before.
+               A white-labelled SaaS deployment. A new traffic
+               node. A known fleet extension. The Orchestrator
+               goes straight to AUTHORING — no Analyst dispatch,
+               no research phase.
+
+The same logic applies inside the execution loop. When an
+Architect surfaces a constraint, the Orchestrator decides:
+
+  Known pattern  → ACT directly, no Analyst needed
+  Genuine unknown → dispatch Analyst first, ACT on the IB
+
+This is why the Orchestrator's accumulated experience matters.
+Every completed TOM extends the pattern library. What required
+an Analyst investigation on the first engagement is handled
+from pattern on the second. The Orchestrator gets faster and
+cheaper as the library grows — which is precisely what
+R.A.F.A.E.L.'s memory layer is designed to enable.
+
 ### Knowledge Graph
 
 `KNOWLEDGE_GRAPH.yaml` is the authoritative semantic layer for the framework: it declares every concept in the `harnessable` namespace — roles, artifacts, enumerations, and their relationships — as a machine-readable graph that agents and guards reason against, not merely read. The framework graph is vendored unchanged under `docs/harness/vendor/harnessable/`; project-specific concepts extend it in a separate `docs/knowledge-graph.yaml`. When two platforms use the same label for different concepts, an alignment entry marks `safe_assumption: false` — an active instruction to any agent working across those platforms to treat the concepts as distinct regardless of shared labels.
