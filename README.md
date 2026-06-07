@@ -21,6 +21,8 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Guards in Action](#guards-in-action)
 - [Repository Structure](#repository-structure)
 - [Key Concepts](#key-concepts)
+  - [Why outcomes, not operations](#why-outcomes-not-operations)
+  - [Target Outcome Mandate (TOM)](#target-outcome-mandate-tom)
   - [Knowledge Graph](#knowledge-graph)
   - [Context Continuity](#context-continuity)
   - [Recursive Self-Improvement](#recursive-self-improvement)
@@ -346,6 +348,91 @@ harnessable/
 ---
 
 ## Key Concepts
+
+### Why outcomes, not operations
+
+Operating models describe organisational structure: who reports to
+whom, what processes exist, how departments are arranged. That's
+irrelevant to an AI agent. Outcome mandates describe what must be
+true when the work is done. That's everything an agent needs.
+
+### Target Outcome Mandate (TOM)
+
+The TOM is the founding document of any body of work. It is authored
+by the Orchestrator in business language — no implementation details,
+no technical constraints — and declares the outcomes the work must
+achieve, the domain context it operates in, the constraints it must
+respect (budget, timeline, compliance, third-party obligations), and
+the success metrics by which completion is judged.
+
+Every DMT in the system derives from a TOM. If a DMT cannot be
+traced to a TOM outcome, it should not exist.
+
+The full artifact hierarchy:
+
+  TOM   Target Outcome Mandate      authored by Orchestrator
+    ↓   derives
+  DMT   Design Mandate Task         derived by Architect from TOM
+    ↓   implements
+  DIP   Design Implementation Plan  authored by Engineer
+    ↓   produces
+  TIR   Technical Implementation Report  produced by Coder
+    ↓   informs upward
+  IB    Intelligence Brief          produced by Analyst, feeds TOM authoring
+
+**Pivoting.** A TOM can be revised. When business conditions change —
+a customer pivot, a competitive move, a new constraint — the
+Orchestrator revises the TOM. The Architect then reassesses the
+existing DMT portfolio: some DMTs survive the revision unchanged,
+some require revision, some are superseded. The TOM version history
+is the business decision record. TOM v1.0 → v1.1 → v2.0 is the
+log of what the business tried to achieve and why it changed.
+
+**The TOM is not a document written once. It is the current best
+synthesis of everything the loop has produced so far. Each version
+is a snapshot of accumulated discovery.**
+
+This is because the Orchestrator does not receive complete
+information from the marketplace. It receives a signal — raw,
+noisy, incomplete. As it processes that signal, gaps emerge.
+For each gap the Orchestrator dispatches an Analyst. What the
+Analyst discovers collides with what the domain Architects
+surface from their own bounded work. The collision of those two
+independent findings — neither sufficient alone — is what drives
+a new TOM version.
+
+The workflow is not a pipeline. It is an adaptive loop:
+
+  Orchestrator detects gap
+      ↓
+  Analyst dispatched
+      ↓
+  IB returned
+      ↓
+  Architect surfaces constraint independently
+      ↓
+  Orchestrator synthesises both findings
+      ↓
+  Collision produces discovery neither held alone
+      ↓
+  TOM vX — new version, possibly new constituent TOM
+      ↓
+  Loop continues until TOM is stable
+
+A fleet member is not designed upfront. It is discovered through
+the loop. The canonical example: "how do we activate tenants?"
+The Analyst found that activation must be manual. The Architect
+found it could not be done reliably in the tenant application.
+Neither finding alone would have produced the answer. Together
+they produced a constituent that was not in the original
+marketplace signal — an operator console. A new constituent TOM
+was born. The fleet grew by one. The parent TOM incremented.
+
+The loop continues until the Orchestrator judges the TOM stable:
+no outstanding gaps, no pending Analyst dispatches, no unresolved
+Architect feedback. At that point the TOM is not finished — it is
+stable enough to execute against. The next marketplace signal will
+start the loop again.
 
 ### Knowledge Graph
 
