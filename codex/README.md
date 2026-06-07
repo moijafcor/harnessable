@@ -127,7 +127,7 @@ Inspection Report (PIR) at
 #### Analyst
 
 ```bash
-codex "$(cat codex/examples/analyst.prompt.md)"
+codex "$(cat codex/analyst.prompt.md)"
 ```
 
 Analyst gathers intelligence from outside the codebase — competitor moves,
