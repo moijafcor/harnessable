@@ -148,22 +148,6 @@ sync_tier2() {
     T2_OK=$((T2_OK + 1))
   fi
 
-  local SRC_TEMPLATES="$FRAMEWORK_ROOT/framework/templates"
-  if [[ -d "$SRC_TEMPLATES" ]]; then
-    ensure_dir "$DST_VENDOR/templates"
-    local TMPL_CHANGES TMPL_COUNT
-    TMPL_CHANGES="$(rsync -a --delete --exclude 'skills/' --itemize-changes \
-      "$SRC_TEMPLATES/" "$DST_VENDOR/templates/" 2>/dev/null | grep -cE '^[>*<c]' || true)"
-    TMPL_COUNT="$(find "$DST_VENDOR/templates" -type f 2>/dev/null | wc -l | tr -d '[:space:]')"
-    if [[ "$TMPL_CHANGES" -gt 0 ]]; then
-      echo "  SYNCED  docs/harness/vendor/harnessable/templates/ ($TMPL_COUNT files)"
-      T2_SYNCED=$((T2_SYNCED + 1))
-    else
-      echo "  OK      docs/harness/vendor/harnessable/templates/ ($TMPL_COUNT files)"
-      T2_OK=$((T2_OK + 1))
-    fi
-  fi
-
   _sync_vendor_file "$SRC_VENDOR/KNOWLEDGE_GRAPH.yaml" \
     "$DST_VENDOR/KNOWLEDGE_GRAPH.yaml" \
     "docs/harness/vendor/harnessable/KNOWLEDGE_GRAPH.yaml"
@@ -342,6 +326,12 @@ sync_templates() {
   for f in "$SRC_DIR/"*.md "$SRC_DIR/"*.yaml; do
     [[ -f "$f" ]] || continue
     name="$(basename "$f")"
+
+    # agents-md.md is install.sh internal tooling (greenfield AGENTS.md
+    # bootstrap only). It is never referenced by agents or hooks in a
+    # deployed project. Exclude from deployment.
+    [[ "$name" == "agents-md.md" ]] && continue
+
     dst="$DST_DIR/$name"
     label="docs/harness/templates/$name"
 
@@ -371,6 +361,24 @@ sync_templates() {
   done
 
   echo ""
+}
+
+# ── cleanup_vendor_templates ──────────────────────────────────────────────────
+# Removes docs/harness/vendor/harnessable/templates/ if it exists.
+# This directory was incorrectly created by a prior sync_tier2() bug.
+# Idempotent — silent if already absent.
+cleanup_vendor_templates() {
+  local STALE_DIR="$TARGET/docs/harness/vendor/harnessable/templates"
+  if [[ -d "$STALE_DIR" ]]; then
+    rm -rf "$STALE_DIR"
+    echo "  CLEANED docs/harness/vendor/harnessable/templates/ (stale)"
+  fi
+
+  local STALE_AGENTS="$TARGET/docs/harness/templates/agents-md.md"
+  if [[ -f "$STALE_AGENTS" ]]; then
+    rm -f "$STALE_AGENTS"
+    echo "  CLEANED docs/harness/templates/agents-md.md (install.sh internal)"
+  fi
 }
 
 # ── bootstrap_agents_md ───────────────────────────────────────────────────────
@@ -904,6 +912,7 @@ main() {
   echo ""
 
   bootstrap_agents_md
+  cleanup_vendor_templates
   sync_tier2
   sync_hooks
   sync_agents
