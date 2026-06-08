@@ -37,7 +37,10 @@ graph enrichment before accepting the QA verdict and setting DONE.
 
 **Engineer** produces the Design Implementation Plan. Recon produces two
 outputs: the DIP and knowledge graph amendments. Raw labels in the DIP
-are a protocol violation if the concept is absent from the graph.
+are a protocol violation if the concept is absent from the graph. When
+the mandate crosses role boundaries, every DIP step must declare its
+executing role — see `agents/engineer.md ## Squad Reference` for the
+13-role profile table and mandatory decomposition triggers.
 
 **Coder** implements only what the approved DIP specifies. Files a
 Discovery before deviating. Produces a TIR with evidence, not claims.

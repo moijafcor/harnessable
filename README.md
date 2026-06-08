@@ -25,6 +25,8 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Target Outcome Mandate (TOM)](#target-outcome-mandate-tom)
   - [Knowledge Graph](#knowledge-graph)
   - [Models Manifest](#models-manifest)
+  - [Squad Reference](#squad-reference)
+  - [Role Scope](#role-scope)
   - [Context Continuity](#context-continuity)
   - [Recursive Self-Improvement](#recursive-self-improvement)
   - [Quality Lifecycle](#quality-lifecycle)
@@ -312,7 +314,7 @@ harnessable/
 │   ├── agents/                    Tier 1 (copy and own) — role-specific agent protocols
 │   │   ├── orchestrator.md        Engagement CTO: TOM authoring, templated/novel classification, ACT/SKIP
 │   │   ├── architect.md           Intent ownership, DMT authoring, mandate closure discipline
-│   │   ├── engineer.md            Recon passes, DIP authoring standards, sub-agent delegation
+│   │   ├── engineer.md            Recon passes, DIP authoring, Squad Reference (13 role profiles), multi-role DIP decomposition
 │   │   ├── coder.md               Build discipline, pre-completion hook runner, exit gate
 │   │   ├── sre.md                 Pre-change capture, blast radius, incident response, SIR
 │   │   ├── qa.md                  Adversarial verification protocol, verdict criteria
@@ -509,6 +511,39 @@ The Orchestrator reads this manifest at INITIALISING before commissioning
 any role, then declares the selected model explicitly in the commission. If
 the file is absent or a role entry is missing, the Orchestrator applies the
 framework's tier defaults and files the required discovery.
+
+### Squad Reference
+
+The `## Squad Reference` section in `framework/agents/engineer.md` is the
+Engineer's authoritative map of all 13 roles: capability surface, hard
+limits, commissioning criteria, DIP step labels, and handoff requirements.
+The Engineer is accountable for multi-role DIP decomposition — when
+implementation crosses role boundaries, the Squad Reference drives which
+roles to commission and how to label each step.
+
+**Mandatory decomposition triggers** (always require multi-role decomposition):
+
+- Code changes + live operations → Coder + SRE
+- Auth, credentials, or new network surfaces → Security (non-optional)
+- Implementation reaching DONE → QA (always)
+
+**Multi-role DIP step labelling** — every step in a multi-role DIP must
+declare its executing role: `**[Coder]**`, `**[SRE]**`, `**[Security]**`,
+`**[QA]**`. Steps organised into named phases. A step without a role label
+in a multi-role DIP is a defect — resolve before setting PLANNED.
+
+### Role Scope
+
+Every agent protocol file (`framework/agents/*.md`) contains a
+`## Role Scope` section with three standard subsections:
+
+- **Reach** — what the role can do
+- **Hard limits** — what the role must never do
+- **At the boundary** — what to do when a limit is reached
+
+Role Scope makes each role self-aware without requiring it to read the
+Engineer's Squad Reference. It is the authoritative declaration of what
+a role may and may not do when operating independently.
 
 ### Context Continuity
 

@@ -1018,9 +1018,17 @@ Produces the **Design Implementation Plan (DIP)**, containing:
 
 - Recon findings
 - Architecture decisions
-- Ordered implementation steps
+- Ordered implementation steps (role-labelled in multi-role mandates)
 - Verification checklists
 - Containment checklist
+
+**Multi-role DIPs:** when implementation spans roles, organise steps into
+named phases and label every step with its executing role — `**[Coder]**`,
+`**[SRE]**`, `**[Security]**`, `**[QA]**`. Unlabelled steps are a defect.
+Mandatory splits: code + live ops → Coder + SRE; auth/credentials/network
+→ Security (non-optional); reaching DONE → QA (always). See
+`agents/engineer.md ## Squad Reference` for all 13 role profiles and
+decomposition triggers.
 
 ---
 
