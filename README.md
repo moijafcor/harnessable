@@ -642,61 +642,38 @@ that needs an afternoon.
 
 ### 1. Set up your project tracker
 
-Create a board or workflow in your project tracker of choice (GitHub Projects, Jira, Linear, Asana, or any tool that supports custom status columns) with these statuses:
-
-`BACKLOG` · `MANDATED` · `IN_RECON` · `PLANNED` · `IN_PROGRESS` · `IN_REVIEW` · `BLOCKED` · `NEEDS_REVISION` · `VERIFIED` · `DONE`
-
-**If using GitHub Projects:** all ten columns can be created in one `gh` CLI command rather than through the UI. Column names must exactly match the list above — a typo causes status transitions to fail silently. First fetch the project ID and the Status field ID:
+The installer can create and configure your GitHub Projects board
+automatically:
 
 ```bash
-gh api graphql -f query='
-query($org: String!, $number: Int!) {
-  organization(login: $org) {
-    projectV2(number: $number) {
-      id
-      fields(first: 20) {
-        nodes {
-          ... on ProjectV2SingleSelectField { id name }
-        }
-      }
-    }
-  }
-}' -F org=YOUR_ORG -F number=YOUR_PROJECT_NUMBER
+# Create a new board for this project
+bash install.sh --github-board=new /path/to/project
+
+# Link to an existing board
+bash install.sh --github-board=5 /path/to/project
+
+# Validate the board already declared in AGENTS.md
+bash install.sh --github-board= /path/to/project
 ```
 
-Then set all ten options in one mutation (replace `PROJECT_ID` and `FIELD_ID` with the values returned above):
+The `--github-board=new` flag creates a GitHub Project, configures
+the harnessable Status field with all ten required options
+(`BACKLOG` through `DONE`), and writes the project number and URL
+to `AGENTS.md ## Project Tracker` automatically.
+
+Requires the [GitHub CLI](https://cli.github.com/) authenticated
+with `project` scope:
 
 ```bash
-gh api graphql -f query='
-mutation($projectId: ID!, $fieldId: ID!) {
-  updateProjectV2Field(input: {
-    projectId: $projectId
-    fieldId: $fieldId
-    singleSelectOptions: [
-      {name: "BACKLOG",        color: GRAY},
-      {name: "MANDATED",       color: BLUE},
-      {name: "IN_RECON",       color: BLUE},
-      {name: "PLANNED",        color: BLUE},
-      {name: "IN_PROGRESS",    color: YELLOW},
-      {name: "IN_REVIEW",      color: ORANGE},
-      {name: "BLOCKED",        color: RED},
-      {name: "NEEDS_REVISION", color: RED},
-      {name: "VERIFIED",       color: GREEN},
-      {name: "DONE",           color: GREEN}
-    ]
-  }) {
-    projectV2Field {
-      ... on ProjectV2SingleSelectField {
-        options { id name color }
-      }
-    }
-  }
-}' -F projectId=PROJECT_ID -F fieldId=FIELD_ID
+gh auth login
+gh auth refresh -s project
 ```
 
-If the board already has a Status field with existing options, this mutation replaces all options; export existing item statuses first if any items are already assigned a value.
+To specify an org board, add `--owner=<org>`:
 
-Declare the tool and integration method in your project's `AGENTS.md` under `## Project Tracker` so every agent session knows how to read and update board state.
+```bash
+bash install.sh --github-board=new --owner=AdsWireIO /path/to/project
+```
 
 ### 2. Install the framework
 

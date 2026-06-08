@@ -22,6 +22,9 @@ FRAMEWORK_ROOT="$(dirname "$(realpath "$0")")"
 MODE="fresh"
 TARGET=""
 FRAMEWORK_VERSION=""
+GITHUB_BOARD=""
+GITHUB_BOARD_OWNER=""
+GITHUB_BOARD_PASSED=false
 
 # Counters
 T2_SYNCED=0; T2_OK=0
@@ -63,20 +66,47 @@ parse_args() {
     echo "  bash install.sh /path/to/project           # fresh install"
     echo "  bash install.sh --update /path/to/project  # full sync update"
     echo "  bash install.sh --update                   # sync in current directory"
+    echo "  bash install.sh --github-board=new /path/to/project"
+    echo "  bash install.sh --github-board=N [--owner=user-or-org] /path/to/project"
     exit 0
   fi
 
-  if [[ "${1:-}" == "--update" ]]; then
-    MODE="update"
-    TARGET="${2:-$(pwd)}"
-  elif [[ -n "${1:-}" ]]; then
+  local POSITIONAL=()
+  local arg
+  for arg in "$@"; do
+    case "$arg" in
+      --update)
+        MODE="update"
+        ;;
+      --github-board=*)
+        GITHUB_BOARD="${arg#--github-board=}"
+        GITHUB_BOARD_PASSED=true
+        ;;
+      --owner=*)
+        GITHUB_BOARD_OWNER="${arg#--owner=}"
+        ;;
+      --*)
+        echo "ERR  Unknown option: $arg"
+        exit 1
+        ;;
+      *)
+        POSITIONAL+=("$arg")
+        ;;
+    esac
+  done
+
+  if [[ "$MODE" == "update" ]]; then
+    TARGET="${POSITIONAL[0]:-$(pwd)}"
+  elif [[ ${#POSITIONAL[@]} -gt 0 ]]; then
     MODE="fresh"
-    TARGET="$1"
+    TARGET="${POSITIONAL[0]}"
   else
     echo "Usage: bash install.sh /path/to/project"
     echo "       bash install.sh --update [/path/to/project]"
+    echo "       bash install.sh --github-board=new /path/to/project"
     exit 1
   fi
+
   TARGET="$(realpath "$TARGET")"
 }
 
@@ -418,6 +448,288 @@ bootstrap_agents_md() {
   echo ""
 
   ACTION_ITEMS+=("Fill AGENTS.md REPLACE markers then re-run install.sh --update")
+}
+
+# ── setup_github_board ────────────────────────────────────────────────────────
+# Handles --github-board=<N|new|empty>.
+# Writes result to AGENTS.md ## Project Tracker.
+
+HARNESSABLE_STATUS_OPTIONS=(
+  "BACKLOG" "MANDATED" "IN_RECON" "PLANNED" "IN_PROGRESS"
+  "IN_REVIEW" "BLOCKED" "NEEDS_REVISION" "VERIFIED" "DONE"
+)
+
+check_gh_cli() {
+  if ! command -v gh &>/dev/null; then
+    echo ""
+    echo "  ERR --github-board requires the GitHub CLI (gh)."
+    echo "      Install: https://cli.github.com/"
+    echo "      Then authenticate: gh auth login"
+    exit 3
+  fi
+
+  if ! gh auth status &>/dev/null; then
+    echo ""
+    echo "  ERR gh CLI is installed but not authenticated."
+    echo "      Run: gh auth login"
+    exit 3
+  fi
+
+  if [[ -z "$GITHUB_BOARD_OWNER" ]]; then
+    GITHUB_BOARD_OWNER="$(gh api user --jq .login 2>/dev/null)"
+    if [[ -z "$GITHUB_BOARD_OWNER" ]]; then
+      echo "  ERR Could not determine GitHub user. Pass --owner=<user>."
+      exit 3
+    fi
+  fi
+
+  echo "  INFO GitHub CLI authenticated as: $GITHUB_BOARD_OWNER"
+}
+
+setup_github_board() {
+  [[ "$GITHUB_BOARD_PASSED" != true ]] && return 0
+
+  echo "── GitHub Projects board ────────────────────────────────────────────────"
+
+  check_gh_cli
+
+  case "$GITHUB_BOARD" in
+    "new")   _board_create ;;
+    "")      _board_validate_from_agents ;;
+    *)       _board_link "$GITHUB_BOARD" ;;
+  esac
+
+  echo ""
+}
+
+_board_create() {
+  local PROJECT_NAME
+  PROJECT_NAME="$(basename "$TARGET") — harnessable"
+
+  echo "  Creating GitHub Project: '$PROJECT_NAME'"
+  echo "  Owner: $GITHUB_BOARD_OWNER"
+
+  local CREATE_OUTPUT
+  CREATE_OUTPUT="$(gh project create \
+    --owner "$GITHUB_BOARD_OWNER" \
+    --title "$PROJECT_NAME" \
+    --format json 2>/dev/null)" || {
+    echo "  ERR Failed to create project."
+    echo "      Check that your token has 'project' scope:"
+    echo "      gh auth refresh -s project"
+    exit 3
+  }
+
+  local PROJECT_NUMBER PROJECT_URL
+  PROJECT_NUMBER="$(echo "$CREATE_OUTPUT" | \
+    python3 -c "import json,sys; d=json.load(sys.stdin); \
+    print(d.get('number',''))" 2>/dev/null)"
+  PROJECT_URL="$(echo "$CREATE_OUTPUT" | \
+    python3 -c "import json,sys; d=json.load(sys.stdin); \
+    print(d.get('url',''))" 2>/dev/null)"
+
+  echo "  Created: project #$PROJECT_NUMBER"
+  echo "  URL: $PROJECT_URL"
+
+  _board_add_status_field "$PROJECT_NUMBER"
+  _board_write_agents_md "$PROJECT_NUMBER" "$PROJECT_URL"
+}
+
+_board_link() {
+  local BOARD_NUMBER="$1"
+  echo "  Linking to GitHub Project #$BOARD_NUMBER"
+  echo "  Owner: $GITHUB_BOARD_OWNER"
+
+  local PROJECT_DATA
+  PROJECT_DATA="$(gh project view "$BOARD_NUMBER" \
+    --owner "$GITHUB_BOARD_OWNER" \
+    --format json 2>/dev/null)" || {
+    echo "  ERR Project #$BOARD_NUMBER not found or not accessible."
+    echo "      Verify owner with --owner=<org-or-user>"
+    exit 3
+  }
+
+  local PROJECT_URL PROJECT_TITLE
+  PROJECT_URL="$(echo "$PROJECT_DATA" | \
+    python3 -c "import json,sys; d=json.load(sys.stdin); \
+    print(d.get('url',''))" 2>/dev/null)"
+  PROJECT_TITLE="$(echo "$PROJECT_DATA" | \
+    python3 -c "import json,sys; d=json.load(sys.stdin); \
+    print(d.get('title',''))" 2>/dev/null)"
+
+  echo "  Found: '$PROJECT_TITLE'"
+  echo "  URL: $PROJECT_URL"
+
+  _board_check_status_field "$BOARD_NUMBER"
+  _board_write_agents_md "$BOARD_NUMBER" "$PROJECT_URL"
+}
+
+_board_validate_from_agents() {
+  local AGENTS_FILE="$TARGET/AGENTS.md"
+  if [[ ! -f "$AGENTS_FILE" ]]; then
+    echo "  ERR --github-board= (read from AGENTS.md) but AGENTS.md"
+    echo "      does not exist. Run install first or pass a board number."
+    exit 3
+  fi
+
+  local BOARD_NUMBER
+  BOARD_NUMBER="$(python3 - "$AGENTS_FILE" <<'PYEOF'
+import re, sys
+content = open(sys.argv[1]).read()
+m = re.search(r'##\s+Project Tracker\s*\n(.*?)(?=\n##|\Z)', content, re.DOTALL)
+if not m: sys.exit(0)
+pm = re.search(r'project[:\s]+(\d+)', m.group(1), re.I)
+print(pm.group(1).strip() if pm else '', end='')
+PYEOF
+)"
+
+  if [[ -z "$BOARD_NUMBER" ]]; then
+    echo "  ERR No project number found in AGENTS.md ## Project Tracker."
+    echo "      Add 'project: <N>' or pass --github-board=<N>."
+    exit 3
+  fi
+
+  echo "  Read from AGENTS.md: project #$BOARD_NUMBER"
+  _board_link "$BOARD_NUMBER"
+}
+
+_board_add_status_field() {
+  local PROJECT_NUMBER="$1"
+  echo "  Adding harnessable Status field..."
+
+  local PROJECT_ID
+  PROJECT_ID="$(gh api graphql \
+    -f query="query { user(login: \"$GITHUB_BOARD_OWNER\") { \
+      projectV2(number: $PROJECT_NUMBER) { id } } }" \
+    --jq '.data.user.projectV2.id' 2>/dev/null)" || true
+
+  if [[ -z "$PROJECT_ID" ]]; then
+    PROJECT_ID="$(gh api graphql \
+      -f query="query { organization(login: \"$GITHUB_BOARD_OWNER\") { \
+        projectV2(number: $PROJECT_NUMBER) { id } } }" \
+      --jq '.data.organization.projectV2.id' 2>/dev/null)" || true
+  fi
+
+  if [[ -z "$PROJECT_ID" ]]; then
+    echo "  WARN Could not resolve project node ID for field creation."
+    echo "       Add Status field options manually: ${HARNESSABLE_STATUS_OPTIONS[*]}"
+    return 0
+  fi
+
+  local FIELD_ID
+  FIELD_ID="$(gh api graphql \
+    -f query="mutation {
+      addProjectV2Field(input: {
+        projectId: \"$PROJECT_ID\"
+        dataType: SINGLE_SELECT
+        name: \"Status\"
+      }) { projectV2Field { ... on ProjectV2SingleSelectField { id } } }
+    }" \
+    --jq '.data.addProjectV2Field.projectV2Field.id' 2>/dev/null)" || true
+
+  if [[ -z "$FIELD_ID" ]]; then
+    echo "  WARN Status field may already exist or could not be created."
+    echo "       Verify field options manually."
+    return 0
+  fi
+
+  local option
+  for option in "${HARNESSABLE_STATUS_OPTIONS[@]}"; do
+    gh api graphql \
+      -f query="mutation {
+        addProjectV2SingleSelectFieldOption(input: {
+          fieldId: \"$FIELD_ID\"
+          name: \"$option\"
+        }) { projectV2SingleSelectField { id } }
+      }" &>/dev/null || true
+    echo "    + $option"
+  done
+
+  echo "  Status field configured: ${#HARNESSABLE_STATUS_OPTIONS[@]} options"
+}
+
+_board_check_status_field() {
+  local PROJECT_NUMBER="$1"
+  echo "  Checking Status field options..."
+
+  local EXISTING_OPTIONS
+  EXISTING_OPTIONS="$(gh project field-list "$PROJECT_NUMBER" \
+    --owner "$GITHUB_BOARD_OWNER" \
+    --format json 2>/dev/null | \
+    python3 -c "
+import json, sys
+try:
+  d = json.load(sys.stdin)
+  fields = d.get('fields', [])
+  for f in fields:
+    if f.get('name') == 'Status':
+      opts = [o.get('name','') for o in f.get('options',[])]
+      print('\n'.join(opts))
+      break
+except Exception:
+  pass
+" 2>/dev/null)" || true
+
+  local MISSING=()
+  local option
+  for option in "${HARNESSABLE_STATUS_OPTIONS[@]}"; do
+    if ! echo "$EXISTING_OPTIONS" | grep -qx "$option"; then
+      MISSING+=("$option")
+    fi
+  done
+
+  if [[ ${#MISSING[@]} -eq 0 ]]; then
+    echo "  OK All ${#HARNESSABLE_STATUS_OPTIONS[@]} status options present"
+  else
+    echo "  WARN Missing status options: ${MISSING[*]}"
+    echo "       Add them manually in GitHub Projects → Status field settings"
+  fi
+}
+
+_board_write_agents_md() {
+  local PROJECT_NUMBER="$1"
+  local PROJECT_URL="$2"
+  local AGENTS_FILE="$TARGET/AGENTS.md"
+
+  [[ -f "$AGENTS_FILE" ]] || return 0
+
+  python3 - "$AGENTS_FILE" \
+    "$PROJECT_NUMBER" "$PROJECT_URL" \
+    "$GITHUB_BOARD_OWNER" <<'PYEOF'
+import re, sys
+agents_path, number, url, owner = sys.argv[1:5]
+content = open(agents_path).read()
+
+tracker_block = f"""## Project Tracker
+
+tool:         GitHub Projects
+owner:        {owner}
+owner_type:   user
+project:      {number}
+integration:  gh CLI / MoijafcorGithubProjects MCP
+task_url:     {url}/items
+
+Expected GH CLI patterns:
+- gh project item-list {number} --owner {owner}
+- gh project item-create {number} --owner {owner} --title "..."
+- gh api graphql ... for field/status mutations
+
+Required board statuses:
+BACKLOG · MANDATED · IN_RECON · PLANNED · IN_PROGRESS ·
+IN_REVIEW · BLOCKED · NEEDS_REVISION · VERIFIED · DONE"""
+
+if re.search(r'##\s+Project Tracker', content):
+  content = re.sub(
+    r'##\s+Project Tracker\s*\n.*?(?=\n##|\Z)',
+    tracker_block + '\n',
+    content, flags=re.DOTALL
+  )
+else:
+  content = content.rstrip() + '\n\n' + tracker_block + '\n'
+
+open(agents_path, 'w').write(content)
+print(f'  PATCHED AGENTS.md ## Project Tracker → project #{number}')
+PYEOF
 }
 
 # ── detect_tracker / apply_tracker ────────────────────────────────────────────
@@ -913,6 +1225,7 @@ main() {
 
   bootstrap_agents_md
   cleanup_vendor_templates
+  setup_github_board
   sync_tier2
   sync_hooks
   sync_agents
