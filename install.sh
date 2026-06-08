@@ -1193,6 +1193,39 @@ _ensure_gitignore_pattern() {
   return 1
 }
 
+# ── audit_ignored_installed_paths ──────────────────────────────────────────────
+
+audit_ignored_installed_paths() {
+  echo "── Git ignore audit ─────────────────────────────────────────────────────"
+
+  local paths=(
+    "AGENTS.md"
+    "docs/harness"
+    "docs/harness/vendor/harnessable"
+    ".claude/settings.json"
+    ".claude/commands"
+    ".harnessable/config.json"
+  )
+
+  local ignored=0
+  local path
+  for path in "${paths[@]}"; do
+    if git -C "$TARGET" check-ignore -q "$path" 2>/dev/null; then
+      echo "  WARN  installed path is ignored by git: $path"
+      echo "        Remove or narrow the ignore rule, or run:"
+      echo "        git -C $TARGET add -f $path"
+      ACTION_ITEMS+=("Review .gitignore: installed harnessable path ignored: $path")
+      ignored=$((ignored + 1))
+    fi
+  done
+
+  if [[ "$ignored" -eq 0 ]]; then
+    echo "  OK    installed harnessable paths are not ignored by git"
+  fi
+
+  echo ""
+}
+
 # ── merge_config ──────────────────────────────────────────────────────────────
 
 merge_config() {
@@ -1372,6 +1405,7 @@ main() {
   merge_settings
   patch_gitignore
   merge_config
+  audit_ignored_installed_paths
   migrate_audit_log
 
   report
