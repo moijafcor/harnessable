@@ -12,6 +12,7 @@
 #
 # What this installs:
 #   <target>/AGENTS.md
+#   <target>/docs/harness/models.yaml
 #   <target>/.agents/skills/harnessable/SKILL.md
 #   <target>/.agents/skills/harnessable/HARNESSABLE_VERSION
 #
@@ -29,6 +30,7 @@ MODE="fresh"
 TARGET=""
 
 AGENTS_SRC="$REPO_ROOT/AGENTS.md"
+MODELS_SRC="$REPO_ROOT/framework/templates/models.yaml"
 SKILL_SRC="$REPO_ROOT/.agents/skills/harnessable/SKILL.md"
 VERSION_SRC="$REPO_ROOT/framework/vendor/harnessable/HARNESSABLE_VERSION"
 
@@ -67,9 +69,10 @@ parse_args() {
 }
 
 check_source() {
-  if [[ ! -f "$AGENTS_SRC" || ! -f "$SKILL_SRC" ]]; then
+  if [[ ! -f "$AGENTS_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
     echo "ERR  Source does not look like a Harnessable checkout:"
     [[ -f "$AGENTS_SRC" ]] || echo "     Missing: $AGENTS_SRC"
+    [[ -f "$MODELS_SRC" ]] || echo "     Missing: $MODELS_SRC"
     [[ -f "$SKILL_SRC" ]] || echo "     Missing: $SKILL_SRC"
     exit 3
   fi
@@ -148,6 +151,28 @@ install_agents_file() {
   LAST_STATUS="merge"
 }
 
+install_models_manifest() {
+  local dst="$TARGET/docs/harness/models.yaml"
+  ensure_dir "$(dirname "$dst")"
+
+  if [[ ! -f "$dst" ]]; then
+    cp "$MODELS_SRC" "$dst"
+    echo "  SYNCED  docs/harness/models.yaml  (NEW)"
+    LAST_STATUS="synced"
+    return 0
+  fi
+
+  if diff -q "$MODELS_SRC" "$dst" &>/dev/null; then
+    echo "  OK      docs/harness/models.yaml"
+    LAST_STATUS="ok"
+    return 0
+  fi
+
+  echo "  MERGE   docs/harness/models.yaml  <- MANUAL_MERGE_REQUIRED"
+  ACTION_ITEMS+=("Merge Harnessable model manifest requirements from $MODELS_SRC into $dst without losing project model choices")
+  LAST_STATUS="merge"
+}
+
 main() {
   parse_args "$@"
   check_source
@@ -164,6 +189,9 @@ main() {
   echo "-- Codex adapter ---------------------------------------------------------"
 
   install_agents_file
+  count_status
+
+  install_models_manifest
   count_status
 
   SKILL_DIR="$TARGET/.agents/skills/harnessable"

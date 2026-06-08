@@ -33,6 +33,7 @@ AG_SYNCED=0; AG_OK=0; AG_MERGE=0
 HK_SYNCED=0; HK_OK=0
 TL_SYNCED=0; TL_OK=0
 TM_SYNCED=0; TM_OK=0
+MM_SYNCED=0; MM_OK=0; MM_MERGE=0
 SK_SYNCED=0; SK_OK=0; SK_MERGE=0
 REPLACE_COUNT=0
 REPLACE_FILES=()
@@ -361,9 +362,9 @@ sync_templates() {
     name="$(basename "$f")"
 
     # agents-md.md is install.sh internal tooling (greenfield AGENTS.md
-    # bootstrap only). It is never referenced by agents or hooks in a
-    # deployed project. Exclude from deployment.
-    [[ "$name" == "agents-md.md" ]] && continue
+    # bootstrap only). models.yaml is installed as docs/harness/models.yaml,
+    # not under templates. Exclude both from template deployment.
+    [[ "$name" == "agents-md.md" || "$name" == "models.yaml" ]] && continue
 
     dst="$DST_DIR/$name"
     label="docs/harness/templates/$name"
@@ -393,6 +394,49 @@ sync_templates() {
     fi
   done
 
+  echo ""
+}
+
+# ── sync_models_manifest ──────────────────────────────────────────────────────
+# Project-owned model choices. Install when absent; never overwrite customised
+# manifests because projects may intentionally pin different providers/models.
+
+sync_models_manifest() {
+  echo "── Models manifest ──────────────────────────────────────────────────────"
+
+  local SRC="$FRAMEWORK_ROOT/framework/templates/models.yaml"
+  local DST="$TARGET/docs/harness/models.yaml"
+  local LABEL="docs/harness/models.yaml"
+
+  ensure_dir "$(dirname "$DST")"
+
+  if [[ ! -f "$SRC" ]]; then
+    echo "  MERGE   $LABEL  ← MANUAL_ACTION_REQUIRED (source missing)"
+    MM_MERGE=$((MM_MERGE + 1))
+    ACTION_ITEMS+=("Create docs/harness/models.yaml — source template missing at $SRC")
+    echo ""
+    return
+  fi
+
+  if [[ ! -f "$DST" ]]; then
+    cp "$SRC" "$DST"
+    echo "  SYNCED  $LABEL  (NEW)"
+    MM_SYNCED=$((MM_SYNCED + 1))
+    echo ""
+    return
+  fi
+
+  if diff -q "$SRC" "$DST" &>/dev/null; then
+    echo "  OK      $LABEL"
+    MM_OK=$((MM_OK + 1))
+    echo ""
+    return
+  fi
+
+  echo "  MERGE   $LABEL  ← MANUAL_MERGE_REQUIRED"
+  MM_MERGE=$((MM_MERGE + 1))
+  MERGE_FILES+=("$LABEL")
+  ACTION_ITEMS+=("Review framework/templates/models.yaml and merge any required role entries into $DST without losing project model choices")
   echo ""
 }
 
@@ -1326,6 +1370,8 @@ report() {
     "Tools ($(( TL_SYNCED + TL_OK ))):" "$TL_SYNCED" "$TL_OK"
   printf "  %-24s %d synced / %d current\n" \
     "Templates ($(( TM_SYNCED + TM_OK ))):" "$TM_SYNCED" "$TM_OK"
+  printf "  %-24s %d synced / %d current / %d manual merge\n" \
+    "Models manifest:" "$MM_SYNCED" "$MM_OK" "$MM_MERGE"
   printf "  %-24s %d synced / %d current\n" \
     "Skills ($(( SK_SYNCED + SK_OK ))):" "$SK_SYNCED" "$SK_OK"
   printf "  %-24s settings=%s  .gitignore=%s  config=%s\n" \
@@ -1401,6 +1447,7 @@ main() {
   sync_agents
   sync_tools
   sync_templates
+  sync_models_manifest
   sync_skills
   merge_settings
   patch_gitignore

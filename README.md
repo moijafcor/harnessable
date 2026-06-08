@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents doing high-stakes production work: twelve roles across six tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: thirteen roles across six tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -24,6 +24,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Why outcomes, not operations](#why-outcomes-not-operations)
   - [Target Outcome Mandate (TOM)](#target-outcome-mandate-tom)
   - [Knowledge Graph](#knowledge-graph)
+  - [Models Manifest](#models-manifest)
   - [Context Continuity](#context-continuity)
   - [Recursive Self-Improvement](#recursive-self-improvement)
   - [Quality Lifecycle](#quality-lifecycle)
@@ -349,6 +350,7 @@ harnessable/
 │   │   ├── agents-md.md           AGENTS.md template — all standard sections including Communication Channels
 │   │   ├── dip.md                 Design Implementation Plan template (all required sections)
 │   │   ├── knowledge-graph.yaml   Project knowledge graph bootstrap template
+│   │   ├── models.yaml            Project model manifest bootstrap template
 │   │   └── skills/                Role skill wrappers (installed as .claude/commands/ — framework-owned)
 │   │
 │   └── vendor/                    Tier 2 (pin and never modify)
@@ -493,6 +495,20 @@ R.A.F.A.E.L.'s memory layer is designed to enable.
 The knowledge graph is also the pipeline's second output. Every mandate produces working software and an enriched graph — both are required for DONE. Every role is a scout: the Engineer amends the graph during recon, the Coder and QA file `ONTOLOGY_GAP` when they encounter undeclared concepts, and the Architect grounds mandate intent in the graph before the DMT is finalised and confirms enrichment before closure. A concept discovered during any stage that is not in the graph halts work until declared. ONTOLOGY_GAP resolutions and graph enrichment are also prerequisites for framework improvement — when the same gap class recurs across three mandates, it triggers a MetaMandate.
 
 Full model and extension guide: [framework/vendor/harnessable/references/knowledge-graph.md](framework/vendor/harnessable/references/knowledge-graph.md)
+
+### Models Manifest
+
+`docs/harness/models.yaml` declares which model/provider/cost tier should
+run each Harnessable role in the installed project. The installer creates it
+from [framework/templates/models.yaml](framework/templates/models.yaml) and
+treats it as project-owned configuration: fill the `# REPLACE` model fields
+for the models your team can actually use. On update, customised manifests
+are reported as `MERGE` rather than overwritten.
+
+The Orchestrator reads this manifest at INITIALISING before commissioning
+any role, then declares the selected model explicitly in the commission. If
+the file is absent or a role entry is missing, the Orchestrator applies the
+framework's tier defaults and files the required discovery.
 
 ### Context Continuity
 
@@ -735,9 +751,10 @@ It installs:
 
 | What | Where | Tier |
 | --- | --- | --- |
-| `KNOWLEDGE_GRAPH.yaml`, `references/`, `templates/`, `HARNESSABLE_VERSION` | `docs/harness/vendor/harnessable/` | 2 — never modify |
+| `KNOWLEDGE_GRAPH.yaml`, `references/`, `HARNESSABLE_VERSION` | `docs/harness/vendor/harnessable/` | 2 — never modify |
 | `agents/`, `hooks/`, `tools/web_verify.py`, `templates/` | `docs/harness/` | 1 — copy and own |
-| Twelve role skills | `.claude/commands/` | framework-owned — do not edit |
+| Project model manifest | `docs/harness/models.yaml` | project-owned config |
+| Thirteen role skills | `.claude/commands/` | framework-owned — do not edit |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |
 | Audit defaults | `.harnessable/config.json` | config |
@@ -748,6 +765,7 @@ It installs:
 | --- | --- | --- | --- |
 | Tier 2 — vendor | KNOWLEDGE_GRAPH, references/ | Unconditional replace | Never |
 | Tier 1 — scaffold | Agent files, dip.md | Replace if not customised; MANUAL_MERGE if customised | Yes — project owns after copy |
+| Project config | models.yaml | Install if absent; MANUAL_MERGE if customised | Yes |
 | Framework-owned | Hooks, tools, skills | Unconditional replace | No — AGENTS.md only |
 
 **Output prefixes** during a run:
@@ -805,7 +823,8 @@ The items that may require manual configuration:
 
 1. Add `## Project Tracker` to `AGENTS.md` if you installed without
    `--github-board` automation
-2. Fill spike.md high-risk surfaces if a `# REPLACE` marker remains
+2. Fill `docs/harness/models.yaml` model/provider choices
+3. Fill spike.md high-risk surfaces if a `# REPLACE` marker remains
 
 Invoke any role with:
 

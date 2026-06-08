@@ -1,6 +1,6 @@
 # Harnessable — Codex Integration
 
-Harnessable works with Codex through three mechanisms:
+Harnessable works with Codex through four mechanisms:
 
 1. **`AGENTS.md`** at the repo root — persistent repository instructions
    loaded automatically by Codex at session start. Declares role boundaries,
@@ -11,7 +11,11 @@ Harnessable works with Codex through three mechanisms:
    protocol, discovery classification table, and knowledge graph obligations
    into the active session.
 
-3. **`codex/*.prompt.md` and `codex/examples/`** — role prompt templates. Use
+3. **`docs/harness/models.yaml`** — project-owned model manifest. The
+   Orchestrator reads it before commissioning roles so each role can be
+   assigned an explicit model/provider/cost tier.
+
+4. **`codex/*.prompt.md` and `codex/examples/`** — role prompt templates. Use
    these as your starting point for each engagement, pipeline, quality
    lifecycle, lightweight, or emergency role rather than writing prompts from
    scratch.
@@ -22,9 +26,10 @@ Harnessable works with Codex through three mechanisms:
 bash codex/install.sh /path/to/your-project
 ```
 
-The script installs `AGENTS.md` and the harnessable skill. It will not
-overwrite a customised `AGENTS.md`; it reports `MERGE` so you can
-merge the Harnessable blocks into the existing repo-level instructions.
+The script installs `AGENTS.md`, `docs/harness/models.yaml`, and the
+harnessable skill. It will not overwrite a customised `AGENTS.md` or
+model manifest; it reports `MERGE` so you can merge the Harnessable
+blocks without losing project-specific instructions or model choices.
 
 To install the full enforcement layer (hooks, guards, audit logger,
 completion gate), run the root installer from this checkout:
@@ -34,8 +39,8 @@ bash install.sh /path/to/your-project
 ```
 
 That installer currently wires Claude Code lifecycle hooks. Codex uses the
-protocol through `AGENTS.md`, the Harnessable skill, prompt templates, and
-explicit verification commands in the DIP.
+protocol through `AGENTS.md`, the model manifest, the Harnessable skill,
+prompt templates, and explicit verification commands in the DIP.
 
 ## Invoking roles
 
@@ -50,8 +55,9 @@ codex "$(cat codex/orchestrator.prompt.md)"
 Orchestrator receives marketplace signals, classifies the engagement as
 templated or novel, authors or revises Target Outcome Mandates (TOMs),
 commissions domain Architects per constituent TOM, and judges DONE against
-the parent TOM Target Outcomes. It does not implement, write DIPs, or write
-code.
+the parent TOM Target Outcomes. It reads `docs/harness/models.yaml` before
+commissioning roles and declares the selected model per commission. It does
+not implement, write DIPs, or write code.
 
 ### Core Pipeline
 
@@ -203,6 +209,7 @@ Codex loads `AGENTS.md` at session start without being asked. This means:
 - Blocked actions (force-push, destructive DB commands, etc.) are declared
   before any work starts
 - The completion gate format is enforced on every response
+- The model manifest location is declared for Orchestrator commissioning
 
 You do not need to repeat these in your prompts.
 
@@ -218,6 +225,13 @@ The skill loads the full protocol when invoked. This adds:
 
 Invoke it for any non-trivial mandate. For simple bounded tasks, `AGENTS.md`
 alone may be sufficient.
+
+## Models manifest
+
+The Codex installer places the default manifest at
+`docs/harness/models.yaml`. Fill the `# REPLACE` model fields for the
+providers available to your project. The Orchestrator reads this file at
+INITIALISING and should name the selected model when commissioning any role.
 
 ## Knowledge graph
 
