@@ -1303,6 +1303,15 @@ if 'codebases' not in config:
     config['codebases'] = []
     changed = True
 
+if 'sibling_projects' not in config:
+    config['sibling_projects'] = []
+    changed = True
+
+config['_readme_sibling_projects'] = (
+    "List sibling project paths for mandate_snapshot.py inclusion. "
+    "Example: ['../my-other-repo', '../another-repo']"
+)
+
 with open(config_path, 'w') as f:
     json.dump(config, f, indent=2)
     f.write('\n')

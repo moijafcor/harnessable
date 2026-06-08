@@ -4,10 +4,10 @@
 
 # REPLACE: Write 2-3 sentences describing what this project is and
 # what harnessable governs here. Example:
-# "This is the api.your-project backend. Work here governs the MCP
-# tool surface, Google Ads integration, multi-tenant data layer,
-# and autonomy policy enforcement. Changes to MCP tools or the
-# tenant isolation boundary require Security role sign-off."
+# "This is the backend API for {project}. Work here governs the
+# core business logic, data layer, and external integrations.
+# Changes to auth/authz or the tenant isolation boundary require
+# Security role sign-off."
 
 Full framework documentation:
 

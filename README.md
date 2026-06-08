@@ -743,11 +743,11 @@ bash install.sh --github-board=new /path/to/your-project
 bash install.sh --github-board=5 /path/to/your-project
 
 # Or create/link an org-owned board by owner and number
-bash install.sh --github-board=new --owner=AdsWireIO /path/to/your-project
-bash install.sh --github-board=5 --owner=AdsWireIO /path/to/your-project
+bash install.sh --github-board=new --owner=your-org /path/to/your-project
+bash install.sh --github-board=5 --owner=your-org /path/to/your-project
 
 # Or link using the full GitHub Projects URL
-bash install.sh --github-board=https://github.com/orgs/AdsWireIO/projects/5/views/1 /path/to/your-project
+bash install.sh --github-board=https://github.com/orgs/your-org/projects/5/views/1 /path/to/your-project
 bash install.sh --github-board=https://github.com/users/moijafcor/projects/2 /path/to/your-project
 
 # Or install without GitHub Projects automation
