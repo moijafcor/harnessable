@@ -205,6 +205,14 @@ principle: >
   the canonical tool are undocumented drift and must be flagged
   as ONTOLOGY_GAP or BLOCKER in the mandate artifact.
 
+## Models
+
+# Declares which model runs each role in this project.
+# The Orchestrator reads docs/harness/models.yaml at INITIALISING.
+# REPLACE: fill docs/harness/models.yaml after installing harnessable.
+
+manifest: docs/harness/models.yaml
+
 ## Communication Channels
 
 # The Narrator produces content for these destinations.
