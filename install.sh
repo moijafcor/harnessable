@@ -373,6 +373,45 @@ sync_templates() {
   echo ""
 }
 
+# ── bootstrap_agents_md ───────────────────────────────────────────────────────
+# Greenfield only. Creates AGENTS.md from template if absent.
+# Never overwrites an existing AGENTS.md under any circumstance.
+bootstrap_agents_md() {
+  local AGENTS_MD="$TARGET/AGENTS.md"
+  local TEMPLATE="$FRAMEWORK_ROOT/framework/templates/agents-md.md"
+
+  [[ -f "$AGENTS_MD" ]] && return 0
+
+  if [[ ! -f "$TEMPLATE" ]]; then
+    echo "  WARN  AGENTS.md absent but template not found:"
+    echo "        $TEMPLATE"
+    echo "        Create AGENTS.md manually before running agents."
+    ACTION_ITEMS+=("Create AGENTS.md — template not found at $TEMPLATE")
+    return 1
+  fi
+
+  cp "$TEMPLATE" "$AGENTS_MD"
+
+  echo ""
+  echo "  ┌─────────────────────────────────────────────────────┐"
+  echo "  │  GREENFIELD INSTALL — AGENTS.md created             │"
+  echo "  │                                                     │"
+  echo "  │  Fill every # REPLACE marker before running        │"
+  echo "  │  agent sessions. Critical sections:                │"
+  echo "  │                                                     │"
+  echo "  │  ## Project Identity  — domain and timezone        │"
+  echo "  │  ## Project Tracker   — enables skill auto-fill    │"
+  echo "  │  ## Blocked           — safety floor commands      │"
+  echo "  │  ## Completion Gate   — gated verification         │"
+  echo "  │                                                     │"
+  echo "  │  Then re-run: bash install.sh --update .           │"
+  echo "  │  to auto-fill skills from ## Project Tracker.      │"
+  echo "  └─────────────────────────────────────────────────────┘"
+  echo ""
+
+  ACTION_ITEMS+=("Fill AGENTS.md REPLACE markers then re-run install.sh --update")
+}
+
 # ── detect_tracker / apply_tracker ────────────────────────────────────────────
 
 detect_tracker() {
@@ -864,6 +903,7 @@ main() {
   echo "  Target:  $TARGET"
   echo ""
 
+  bootstrap_agents_md
   sync_tier2
   sync_hooks
   sync_agents
