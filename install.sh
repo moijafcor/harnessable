@@ -24,6 +24,7 @@ TARGET=""
 FRAMEWORK_VERSION=""
 GITHUB_BOARD=""
 GITHUB_BOARD_OWNER=""
+GITHUB_BOARD_OWNER_TYPE=""
 GITHUB_BOARD_PASSED=false
 
 # Counters
@@ -68,6 +69,8 @@ parse_args() {
     echo "  bash install.sh --update                   # sync in current directory"
     echo "  bash install.sh --github-board=new /path/to/project"
     echo "  bash install.sh --github-board=N [--owner=user-or-org] /path/to/project"
+    echo "  bash install.sh --github-board=https://github.com/orgs/ORG/projects/N[/views/VIEW] /path/to/project"
+    echo "  bash install.sh --github-board=https://github.com/users/USER/projects/N /path/to/project"
     exit 0
   fi
 
@@ -491,6 +494,7 @@ setup_github_board() {
 
   echo "── GitHub Projects board ────────────────────────────────────────────────"
 
+  _board_normalize_input
   check_gh_cli
 
   case "$GITHUB_BOARD" in
@@ -500,6 +504,68 @@ setup_github_board() {
   esac
 
   echo ""
+}
+
+_board_normalize_input() {
+  case "$GITHUB_BOARD" in
+    ""|"new")
+      return 0
+      ;;
+    http://github.com/*|https://github.com/*|github.com/*)
+      local PARSED
+      PARSED="$(python3 - "$GITHUB_BOARD" <<'PYEOF'
+import re
+import sys
+from urllib.parse import urlparse
+
+raw = sys.argv[1]
+candidate = raw if re.match(r'https?://', raw) else f'https://{raw}'
+parsed = urlparse(candidate)
+path = parsed.path.rstrip('/')
+
+m = re.fullmatch(r'/(orgs|users)/([^/]+)/projects/([0-9]+)(?:/views/[0-9]+)?', path)
+if not m or parsed.netloc.lower() != 'github.com':
+    sys.exit(1)
+
+kind, owner, number = m.groups()
+owner_type = 'org' if kind == 'orgs' else 'user'
+print(f'{owner_type}\t{owner}\t{number}')
+PYEOF
+      )" || {
+        echo "  ERR Malformed GitHub Projects URL: $GITHUB_BOARD"
+        echo "      Expected: https://github.com/orgs/<org>/projects/<number>"
+        echo "            or: https://github.com/users/<user>/projects/<number>"
+        echo "      Optional suffix: /views/<view>"
+        exit 3
+      }
+
+      local URL_OWNER
+      IFS=$'\t' read -r GITHUB_BOARD_OWNER_TYPE URL_OWNER GITHUB_BOARD <<< "$PARSED"
+      if [[ -z "$GITHUB_BOARD_OWNER" ]]; then
+        GITHUB_BOARD_OWNER="$URL_OWNER"
+      fi
+      ;;
+    *[!0-9]*)
+      echo "  ERR Invalid --github-board value: $GITHUB_BOARD"
+      echo "      Use new, an empty value, a project number, or a GitHub Projects URL."
+      exit 3
+      ;;
+  esac
+}
+
+_board_owner_type_from_url() {
+  python3 - "$1" <<'PYEOF'
+import re
+import sys
+from urllib.parse import urlparse
+
+url = sys.argv[1]
+path = urlparse(url).path
+m = re.search(r'/(orgs|users)/[^/]+/projects/[0-9]+', path)
+if not m:
+    sys.exit(0)
+print('org' if m.group(1) == 'orgs' else 'user', end='')
+PYEOF
 }
 
 _board_create() {
@@ -531,6 +597,10 @@ _board_create() {
   echo "  Created: project #$PROJECT_NUMBER"
   echo "  URL: $PROJECT_URL"
 
+  if [[ -z "$GITHUB_BOARD_OWNER_TYPE" ]]; then
+    GITHUB_BOARD_OWNER_TYPE="$(_board_owner_type_from_url "$PROJECT_URL")"
+  fi
+
   _board_add_status_field "$PROJECT_NUMBER"
   _board_write_agents_md "$PROJECT_NUMBER" "$PROJECT_URL"
 }
@@ -540,14 +610,23 @@ _board_link() {
   echo "  Linking to GitHub Project #$BOARD_NUMBER"
   echo "  Owner: $GITHUB_BOARD_OWNER"
 
-  local PROJECT_DATA
+  local PROJECT_DATA GH_ERR
+  GH_ERR="$(mktemp /tmp/harnessable_gh_project_view.XXXXXX)"
   PROJECT_DATA="$(gh project view "$BOARD_NUMBER" \
     --owner "$GITHUB_BOARD_OWNER" \
-    --format json 2>/dev/null)" || {
+    --format json 2>"$GH_ERR")" || {
     echo "  ERR Project #$BOARD_NUMBER not found or not accessible."
     echo "      Verify owner with --owner=<org-or-user>"
+    if [[ -s "$GH_ERR" ]]; then
+      echo "      gh project view error:"
+      sed 's/^/        /' "$GH_ERR"
+    fi
+    echo "      If this is a missing project scope error, run:"
+    echo "      gh auth refresh -s project"
+    rm -f "$GH_ERR"
     exit 3
   }
+  rm -f "$GH_ERR"
 
   local PROJECT_URL PROJECT_TITLE
   PROJECT_URL="$(echo "$PROJECT_DATA" | \
@@ -559,6 +638,13 @@ _board_link() {
 
   echo "  Found: '$PROJECT_TITLE'"
   echo "  URL: $PROJECT_URL"
+
+  if [[ -z "$GITHUB_BOARD_OWNER_TYPE" ]]; then
+    GITHUB_BOARD_OWNER_TYPE="$(_board_owner_type_from_url "$PROJECT_URL")"
+  fi
+  if [[ -z "$GITHUB_BOARD_OWNER_TYPE" ]]; then
+    echo "  WARN Could not infer owner_type from project URL; AGENTS.md will omit owner_type."
+  fi
 
   _board_check_status_field "$BOARD_NUMBER"
   _board_write_agents_md "$BOARD_NUMBER" "$PROJECT_URL"
@@ -595,7 +681,11 @@ PYEOF
 
 _board_add_status_field() {
   local PROJECT_NUMBER="$1"
-  echo "  Adding harnessable Status field..."
+  _board_configure_status_field "$PROJECT_NUMBER"
+}
+
+_board_resolve_project_id() {
+  local PROJECT_NUMBER="$1"
 
   local PROJECT_ID
   PROJECT_ID="$(gh api graphql \
@@ -610,14 +700,30 @@ _board_add_status_field() {
       --jq '.data.organization.projectV2.id' 2>/dev/null)" || true
   fi
 
-  if [[ -z "$PROJECT_ID" ]]; then
-    echo "  WARN Could not resolve project node ID for field creation."
-    echo "       Add Status field options manually: ${HARNESSABLE_STATUS_OPTIONS[*]}"
-    return 0
-  fi
+  printf '%s' "$PROJECT_ID"
+}
 
-  local FIELD_ID
-  FIELD_ID="$(gh api graphql \
+_board_status_field_id() {
+  local PROJECT_NUMBER="$1"
+  gh project field-list "$PROJECT_NUMBER" \
+    --owner "$GITHUB_BOARD_OWNER" \
+    --format json 2>/dev/null | \
+    python3 -c "
+import json, sys
+try:
+  d = json.load(sys.stdin)
+  for f in d.get('fields', []):
+    if f.get('name') == 'Status':
+      print(f.get('id', ''), end='')
+      break
+except Exception:
+  pass
+" 2>/dev/null || true
+}
+
+_board_create_status_field() {
+  local PROJECT_ID="$1"
+  gh api graphql \
     -f query="mutation {
       addProjectV2Field(input: {
         projectId: \"$PROJECT_ID\"
@@ -625,65 +731,102 @@ _board_add_status_field() {
         name: \"Status\"
       }) { projectV2Field { ... on ProjectV2SingleSelectField { id } } }
     }" \
-    --jq '.data.addProjectV2Field.projectV2Field.id' 2>/dev/null)" || true
+    --jq '.data.addProjectV2Field.projectV2Field.id' 2>/dev/null || true
+}
 
-  if [[ -z "$FIELD_ID" ]]; then
-    echo "  WARN Status field may already exist or could not be created."
-    echo "       Verify field options manually."
+_board_configure_status_field() {
+  local PROJECT_NUMBER="$1"
+  echo "  Configuring harnessable Status field..."
+
+  local PROJECT_ID
+  PROJECT_ID="$(_board_resolve_project_id "$PROJECT_NUMBER")"
+
+  if [[ -z "$PROJECT_ID" ]]; then
+    echo "  WARN Could not resolve project node ID for Status field configuration."
+    echo "       Refresh GitHub CLI project scope, then rerun installer:"
+    echo "       gh auth refresh -s project"
     return 0
   fi
 
-  local option
-  for option in "${HARNESSABLE_STATUS_OPTIONS[@]}"; do
-    gh api graphql \
-      -f query="mutation {
-        addProjectV2SingleSelectFieldOption(input: {
-          fieldId: \"$FIELD_ID\"
-          name: \"$option\"
-        }) { projectV2SingleSelectField { id } }
-      }" &>/dev/null || true
-    echo "    + $option"
-  done
+  local FIELD_ID
+  FIELD_ID="$(_board_status_field_id "$PROJECT_NUMBER")"
 
-  echo "  Status field configured: ${#HARNESSABLE_STATUS_OPTIONS[@]} options"
+  if [[ -z "$FIELD_ID" ]]; then
+    echo "  Status field not found; creating it..."
+    FIELD_ID="$(_board_create_status_field "$PROJECT_ID")"
+    if [[ -z "$FIELD_ID" ]]; then
+      echo "  WARN Could not create Status field."
+      echo "       Refresh GitHub CLI project scope, then rerun installer:"
+      echo "       gh auth refresh -s project"
+      return 0
+    fi
+  fi
+
+  local GH_ERR GH_PAYLOAD
+  GH_ERR="$(mktemp /tmp/harnessable_gh_status_field.XXXXXX)"
+  GH_PAYLOAD="$(mktemp /tmp/harnessable_gh_status_field_payload.XXXXXX)"
+  python3 - "$GH_PAYLOAD" "$FIELD_ID" <<'PYEOF'
+import json
+import sys
+
+payload_path, field_id = sys.argv[1:3]
+options = [
+    ("BACKLOG", "GRAY"),
+    ("MANDATED", "BLUE"),
+    ("IN_RECON", "BLUE"),
+    ("PLANNED", "BLUE"),
+    ("IN_PROGRESS", "YELLOW"),
+    ("IN_REVIEW", "ORANGE"),
+    ("BLOCKED", "RED"),
+    ("NEEDS_REVISION", "RED"),
+    ("VERIFIED", "GREEN"),
+    ("DONE", "GREEN"),
+]
+payload = {
+    "query": """
+mutation($fieldId: ID!, $options: [ProjectV2SingleSelectFieldOptionInput!]!) {
+  updateProjectV2Field(input: {
+    fieldId: $fieldId
+    singleSelectOptions: $options
+  }) {
+    projectV2Field {
+      ... on ProjectV2SingleSelectField {
+        id
+      }
+    }
+  }
+}
+""",
+    "variables": {
+        "fieldId": field_id,
+        "options": [
+            {"name": name, "color": color, "description": ""}
+            for name, color in options
+        ],
+    },
+}
+with open(payload_path, "w") as f:
+    json.dump(payload, f)
+PYEOF
+
+  if gh api graphql --input "$GH_PAYLOAD" >/dev/null 2>"$GH_ERR"; then
+    echo "  Status field configured: ${#HARNESSABLE_STATUS_OPTIONS[@]} prescribed options"
+  else
+    echo "  WARN Could not replace Status field options."
+    if [[ -s "$GH_ERR" ]]; then
+      echo "       gh updateProjectV2Field error:"
+      sed 's/^/        /' "$GH_ERR"
+    fi
+    echo "       Refresh GitHub CLI project scope, then rerun installer:"
+    echo "       gh auth refresh -s project"
+  fi
+
+  rm -f "$GH_ERR" "$GH_PAYLOAD"
 }
 
 _board_check_status_field() {
   local PROJECT_NUMBER="$1"
-  echo "  Checking Status field options..."
-
-  local EXISTING_OPTIONS
-  EXISTING_OPTIONS="$(gh project field-list "$PROJECT_NUMBER" \
-    --owner "$GITHUB_BOARD_OWNER" \
-    --format json 2>/dev/null | \
-    python3 -c "
-import json, sys
-try:
-  d = json.load(sys.stdin)
-  fields = d.get('fields', [])
-  for f in fields:
-    if f.get('name') == 'Status':
-      opts = [o.get('name','') for o in f.get('options',[])]
-      print('\n'.join(opts))
-      break
-except Exception:
-  pass
-" 2>/dev/null)" || true
-
-  local MISSING=()
-  local option
-  for option in "${HARNESSABLE_STATUS_OPTIONS[@]}"; do
-    if ! echo "$EXISTING_OPTIONS" | grep -qx "$option"; then
-      MISSING+=("$option")
-    fi
-  done
-
-  if [[ ${#MISSING[@]} -eq 0 ]]; then
-    echo "  OK All ${#HARNESSABLE_STATUS_OPTIONS[@]} status options present"
-  else
-    echo "  WARN Missing status options: ${MISSING[*]}"
-    echo "       Add them manually in GitHub Projects → Status field settings"
-  fi
+  _board_configure_status_field "$PROJECT_NUMBER"
 }
 
 _board_write_agents_md() {
@@ -695,17 +838,18 @@ _board_write_agents_md() {
 
   python3 - "$AGENTS_FILE" \
     "$PROJECT_NUMBER" "$PROJECT_URL" \
-    "$GITHUB_BOARD_OWNER" <<'PYEOF'
+    "$GITHUB_BOARD_OWNER" "$GITHUB_BOARD_OWNER_TYPE" <<'PYEOF'
 import re, sys
-agents_path, number, url, owner = sys.argv[1:5]
+agents_path, number, url, owner, owner_type = sys.argv[1:6]
 content = open(agents_path).read()
+
+owner_type_line = f"owner_type:   {owner_type}\n" if owner_type else ""
 
 tracker_block = f"""## Project Tracker
 
 tool:         GitHub Projects
 owner:        {owner}
-owner_type:   user
-project:      {number}
+{owner_type_line}project:      {number}
 integration:  gh CLI / MoijafcorGithubProjects MCP
 task_url:     {url}/items
 
@@ -738,35 +882,28 @@ detect_tracker() {
   local AGENTS_FILE="$TARGET/AGENTS.md"
   [[ -f "$AGENTS_FILE" ]] || return 0
 
-  TRACKER_TOOL="$(python3 - "$AGENTS_FILE" <<'PYEOF'
+  local TRACKER_VALUES
+  TRACKER_VALUES="$(python3 - "$AGENTS_FILE" <<'PYEOF'
 import re, sys
 content = open(sys.argv[1]).read()
-m = re.search(r'## Project Tracker\n(.*?)(?=\n##|\Z)', content, re.DOTALL)
-if not m: sys.exit(0)
-tm = re.search(r'Tool:\s*(.+)', m.group(1))
-print(tm.group(1).strip() if tm else '', end='')
+m = re.search(r'##\s+Project Tracker\s*\n(.*?)(?=\n##|\Z)', content, re.DOTALL | re.I)
+if not m:
+    sys.exit(0)
+block = m.group(1)
+
+def value(pattern):
+    found = re.search(pattern, block, re.I | re.M)
+    return found.group(1).strip() if found else ''
+
+print(value(r'^\s*tool\s*:\s*(.+)$'))
+print(value(r'^\s*(?:task_url|Task URL pattern)\s*:\s*(.+)$'))
+print(value(r'^\s*integration\s*:\s*(.+)$'))
 PYEOF
   2>/dev/null || true)"
 
-  TRACKER_URL="$(python3 - "$AGENTS_FILE" <<'PYEOF'
-import re, sys
-content = open(sys.argv[1]).read()
-m = re.search(r'## Project Tracker\n(.*?)(?=\n##|\Z)', content, re.DOTALL)
-if not m: sys.exit(0)
-um = re.search(r'Task URL pattern:\s*(.+)', m.group(1))
-print(um.group(1).strip() if um else '', end='')
-PYEOF
-  2>/dev/null || true)"
-
-  TRACKER_INTEGRATION="$(python3 - "$AGENTS_FILE" <<'PYEOF'
-import re, sys
-content = open(sys.argv[1]).read()
-m = re.search(r'## Project Tracker\n(.*?)(?=\n##|\Z)', content, re.DOTALL)
-if not m: sys.exit(0)
-im = re.search(r'Integration:\s*(.+)', m.group(1))
-print(im.group(1).strip() if im else '', end='')
-PYEOF
-  2>/dev/null || true)"
+  TRACKER_TOOL="$(printf '%s\n' "$TRACKER_VALUES" | sed -n '1p')"
+  TRACKER_URL="$(printf '%s\n' "$TRACKER_VALUES" | sed -n '2p')"
+  TRACKER_INTEGRATION="$(printf '%s\n' "$TRACKER_VALUES" | sed -n '3p')"
 }
 
 apply_tracker() {

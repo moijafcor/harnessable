@@ -661,7 +661,15 @@ Then choose one installer mode for Step 2:
   (`BACKLOG` through `DONE`), and write the project number and URL to
   `AGENTS.md ## Project Tracker`.
 - `--github-board=<number>` — link this repo to an existing GitHub
-  Project and write the tracker block to `AGENTS.md`.
+  Project and write the tracker block to `AGENTS.md`. Add
+  `--owner=<org-or-user>` when the board is not owned by the
+  authenticated GitHub user.
+- `--github-board=https://github.com/orgs/<org>/projects/<number>` —
+  link an organization-owned board from its full GitHub Projects URL.
+- `--github-board=https://github.com/users/<user>/projects/<number>` —
+  link a user-owned board from its full GitHub Projects URL.
+  URLs copied from a specific project view also work, including a
+  trailing `/views/<view>` suffix.
 - `--github-board=` — read the project number already declared in
   `AGENTS.md ## Project Tracker` and validate that board.
 - no `--github-board` flag — install harnessable without GitHub Projects
@@ -683,12 +691,39 @@ bash install.sh --github-board=new /path/to/your-project
 # Or link an existing board
 bash install.sh --github-board=5 /path/to/your-project
 
-# Or create/link an org-owned board
+# Or create/link an org-owned board by owner and number
 bash install.sh --github-board=new --owner=AdsWireIO /path/to/your-project
+bash install.sh --github-board=5 --owner=AdsWireIO /path/to/your-project
+
+# Or link using the full GitHub Projects URL
+bash install.sh --github-board=https://github.com/orgs/AdsWireIO/projects/5/views/1 /path/to/your-project
+bash install.sh --github-board=https://github.com/users/moijafcor/projects/2 /path/to/your-project
 
 # Or install without GitHub Projects automation
 bash install.sh /path/to/your-project
 ```
+
+When a GitHub board flag is supplied, the installer configures the
+GitHub Projects `Status` field automatically. If the board already has
+primed/default labels, they are replaced with the harnessable
+single-select prescription:
+
+```text
+BACKLOG
+MANDATED
+IN_RECON
+PLANNED
+IN_PROGRESS
+IN_REVIEW
+BLOCKED
+NEEDS_REVISION
+VERIFIED
+DONE
+```
+
+If field configuration fails, the installer prints the underlying `gh`
+error. Refresh the GitHub CLI token with `gh auth refresh -s project`,
+then rerun the same installer command.
 
 The installer is idempotent — safe to re-run at any time. On greenfield
 projects it creates `AGENTS.md` from the template before syncing framework
