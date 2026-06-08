@@ -642,26 +642,11 @@ that needs an afternoon.
 
 ### 1. Set up your project tracker
 
-The installer can create and configure your GitHub Projects board
-automatically:
+Choose how harnessable should discover your tracker before you install.
+For GitHub Projects, the installer can create a board, link an existing
+board, or validate the board already declared in `AGENTS.md`.
 
-```bash
-# Create a new board for this project
-bash install.sh --github-board=new /path/to/project
-
-# Link to an existing board
-bash install.sh --github-board=5 /path/to/project
-
-# Validate the board already declared in AGENTS.md
-bash install.sh --github-board= /path/to/project
-```
-
-The `--github-board=new` flag creates a GitHub Project, configures
-the harnessable Status field with all ten required options
-(`BACKLOG` through `DONE`), and writes the project number and URL
-to `AGENTS.md ## Project Tracker` automatically.
-
-Requires the [GitHub CLI](https://cli.github.com/) authenticated
+First make sure the [GitHub CLI](https://cli.github.com/) is authenticated
 with `project` scope:
 
 ```bash
@@ -669,21 +654,49 @@ gh auth login
 gh auth refresh -s project
 ```
 
-To specify an org board, add `--owner=<org>`:
+Then choose one installer mode for Step 2:
 
-```bash
-bash install.sh --github-board=new --owner=AdsWireIO /path/to/project
-```
+- `--github-board=new` — create a new GitHub Project for this repo,
+  configure the harnessable Status field with all ten required options
+  (`BACKLOG` through `DONE`), and write the project number and URL to
+  `AGENTS.md ## Project Tracker`.
+- `--github-board=<number>` — link this repo to an existing GitHub
+  Project and write the tracker block to `AGENTS.md`.
+- `--github-board=` — read the project number already declared in
+  `AGENTS.md ## Project Tracker` and validate that board.
+- no `--github-board` flag — install harnessable without GitHub Projects
+  automation. Fill `AGENTS.md ## Project Tracker` manually, then re-run
+  `bash install.sh --update /path/to/project` so skills can auto-fill.
+
+For organization-owned boards, add `--owner=<org>` to the install
+command in Step 2.
 
 ### 2. Install the framework
 
-Run the installer from the harnessable repository root, pointing it at your project:
+Run one installer command from the harnessable repository root, pointing it
+at your target project:
 
 ```bash
+# Create and configure a new GitHub Projects board
+bash install.sh --github-board=new /path/to/your-project
+
+# Or link an existing board
+bash install.sh --github-board=5 /path/to/your-project
+
+# Or create/link an org-owned board
+bash install.sh --github-board=new --owner=AdsWireIO /path/to/your-project
+
+# Or install without GitHub Projects automation
 bash install.sh /path/to/your-project
 ```
 
-The installer is idempotent — safe to re-run at any time. It installs:
+The installer is idempotent — safe to re-run at any time. On greenfield
+projects it creates `AGENTS.md` from the template before syncing framework
+files. When a GitHub board flag is supplied, it patches
+`AGENTS.md ## Project Tracker` before skills are installed, so role
+commands receive tracker details during the same run.
+
+It installs:
 
 | What | Where | Tier |
 | --- | --- | --- |
@@ -711,7 +724,9 @@ The installer is idempotent — safe to re-run at any time. It installs:
 | `MERGE` | Customised file skipped — MANUAL_MERGE_REQUIRED |
 | `PATCHED` | Config file updated (settings, gitignore, config.json) |
 
-**Tracker auto-fill:** if your project's `AGENTS.md` already has a `## Project Tracker` section before you run the installer, the skills are auto-filled with your tracker tool, URL pattern, and integration method. If it does not, the skills install with a `# REPLACE` marker — add the section and re-run with `--update`.
+**Tracker auto-fill:** skills are auto-filled from `AGENTS.md ## Project Tracker`.
+The `--github-board` flags populate that section during install. For
+non-GitHub trackers, add the section manually and re-run with `--update`.
 
 **Keeping in sync:** as the framework evolves, pull the latest harnessable and sync all installed projects:
 
@@ -751,10 +766,11 @@ All project-specific configuration belongs in `AGENTS.md`.
 `install.sh` reads `AGENTS.md ## Project Tracker` and fills
 skill placeholders automatically on every sync.
 
-The two items that always require manual configuration:
+The items that may require manual configuration:
 
-1. Add `## Project Tracker` to `AGENTS.md` if not present
-2. Fill spike.md high-risk surfaces (line marked `# REPLACE`)
+1. Add `## Project Tracker` to `AGENTS.md` if you installed without
+   `--github-board` automation
+2. Fill spike.md high-risk surfaces if a `# REPLACE` marker remains
 
 Invoke any role with:
 
