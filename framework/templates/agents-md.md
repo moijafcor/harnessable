@@ -171,6 +171,40 @@ the exact approval needed.
 #
 # If none: "No project-specific MCP servers are declared."
 
+## Infrastructure
+
+# Declares the canonical tooling for provisioning and managing
+# infrastructure in this project. All agents must plan and verify
+# infrastructure changes through this tooling — not directly on hosts.
+# Direct mutations outside the canonical tool are undocumented drift.
+
+# REPLACE: Choose your provisioning tool and fill in the paths.
+# Common values for provisioning_tool:
+#   Ansible | Terraform | Pulumi | CDK | Helm | Chef | Puppet | manual
+# Use manual only when no IaC tooling exists — and explain why.
+
+provisioning_tool: # REPLACE: Ansible | Terraform | Pulumi | CDK |
+                   #          Helm | Chef | Puppet | manual (explain why)
+
+canonical_path:    # REPLACE: path to playbooks, modules, stacks,
+                   #          or charts — wherever the IaC lives
+                   # Ansible example:  ~/code/ansible/playbooks/
+                   # Terraform example: ~/code/infra/terraform/
+                   # Helm example:      ~/code/helm/charts/
+
+inventory:         # REPLACE: inventory file, state backend, or tfvars
+                   #          (omit if not applicable to your tooling)
+                   # Ansible example:  ~/code/ansible/inventory/
+                   # Terraform example: backend configured in main.tf
+
+principle: >
+  Infrastructure changes must be expressed as code changes to the
+  declared tooling, not executed directly on hosts. An SRE mandate
+  must reference the relevant playbook, module, stack, or chart —
+  not a sequence of shell commands. Direct host mutations outside
+  the canonical tool are undocumented drift and must be flagged
+  as ONTOLOGY_GAP or BLOCKER in the mandate artifact.
+
 ## Communication Channels
 
 # The Narrator produces content for these destinations.

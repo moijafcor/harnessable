@@ -180,6 +180,23 @@ MoijafcorGithubProjects MCP:
            link_pr_to_project, archive_project_item
   scope:   mandate tracking for harnessable framework development
 
+## Infrastructure
+
+provisioning_tool: Ansible
+
+canonical_path:    # REPLACE: ~/code/ansible/playbooks/
+                   # Path to the Ansible playbooks that govern
+                   # YOUR-NODE, colo nodes, and your-vendor fleet.
+
+inventory:         # REPLACE: ~/code/ansible/inventory/
+
+principle: >
+  Infrastructure changes must be expressed as Ansible playbook
+  changes, not executed directly on hosts. An SRE mandate working
+  on YOUR-NODE, colo, or your-vendor nodes must reference the relevant
+  playbook and role — not a sequence of shell commands. Direct
+  host mutations outside Ansible are undocumented drift.
+
 ## Communication Channels
 
 The Narrator may draft content for these destinations only when
