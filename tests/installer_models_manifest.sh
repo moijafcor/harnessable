@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_ROOT="$(mktemp -d)"
+EXPECTED_VERSION="$(git -C "$ROOT" rev-parse --short HEAD)"
 trap 'rm -rf "$TMP_ROOT"' EXIT
 
 fail() {
@@ -36,11 +37,20 @@ if len(roles) != 13:
 PYEOF
 }
 
+assert_version_file() {
+  local path="$1"
+  [[ -f "$path" ]] || fail "version file missing: $path"
+  [[ "$(cat "$path")" == "$EXPECTED_VERSION" ]] || \
+    fail "version file $path did not contain $EXPECTED_VERSION"
+}
+
 target="$(new_target)"
 bash "$ROOT/install.sh" "$target" > "$TMP_ROOT/full.out"
 assert_models_manifest "$target"
+assert_version_file "$target/docs/harness/vendor/harnessable/HARNESSABLE_VERSION"
 [[ ! -f "$target/docs/harness/templates/models.yaml" ]] || fail "models.yaml copied under templates"
 grep -q "SYNCED  docs/harness/models.yaml  (NEW)" "$TMP_ROOT/full.out" || fail "full installer did not report models manifest sync"
+grep -q "HARNESSABLE_VERSION → $EXPECTED_VERSION" "$TMP_ROOT/full.out" || fail "full installer did not report resolved version"
 
 echo "# project-selected models" >> "$target/docs/harness/models.yaml"
 git -C "$target" add -A
@@ -52,7 +62,9 @@ grep -q "# project-selected models" "$target/docs/harness/models.yaml" || fail "
 target="$(new_target)"
 bash "$ROOT/codex/install.sh" "$target" > "$TMP_ROOT/codex.out"
 assert_models_manifest "$target"
+assert_version_file "$target/.agents/skills/harnessable/HARNESSABLE_VERSION"
 grep -q "SYNCED  docs/harness/models.yaml  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report models manifest sync"
+grep -q "harnessable Codex adapter $EXPECTED_VERSION" "$TMP_ROOT/codex.out" || fail "codex installer did not report resolved version"
 
 echo "# codex project-selected models" >> "$target/docs/harness/models.yaml"
 git -C "$target" add -A

@@ -186,8 +186,7 @@ sync_tier2() {
     "$DST_VENDOR/KNOWLEDGE_GRAPH.yaml" \
     "docs/harness/vendor/harnessable/KNOWLEDGE_GRAPH.yaml"
 
-  _sync_vendor_file "$SRC_VENDOR/HARNESSABLE_VERSION" \
-    "$DST_VENDOR/HARNESSABLE_VERSION" \
+  _sync_version_file "$DST_VENDOR/HARNESSABLE_VERSION" \
     "docs/harness/vendor/harnessable/HARNESSABLE_VERSION → $FRAMEWORK_VERSION"
 
   echo ""
@@ -204,6 +203,24 @@ _sync_vendor_file() {
     echo "  OK      $LABEL"
     T2_OK=$((T2_OK + 1))
   fi
+}
+
+_sync_version_file() {
+  local DST="$1" LABEL="$2" TMP_VERSION
+  ensure_dir "$(dirname "$DST")"
+  TMP_VERSION="$(mktemp /tmp/harnessable_version.XXXXXX)"
+  printf '%s\n' "$FRAMEWORK_VERSION" > "$TMP_VERSION"
+
+  if [[ ! -f "$DST" ]] || ! diff -q "$TMP_VERSION" "$DST" &>/dev/null; then
+    cp "$TMP_VERSION" "$DST"
+    echo "  SYNCED  $LABEL"
+    T2_SYNCED=$((T2_SYNCED + 1))
+  else
+    echo "  OK      $LABEL"
+    T2_OK=$((T2_OK + 1))
+  fi
+
+  rm -f "$TMP_VERSION"
 }
 
 # ── sync_hooks ────────────────────────────────────────────────────────────────

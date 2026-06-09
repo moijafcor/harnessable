@@ -130,6 +130,15 @@ copy_if_changed() {
   LAST_STATUS="synced"
 }
 
+write_version_file() {
+  local dst="$1" label="$2" tmp_version
+  ensure_dir "$(dirname "$dst")"
+  tmp_version="$(mktemp /tmp/harnessable_codex_version.XXXXXX)"
+  printf '%s\n' "$FRAMEWORK_VERSION" > "$tmp_version"
+  copy_if_changed "$tmp_version" "$dst" "$label"
+  rm -f "$tmp_version"
+}
+
 install_agents_file() {
   local dst="$TARGET/AGENTS.md"
 
@@ -178,7 +187,9 @@ main() {
   check_source
   check_target
 
-  FRAMEWORK_VERSION="$(cat "$VERSION_SRC" 2>/dev/null || git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+  FRAMEWORK_VERSION="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null \
+    || cat "$VERSION_SRC" 2>/dev/null \
+    || echo unknown)"
 
   echo ""
   echo "harnessable Codex adapter $FRAMEWORK_VERSION  [mode: $MODE]"
@@ -198,18 +209,9 @@ main() {
   copy_if_changed "$SKILL_SRC" "$SKILL_DIR/SKILL.md" ".agents/skills/harnessable/SKILL.md"
   count_status
 
-  if [[ -f "$VERSION_SRC" ]]; then
-    copy_if_changed "$VERSION_SRC" "$SKILL_DIR/HARNESSABLE_VERSION" ".agents/skills/harnessable/HARNESSABLE_VERSION"
+  if [[ -n "$FRAMEWORK_VERSION" && "$FRAMEWORK_VERSION" != "unknown" ]]; then
+    write_version_file "$SKILL_DIR/HARNESSABLE_VERSION" ".agents/skills/harnessable/HARNESSABLE_VERSION"
     count_status
-  elif git -C "$REPO_ROOT" rev-parse HEAD &>/dev/null 2>&1; then
-    ensure_dir "$SKILL_DIR"
-    TMP_VERSION="$(mktemp /tmp/harnessable_codex_version.XXXXXX)"
-    trap 'rm -f "$TMP_VERSION"' EXIT
-    git -C "$REPO_ROOT" rev-parse --short HEAD > "$TMP_VERSION"
-    copy_if_changed "$TMP_VERSION" "$SKILL_DIR/HARNESSABLE_VERSION" ".agents/skills/harnessable/HARNESSABLE_VERSION"
-    count_status
-    rm -f "$TMP_VERSION"
-    trap - EXIT
   else
     echo "  MERGE   .agents/skills/harnessable/HARNESSABLE_VERSION  <- MANUAL_ACTION_REQUIRED"
     ACTION_ITEMS+=("Create .agents/skills/harnessable/HARNESSABLE_VERSION after choosing a release pin")
