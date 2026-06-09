@@ -106,6 +106,12 @@ verify-only operations and is removed by the Stop hook.
 codex "$(cat codex/qa.prompt.md)"
 ```
 
+QA is the grader in the harnessable Rubric loop. It evaluates DMT
+Acceptance Criteria, DIP Verification Checklists, and the AGENTS.md
+Completion Gate, then derives PASS / CONDITIONAL_PASS / FAIL from the
+Per-Criterion Verdict Table. FAIL, or CONDITIONAL_PASS returned to
+NEEDS_REVISION, must include targeted handoff blocks per failing criterion.
+
 ### Security
 
 Security review is invoked only when the Architect flagged the mandate for Security
@@ -220,6 +226,8 @@ The skill loads the full protocol when invoked. This adds:
 - Detailed role rules (what each role must and must not do)
 - The complete discovery classification table including `ONTOLOGY_GAP`
 - Knowledge graph obligations (grounding, amendment, PLANNED and DONE gates)
+- Rubric obligations for QA: three layers, per-criterion verdict table, and
+  NEEDS_REVISION handoff
 - Required output format per role, including TOM, DMT, DIP, TIR, SIR,
   QA Verdict, SRR, CRR, PIR, IB, CP, EIR, and Spike Branch
 

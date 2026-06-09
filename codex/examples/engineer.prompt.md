@@ -20,7 +20,8 @@ Produce a DIP that includes:
 - Architecture decisions (ADRs for non-obvious choices)
 - Ordered implementation steps
 - Containment checklist per step (Detect / Contain / Recover / Prevent)
-- Verification commands
+- Verification Checklists as Rubric Layer 2: `[REQUIRED]` checks QA will
+  re-execute alongside DMT Acceptance Criteria and the Completion Gate
 
 Raw labels in the DIP are a protocol violation if the concept is absent
 from the knowledge graph. Use namespaced terms only.

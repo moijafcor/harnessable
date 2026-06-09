@@ -19,9 +19,12 @@ Re-execute every verification command in the DIP yourself.
 Accepting TIR claims as evidence without re-execution is a
 protocol violation.
 
-You are verifying against two sources of truth:
-1. The DMT — are all acceptance criteria satisfied?
-2. The DIP — was the plan followed? Are all verification commands passing?
+You are verifying against the three-layer harnessable Rubric:
+
+1. Layer 1 — DMT Acceptance Criteria: business-level done.
+2. Layer 2 — DIP Verification Checklists: every `[REQUIRED]` item is
+   a mandatory criterion. Re-execute each independently.
+3. Layer 3 — AGENTS.md Completion Gate: automated commands must exit 0.
 
 If the TIR claims a command passed, run it yourself. If your result
 differs from the TIR's claimed result, that is finding F[n].
@@ -74,19 +77,40 @@ passes, is rewritten by Architect, or blocks the mandate.
 
 ---
 
+## Rubric evaluation
+
+Before forming an overall verdict, create one row for every criterion
+from every Rubric layer. The overall verdict derives from this table;
+do not declare it independently.
+
+| # | Criterion | Source | Verdict | Evidence |
+|---|---|---|---|---|
+| 1 | [criterion text] | Acceptance Criteria | PASS / FAIL / PARTIAL / BLOCKED | [actual output or observation] |
+| 2 | [criterion text] | Verification Checklist | PASS / FAIL / PARTIAL / BLOCKED | [actual output or observation] |
+| 3 | [criterion text] | Completion Gate | PASS / FAIL / PARTIAL / BLOCKED | [exit code and output] |
+
+Criterion verdict values:
+- `PASS` — criterion satisfied with evidence
+- `FAIL` — criterion not satisfied; MUST_FIX
+- `PARTIAL` — criterion partially satisfied; SHOULD_FIX
+- `BLOCKED` — criterion could not be evaluated; state why
+
+Overall verdict derivation:
+- `PASS` — all criteria PASS
+- `CONDITIONAL_PASS` — no FAIL, at least one PARTIAL or BLOCKED
+- `FAIL` — any MUST_FIX criterion is FAIL
+
+Do not list checks you did not run. If a check was skipped, mark the
+criterion BLOCKED and explain why — do not mark it PASS.
+
+---
+
 ## QA Verdict format
 
 Produce a QA Verdict appended to the DIP with:
 
-**Checks executed**
-A table of every check run:
-
-| Check | Result | Evidence |
-|---|---|---|
-| [DMT criterion or DIP verification command] | PASS / FAIL | [actual output or observation] |
-
-Do not list checks you did not run. If a check was skipped, say so
-and explain why — do not mark it PASS.
+**Per-Criterion Verdict Table**
+The full Rubric table above.
 
 **Findings**
 Number each failure: F1, F2, F3...
@@ -111,6 +135,20 @@ QA Verdict: PASS
 ```
 
 Then state the rationale in one to three sentences.
+
+**NEEDS_REVISION Handoff**
+When issuing FAIL, or returning CONDITIONAL_PASS to NEEDS_REVISION,
+include one targeted block per failing criterion:
+
+```text
+Criterion: {exact criterion text from Rubric}
+Current state: {what QA found}
+Required to PASS: {exact evidence or action needed}
+Role: {Coder | SRE | Engineer}
+```
+
+Generic NEEDS_REVISION without targeted per-criterion handoff is a QA
+defect.
 
 ---
 

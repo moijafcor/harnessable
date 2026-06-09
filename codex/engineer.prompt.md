@@ -91,10 +91,13 @@ Ordered, numbered. Each step must answer the containment checklist:
 A step with no answer for any of these has a design gap. Fix it
 before listing the step.
 
-**Verification commands**
-The exact commands QA will run to verify this mandate. Not "run the
-tests" — the specific commands with expected output or exit codes.
-QA will re-execute these independently.
+**Verification Checklists — Rubric Layer 2**
+The exact `[REQUIRED]` checks QA will run to verify this mandate,
+grouped by functional, operational, domain, QA-specific, and
+security/compliance checks as applicable. Not "run the tests" — the
+specific assertions or commands with expected output or exit codes.
+QA will re-execute these independently alongside DMT Acceptance
+Criteria (Layer 1) and the AGENTS.md Completion Gate (Layer 3).
 
 **Domain concepts introduced**
 Any new concepts declared in the knowledge graph during this mandate.

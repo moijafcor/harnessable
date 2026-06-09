@@ -51,9 +51,13 @@ documented, respects blast radius, and verifies system health — not test
 suites. Produces a SIR with actual command output and observation window
 evidence, not claims.
 
-**QA** verifies independently. Re-executes checks — does not inherit
-them from the Coder or SRE. A passing verdict over unresolved ONTOLOGY_GAP
-discoveries is a protocol violation.
+**QA** verifies independently as the grader in the harnessable Rubric
+loop. It evaluates three layers before declaring any verdict: DMT
+Acceptance Criteria, DIP Verification Checklists, and the AGENTS.md
+Completion Gate. It re-executes checks — does not inherit them from the
+Coder or SRE — and derives the overall verdict from a per-criterion
+verdict table. A passing verdict over unresolved ONTOLOGY_GAP discoveries
+is a protocol violation.
 
 **Security** is invoked by the Architect on mandates that touch auth, untrusted
 inputs, credentials, external surfaces, data exposure, privilege, or new
@@ -80,7 +84,7 @@ Communication Package. Does not issue verdicts or invent unsupported outcomes.
 | Engineering            | Design Implementation Plan (DIP)                          |
 | Coding                 | Task Implementation Report (TIR)                          |
 | Infrastructure / Ops   | SRE Implementation Report (SIR)                           |
-| Review                 | QA Verdict: PASS / CONDITIONAL_PASS / FAIL                |
+| Review                 | QA Verdict with per-criterion Rubric table: PASS / CONDITIONAL_PASS / FAIL |
 | Security (when flagged)| Security Review Report (SRR): SECURE_PASS / CONDITIONAL_PASS / FAIL |
 | Code review [quality]  | Code Review Report (CRR) + child mandates                 |
 | Traffic inspection [quality] | Protocol Inspection Report (PIR) + child mandates   |
