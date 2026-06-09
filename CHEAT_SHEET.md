@@ -1067,6 +1067,16 @@ Produces the **QA Verdict**, containing:
 - Out-of-scope findings
 - Verdict: PASS / CONDITIONAL_PASS / FAIL
 
+### Rubric
+
+Three-layer done criteria evaluated by QA:
+  Layer 1: DMT Acceptance Criteria (Architect)
+  Layer 2: DIP Verification Checklists [REQUIRED] (Engineer)
+  Layer 3: Completion Gate commands (AGENTS.md)
+
+QA produces per-criterion verdict table → PASS/FAIL/PARTIAL/BLOCKED
+FAIL → NEEDS_REVISION with targeted handoff per failing criterion
+
 ---
 
 ### Security [Pipeline]

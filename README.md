@@ -31,6 +31,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Recursive Self-Improvement](#recursive-self-improvement)
   - [Quality Lifecycle](#quality-lifecycle)
   - [Analyst](#analyst)
+  - [Rubric](#rubric)
   - [Orchestrator](#orchestrator)
   - [Narrator](#narrator)
   - [External Fact Verification](#external-fact-verification)
@@ -574,6 +575,22 @@ independent signals. The Analyst recommends; the Architect
 decides whether to mandate work. No training knowledge may
 appear as a source in an Intelligence Brief — every claim
 requires a fetched URL and a date.
+
+### Rubric
+
+The Rubric is the complete set of verifiable criteria that define
+DONE for a mandate. It has three layers: the DMT Acceptance
+Criteria (what the Architect declared as done), the DIP
+Verification Checklists (what the Engineer specified as done at
+implementation level), and the Completion Gate (automated shell
+commands that must exit 0). The QA role is the grader — it
+evaluates output against all three layers and produces a
+per-criterion verdict table. When any criterion fails, QA issues
+NEEDS_REVISION with targeted per-criterion feedback: exactly what
+failed and exactly what evidence would satisfy it. This is the
+harnessable Rubric loop — the same pattern LangChain formalises
+as RubricMiddleware, human-gated by design because high-stakes
+production work should not loop autonomously.
 
 ### Orchestrator
 
