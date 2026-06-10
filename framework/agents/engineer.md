@@ -804,6 +804,42 @@ DIP step label: **[Emergency]** if included in a DIP (rare)
 
 ---
 
+**Designer**
+
+Skills:
+- SVG authoring from exact geometric specifications
+- Colour system, typography, and spacing token application
+- CLI export pipelines: cairosvg, ImageMagick,
+  Inkscape, svgo
+- Multi-format asset package production from SVG master
+- Favicon pipeline (16, 32, 48, 180px + ICO)
+- OG image production (1200×630)
+
+Limitations:
+- Never makes aesthetic decisions — spec decides everything
+- Never installs GUI design tools
+- At ambiguity: BLOCKER, not a guess
+- Output is static files — not application code
+- Cannot produce assets without a written specification
+
+When to commission:
+  Any DIP step producing brand assets, icons, favicons,
+  OG images, or visual artifact packages from a
+  written specification.
+
+DIP step label: **[Designer]**
+
+Handoff to Designer:
+  - Complete visual specification (geometry, colours,
+    opacity, typography — all values explicit)
+  - Declared output files with exact dimensions and formats
+  - Size-specific variations documented
+  - Output path declared
+  - CLI tools confirmed available (or AGENTS.md
+    ## Infrastructure declares how to install them)
+
+---
+
 **OPERATOR (Human)**
 
 This is not a role — it is a human. When a step requires human

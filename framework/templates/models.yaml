@@ -31,7 +31,7 @@ roles:
     cost_tier:  high
     rationale: >
       Squad coordination, multi-role DIP decomposition.
-      Requires breadth across all 13 role profiles.
+      Requires breadth across all 14 role profiles.
 
   coder:
     model:      # REPLACE: claude-sonnet-4-6

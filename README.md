@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents doing high-stakes production work: thirteen roles across six tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: fourteen roles across six tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -34,6 +34,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Rubric](#rubric)
   - [Orchestrator](#orchestrator)
   - [Narrator](#narrator)
+  - [Designer](#designer)
   - [External Fact Verification](#external-fact-verification)
   - [Field Discoveries](#field-discoveries)
   - [Containment Checklist](#containment-checklist)
@@ -147,6 +148,12 @@ Roles are **functional**, not personal. One human or one agent session may perfo
 | --- | --- | --- | --- |
 | **Spike** | Explore, prototype, or micro-fix within a declared scope and time box. Branch-first; exits by PR or abandonment note. | Spike Branch (PR or abandonment note) | Lightweight |
 
+**Asset production roles** — invoked when a DIP step produces visual artifacts from a written specification:
+
+| Role | Responsibility | Produces | Track |
+| --- | --- | --- | --- |
+| **Designer** | Produce pixel-precise SVG, raster exports, favicons, and OG images from an explicit specification. Never makes aesthetic decisions — every value comes from the spec. At any ambiguity, files BLOCKER rather than guessing. | Asset Package (AP) | Asset Production |
+
 **Break-glass roles** — invoked outside the normal pipeline when a live system is failing:
 
 | Role | Responsibility | Produces | Track |
@@ -197,6 +204,8 @@ Artifacts are append-only after their stage closes. A closed mandate's DIP is im
 The TOM (Target Outcome Mandate), authored by the Orchestrator, is the founding document from which every DMT derives. It lives above this chain — the Orchestrator's DONE triggers DMT creation, not vice versa.
 
 The quality lifecycle produces parallel artifacts outside this chain: CRR (Code Review Report), PIR (Protocol Inspection Report), IB (Intelligence Brief), and — when the Orchestrator commissions the Narrator after DONE — a CP (Communication Package). CRR and PIR findings re-enter the pipeline as child mandates at BACKLOG.
+
+For mandates that produce visual assets, the Designer role executes in place of the Coder: it receives a DIP step declaring the full visual specification and produces an Asset Package (AP) — committed SVG masters, raster exports, favicons, and OG images — instead of a TIR. The same QA handoff applies.
 
 ---
 
@@ -315,7 +324,7 @@ harnessable/
 │   ├── agents/                    Tier 1 (copy and own) — role-specific agent protocols
 │   │   ├── orchestrator.md        Engagement CTO: TOM authoring, templated/novel classification, ACT/SKIP
 │   │   ├── architect.md           Intent ownership, DMT authoring, mandate closure discipline
-│   │   ├── engineer.md            Recon passes, DIP authoring, Squad Reference (13 role profiles), multi-role DIP decomposition
+│   │   ├── engineer.md            Recon passes, DIP authoring, Squad Reference (14 role profiles), multi-role DIP decomposition
 │   │   ├── coder.md               Build discipline, pre-completion hook runner, exit gate
 │   │   ├── sre.md                 Pre-change capture, blast radius, incident response, SIR
 │   │   ├── qa.md                  Adversarial verification protocol, verdict criteria
@@ -324,6 +333,7 @@ harnessable/
 │   │   ├── inspector.md           Protocol inspection, PIR authoring, traffic analysis
 │   │   ├── analyst.md             External intelligence gathering, IB authoring, signal classification
 │   │   ├── narrator.md            Destination-calibrated communication from DIP: CP authoring, audience personas
+│   │   ├── designer.md            Pixel-precise visual asset production: SVG authoring, CLI export pipeline, AP artifact
 │   │   ├── spike.md               Branch-first micro-mandate: time box, scope, Ship/Abandon exits
 │   │   └── emergency.md           Break-glass protocol: fix first, document concurrent, EIR
 │   │
@@ -516,7 +526,7 @@ framework's tier defaults and files the required discovery.
 ### Squad Reference
 
 The `## Squad Reference` section in `framework/agents/engineer.md` is the
-Engineer's authoritative map of all 13 roles: capability surface, hard
+Engineer's authoritative map of all 14 roles: capability surface, hard
 limits, commissioning criteria, DIP step labels, and handoff requirements.
 The Engineer is accountable for multi-role DIP decomposition — when
 implementation crosses role boundaries, the Squad Reference drives which
@@ -626,6 +636,21 @@ collection. The project's declared communication channels live in
 AGENTS.md ## Communication Channels. The output is a Communication
 Package: one file per destination, shaped for its audience and
 format.
+
+### Designer
+
+The Designer produces pixel-precise visual artifacts from
+written specifications: SVG logomarks, favicons, OG images,
+icon sets, brand token files. It never makes aesthetic
+decisions — every colour, coordinate, size, and opacity
+comes from the specification. At any ambiguity, it files a
+BLOCKER to the Architect rather than guessing. Its tool
+surface is CLI-based: cairosvg, ImageMagick, Inkscape, svgo.
+Its output is static files, not application code. Verification
+uses ImageMagick identify to confirm dimensions exactly match
+the specification. The Asset Package is the Designer's
+artifact: a committed collection of visual files with a
+manifest of every file, its dimensions, and the commit SHA.
 
 ### External Fact Verification
 
@@ -809,7 +834,7 @@ It installs:
 | `KNOWLEDGE_GRAPH.yaml`, `references/`, `HARNESSABLE_VERSION` | `docs/harness/vendor/harnessable/` | 2 — never modify |
 | `agents/`, `hooks/`, `tools/web_verify.py`, `templates/` | `docs/harness/` | 1 — copy and own |
 | Project model manifest | `docs/harness/models.yaml` | project-owned config |
-| Thirteen role skills | `.claude/commands/` | framework-owned — do not edit |
+| Fourteen role skills | `.claude/commands/` | framework-owned — do not edit |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |
 | Audit defaults | `.harnessable/config.json` | config |

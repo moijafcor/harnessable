@@ -1025,11 +1025,12 @@ Produces the **Design Implementation Plan (DIP)**, containing:
 **Multi-role DIPs:** when implementation spans roles, organise steps into
 named phases and label every step with its executing type — agent roles:
 `**[Coder]**`, `**[SRE]**`, `**[Security]**`, `**[QA]**`, `**[Analyst]**`,
-`**[Reviewer]**`, `**[Inspector]**`; human-executed: `**[OPERATOR]**`;
-browser automation: `**[PLAYWRIGHT]**`. Unlabelled steps are a defect.
-Mandatory splits: code + live ops → Coder + SRE; auth/credentials/network
-→ Security (non-optional); reaching DONE → QA (always). See
-`agents/engineer.md ## Squad Reference` for all 13 role profiles and
+`**[Reviewer]**`, `**[Inspector]**`, `**[Designer]**`; human-executed:
+`**[OPERATOR]**`; browser automation: `**[PLAYWRIGHT]**`. Unlabelled steps
+are a defect. Mandatory splits: code + live ops → Coder + SRE;
+auth/credentials/network → Security (non-optional); reaching DONE → QA
+(always); visual asset steps → Designer. See
+`agents/engineer.md ## Squad Reference` for all 14 role profiles and
 decomposition triggers.
 
 ---
@@ -1057,6 +1058,20 @@ Executes infrastructure and operational mandates. Produces the **SRE Implementat
 
 The SRE must not proceed without a documented rollback procedure and blast
 radius declaration in the DIP.
+
+---
+
+### Designer [Asset Production Pipeline]
+
+Invoked on DIP steps that produce visual assets. Produces the **Asset Package (AP)**, containing:
+
+- SVG master file (the source of truth for all raster exports)
+- Raster exports at declared dimensions, dimension-verified with `identify`
+- Favicon pipeline (16, 32, 48, 180px + ICO)
+- OG image at 1200×630 (unless spec declares otherwise)
+- Asset manifest: every file with dimensions, file size, and commit SHA
+
+The Designer requires a complete, unambiguous specification before starting. Any missing value (colour, coordinate, dimension) is filed as `DESIGN_AMBIGUITY: BLOCKER` before any output is produced. At no point does the Designer make an aesthetic decision.
 
 ---
 
