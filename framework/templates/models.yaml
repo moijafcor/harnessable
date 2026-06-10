@@ -41,6 +41,14 @@ roles:
       File creation, IaC authoring, git operations.
       Well-defined tasks with explicit specifications.
 
+  designer:
+    model:      # REPLACE: claude-sonnet-4-6
+    provider:   anthropic
+    cost_tier:  medium
+    rationale: >
+      Pixel-precise SVG and asset package production from
+      complete written specifications.
+
   sre:
     model:      # REPLACE: claude-sonnet-4-6
     provider:   anthropic

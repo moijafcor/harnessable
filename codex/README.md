@@ -100,6 +100,19 @@ files in `## Credential Operations`, the SRE must create the session-scoped
 `.harnessable/credential_ops.json` before credential steps; it permits only
 verify-only operations and is removed by the Stop hook.
 
+### Designer
+
+```bash
+codex "$(cat codex/designer.prompt.md)"
+```
+
+Designer is the asset production pipeline role. It produces pixel-precise
+SVG masters, raster exports, favicons, OG images, or visual asset packages
+from complete written specifications. Its output is an Asset Package (AP),
+not running code. It never makes aesthetic decisions; missing geometry,
+colour, typography, opacity, size, or output path values are
+`DESIGN_AMBIGUITY` blockers.
+
 ### QA
 
 ```bash
@@ -234,7 +247,7 @@ The skill loads the full protocol when invoked. This adds:
 - Rubric obligations for QA: three layers, per-criterion verdict table, and
   NEEDS_REVISION handoff
 - Required output format per role, including TOM, DMT, DIP, TIR, SIR,
-  QA Verdict, SRR, CRR, PIR, IB, CP, EIR, and Spike Branch
+  AP, QA Verdict, SRR, CRR, PIR, IB, CP, EIR, and Spike Branch
 
 Invoke it for any non-trivial mandate. For simple bounded tasks, `AGENTS.md`
 alone may be sufficient.

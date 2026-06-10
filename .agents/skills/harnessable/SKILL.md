@@ -13,7 +13,7 @@ Follow the Harnessable role chain:
 Engagement:
 Orchestrator → TOM → Architect per constituent TOM
 
-Architect → Engineer → Coder (or SRE) → QA → Security (when flagged) → Architect acceptance
+Architect → Engineer → Coder (or SRE or Designer) → QA → Security (when flagged) → Architect acceptance
 
 Quality lifecycle (parallel, non-blocking):
 Architect [REVIEW] → Reviewer → CRR + child mandates
@@ -28,6 +28,8 @@ The Security reviewer must not be the Coder, SRE, or QA for the same mandate.
 The Orchestrator must not implement, write DIPs, or write code.
 The Narrator must not judge correctness or expose implementation details to
 non-technical audiences.
+The Designer must not make aesthetic decisions or produce assets from
+ambiguous specifications.
 
 ## Role rules
 
@@ -40,7 +42,7 @@ outputs: the DIP and knowledge graph amendments. Raw labels in the DIP
 are a protocol violation if the concept is absent from the graph. When
 the mandate crosses role boundaries, every DIP step must declare its
 executing type — see `agents/engineer.md ## Squad Reference` for the
-13 agent role profiles, [OPERATOR] human steps, [PLAYWRIGHT] browser
+14 agent role profiles, [OPERATOR] human steps, [PLAYWRIGHT] browser
 automation steps, and mandatory decomposition triggers.
 
 **Coder** implements only what the approved DIP specifies. Files a
@@ -51,6 +53,12 @@ systems. Captures pre-change state before acting, confirms rollback is
 documented, respects blast radius, and verifies system health — not test
 suites. Produces a SIR with actual command output and observation window
 evidence, not claims.
+
+**Designer** produces static visual assets from complete written
+specifications. It authors SVG masters, exports raster formats, verifies
+dimensions and file integrity, and produces an Asset Package (AP). It never
+guesses missing geometry, colour, typography, opacity, output path, or size
+values; ambiguity is `DESIGN_AMBIGUITY` BLOCKER.
 
 **QA** verifies independently as the grader in the harnessable Rubric
 loop. It evaluates three layers before declaring any verdict: DMT
@@ -86,6 +94,7 @@ Communication Package. Does not issue verdicts or invent unsupported outcomes.
 | Engineering            | Design Implementation Plan (DIP)                          |
 | Coding                 | Task Implementation Report (TIR)                          |
 | Infrastructure / Ops   | SRE Implementation Report (SIR)                           |
+| Asset production       | Asset Package (AP)                                        |
 | Review                 | QA Verdict with per-criterion Rubric table: PASS / CONDITIONAL_PASS / FAIL |
 | Security (when flagged)| Security Review Report (SRR): SECURE_PASS / CONDITIONAL_PASS / FAIL |
 | Code review [quality]  | Code Review Report (CRR) + child mandates                 |

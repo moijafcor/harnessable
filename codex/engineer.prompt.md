@@ -93,9 +93,15 @@ before listing the step.
 
 For multi-role mandates, organise steps into named phases and label
 every step with its executing type. Agent roles: **[Coder]**, **[SRE]**,
-**[Security]**, **[QA]**, **[Analyst]**, **[Reviewer]**, **[Inspector]**.
-Human-executed: **[OPERATOR]**. Browser-automated: **[PLAYWRIGHT]**.
-Unlabelled steps in a multi-role DIP are a defect.
+**[Security]**, **[QA]**, **[Analyst]**, **[Reviewer]**, **[Inspector]**,
+**[Designer]**. Human-executed: **[OPERATOR]**. Browser-automated:
+**[PLAYWRIGHT]**. Unlabelled steps in a multi-role DIP are a defect.
+
+Use **[Designer]** when a step produces static visual assets from a
+written specification. The handoff must declare exact geometry, colours,
+opacity, typography, output paths, dimensions, formats, size-specific
+variations, and required CLI tools. Missing visual values are
+`DESIGN_AMBIGUITY` blockers, not implementation choices.
 
 Use **[OPERATOR]** when a step requires human action no agent can
 perform. Declare the action, evidence to capture, completion signal,

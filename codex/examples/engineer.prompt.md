@@ -21,8 +21,11 @@ Produce a DIP that includes:
 - Ordered implementation steps
 - For multi-role mandates, label every step with its executing type:
   agent roles `[Coder]`, `[SRE]`, `[Security]`, `[QA]`, `[Analyst]`,
-  `[Reviewer]`, `[Inspector]`; human-executed `[OPERATOR]`; browser
-  automation `[PLAYWRIGHT]`
+  `[Reviewer]`, `[Inspector]`, `[Designer]`; human-executed `[OPERATOR]`;
+  browser automation `[PLAYWRIGHT]`
+- For `[Designer]` steps, declare exact visual specification values,
+  output paths, formats, dimensions, size-specific variations, and CLI
+  tool prerequisites; missing values are `DESIGN_AMBIGUITY` blockers
 - For `[OPERATOR]` steps, declare action, evidence, completion signal,
   and blocked path
 - For `[PLAYWRIGHT]` steps, declare test file, command, pass criteria,
