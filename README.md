@@ -529,8 +529,11 @@ roles to commission and how to label each step.
 - Implementation reaching DONE → QA (always)
 
 **Multi-role DIP step labelling** — every step in a multi-role DIP must
-declare its executing role: `**[Coder]**`, `**[SRE]**`, `**[Security]**`,
-`**[QA]**`. Steps organised into named phases. A step without a role label
+declare its executing type. Agent roles: `**[Coder]**`, `**[SRE]**`,
+`**[Security]**`, `**[QA]**`, `**[Analyst]**`, `**[Reviewer]**`,
+`**[Inspector]**`. Human-executed: `**[OPERATOR]**` (requires human action,
+cannot be automated). Browser automation: `**[PLAYWRIGHT]**` (Playwright
+headless test). Steps organised into named phases. A step without a label
 in a multi-role DIP is a defect — resolve before setting PLANNED.
 
 ### Role Scope

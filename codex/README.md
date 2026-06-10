@@ -109,7 +109,9 @@ codex "$(cat codex/qa.prompt.md)"
 QA is the grader in the harnessable Rubric loop. It evaluates DMT
 Acceptance Criteria, DIP Verification Checklists, and the AGENTS.md
 Completion Gate, then derives PASS / CONDITIONAL_PASS / FAIL from the
-Per-Criterion Verdict Table. FAIL, or CONDITIONAL_PASS returned to
+Per-Criterion Verdict Table. OPERATOR criteria require direct review of
+human-captured evidence; PLAYWRIGHT criteria require QA to re-run the
+browser test independently. FAIL, or CONDITIONAL_PASS returned to
 NEEDS_REVISION, must include targeted handoff blocks per failing criterion.
 
 ### Security
@@ -150,7 +152,10 @@ codex "$(cat codex/inspector.prompt.md)"
 
 Inspector examines traffic or replayed scenarios and files a Protocol
 Inspection Report (PIR) at
-`docs/mandates/inspect/{surface}_{date}_inspection_report.md`.
+`docs/mandates/inspect/{surface}_{date}_inspection_report.md`. For DIP
+steps declared as `[PLAYWRIGHT]`, Inspector treats Playwright as a
+first-class verification instrument, executes the declared test
+independently, and captures stdout, exit code, and screenshot path.
 
 #### Analyst
 

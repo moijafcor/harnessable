@@ -39,8 +39,9 @@ graph enrichment before accepting the QA verdict and setting DONE.
 outputs: the DIP and knowledge graph amendments. Raw labels in the DIP
 are a protocol violation if the concept is absent from the graph. When
 the mandate crosses role boundaries, every DIP step must declare its
-executing role — see `agents/engineer.md ## Squad Reference` for the
-13-role profile table and mandatory decomposition triggers.
+executing type — see `agents/engineer.md ## Squad Reference` for the
+13 agent role profiles, [OPERATOR] human steps, [PLAYWRIGHT] browser
+automation steps, and mandatory decomposition triggers.
 
 **Coder** implements only what the approved DIP specifies. Files a
 Discovery before deviating. Produces a TIR with evidence, not claims.
@@ -56,8 +57,9 @@ loop. It evaluates three layers before declaring any verdict: DMT
 Acceptance Criteria, DIP Verification Checklists, and the AGENTS.md
 Completion Gate. It re-executes checks — does not inherit them from the
 Coder or SRE — and derives the overall verdict from a per-criterion
-verdict table. A passing verdict over unresolved ONTOLOGY_GAP discoveries
-is a protocol violation.
+verdict table. QA verifies [OPERATOR] evidence directly and re-runs
+[PLAYWRIGHT] tests independently. A passing verdict over unresolved
+ONTOLOGY_GAP discoveries is a protocol violation.
 
 **Security** is invoked by the Architect on mandates that touch auth, untrusted
 inputs, credentials, external surfaces, data exposure, privilege, or new

@@ -64,11 +64,14 @@ See `agents/engineer.md` for the full recon protocol. Minimum recon:
 
 **Multi-role decomposition:**
 When implementation spans role boundaries, the DIP must organise steps into
-named phases and label every step with its executing role. See
+named phases and label every step with its executing type. See
 `agents/engineer.md ## Squad Reference` for the full 13-role profile table,
 mandatory decomposition triggers (code + live ops → Coder + SRE; auth/
 credentials/network → Security; DONE → QA always), and DIP phase structure.
-A step without a role label in a multi-role DIP is a protocol defect.
+Agent roles: `[Coder]`, `[SRE]`, `[Security]`, `[QA]`, `[Analyst]`,
+`[Reviewer]`, `[Inspector]`. Human-executed: `[OPERATOR]` (requires human
+action, cannot be automated). Browser automation: `[PLAYWRIGHT]` (Playwright
+headless test). A step without a label in a multi-role DIP is a protocol defect.
 
 **Permissions:**
 

@@ -1023,8 +1023,10 @@ Produces the **Design Implementation Plan (DIP)**, containing:
 - Containment checklist
 
 **Multi-role DIPs:** when implementation spans roles, organise steps into
-named phases and label every step with its executing role — `**[Coder]**`,
-`**[SRE]**`, `**[Security]**`, `**[QA]**`. Unlabelled steps are a defect.
+named phases and label every step with its executing type — agent roles:
+`**[Coder]**`, `**[SRE]**`, `**[Security]**`, `**[QA]**`, `**[Analyst]**`,
+`**[Reviewer]**`, `**[Inspector]**`; human-executed: `**[OPERATOR]**`;
+browser automation: `**[PLAYWRIGHT]**`. Unlabelled steps are a defect.
 Mandatory splits: code + live ops → Coder + SRE; auth/credentials/network
 → Security (non-optional); reaching DONE → QA (always). See
 `agents/engineer.md ## Squad Reference` for all 13 role profiles and

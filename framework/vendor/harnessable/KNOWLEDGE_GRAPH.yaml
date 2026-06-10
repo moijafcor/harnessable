@@ -609,6 +609,44 @@ concepts:
       Human approves each loop iteration via board state.
       No max_iterations cap — Architect decides when to escalate.
 
+  harnessable.OperatorStep:
+    type: concept
+    definition: >
+      A DIP Implementation Step requiring human action that no
+      agent can perform. Declared with [OPERATOR] label. The agent
+      writes exact instructions and evidence requirements; the
+      human executes and returns evidence to the session.
+      QA verifies evidence exists and matches pass criteria —
+      it cannot re-execute the step independently.
+    dip_label: "[OPERATOR]"
+    rubric_layer: Verification Checklist
+    qa_evidence_requirement: >
+      Human-captured (screenshot, log, confirmation text).
+      Absent evidence = BLOCKED, not PASS.
+    failure_mode: >
+      Undeclared OPERATOR steps are invisible to QA.
+      The mandate appears complete when it is not.
+
+  harnessable.PlaywrightStep:
+    type: concept
+    definition: >
+      A DIP Implementation Step requiring browser automation via
+      Playwright. Declared with [PLAYWRIGHT] label. The Coder writes
+      the test file; QA or Inspector re-executes independently and
+      captures fresh evidence. Self-reported Coder pass is never
+      sufficient — QA must run and evidence independently.
+    dip_label: "[PLAYWRIGHT]"
+    rubric_layer: Verification Checklist
+    runtime: "npx playwright test | python -m pytest (playwright)"
+    evidence: exit_code + stdout + screenshot_path
+    prerequisite: Playwright declared available in AGENTS.md ## Browser Testing
+    qa_evidence_requirement: >
+      Independent re-execution by QA or Inspector.
+      Screenshot at test-results/{name}.png.
+    failure_mode: >
+      Undeclared PLAYWRIGHT steps are invisible to the Rubric.
+      Browser-required acceptance tests silently never run.
+
   harnessable.RoleScope:
     type: concept
     definition: >

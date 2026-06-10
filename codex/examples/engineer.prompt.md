@@ -19,6 +19,14 @@ Produce a DIP that includes:
 - Recon findings
 - Architecture decisions (ADRs for non-obvious choices)
 - Ordered implementation steps
+- For multi-role mandates, label every step with its executing type:
+  agent roles `[Coder]`, `[SRE]`, `[Security]`, `[QA]`, `[Analyst]`,
+  `[Reviewer]`, `[Inspector]`; human-executed `[OPERATOR]`; browser
+  automation `[PLAYWRIGHT]`
+- For `[OPERATOR]` steps, declare action, evidence, completion signal,
+  and blocked path
+- For `[PLAYWRIGHT]` steps, declare test file, command, pass criteria,
+  evidence path, and confirm `AGENTS.md ## Browser Testing`
 - Containment checklist per step (Detect / Contain / Recover / Prevent)
 - Verification Checklists as Rubric Layer 2: `[REQUIRED]` checks QA will
   re-execute alongside DMT Acceptance Criteria and the Completion Gate

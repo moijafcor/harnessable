@@ -205,6 +205,22 @@ principle: >
   the canonical tool are undocumented drift and must be flagged
   as ONTOLOGY_GAP or BLOCKER in the mandate artifact.
 
+## Browser Testing
+
+# Declares Playwright availability for [PLAYWRIGHT] DIP steps.
+# If absent or declared as unavailable, [PLAYWRIGHT] steps
+# cannot execute and QA will issue BLOCKED on browser criteria.
+# REPLACE: fill in after confirming Playwright installation.
+
+playwright:
+  available:   # REPLACE: true | false
+  runtime:     # REPLACE: node (npx playwright) | python (pytest-playwright)
+  version:     # REPLACE: output of `npx playwright --version`
+  browsers:    # REPLACE: chromium | firefox | webkit | all
+  config:      # REPLACE: path to playwright.config.ts or pytest.ini
+               # (omit if using defaults)
+  screenshots: # REPLACE: test-results/ (default output directory)
+
 ## Models
 
 # Declares which model runs each role in this project.

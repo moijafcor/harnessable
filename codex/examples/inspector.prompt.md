@@ -20,6 +20,11 @@ Run the requested passes:
 - MCP surface, when in scope
 - Business instrumentation verification
 
+If the DIP declares `[PLAYWRIGHT]` steps, treat Playwright as a
+first-class verification instrument: confirm it is installed, run the
+declared test independently, capture exit code/stdout/screenshot path,
+and file BLOCKED if the prerequisite is missing.
+
 File a Protocol Inspection Report at:
 `docs/mandates/inspect/{surface}_{date}_inspection_report.md`
 

@@ -45,6 +45,25 @@ Run the passes declared in the DMT. For full inspection, run:
 5. MCP surface, when in scope
 6. Business instrumentation verification
 
+## Playwright verification
+
+Playwright is a first-class Inspector instrument for steps declared as
+`[PLAYWRIGHT]` in the DIP. When present:
+
+1. Read the declared test file path and command.
+2. Confirm Playwright is installed:
+
+```bash
+npx playwright --version 2>/dev/null || python -m playwright --version 2>/dev/null
+```
+
+3. Execute the test independently of the Coder's run.
+4. Capture stdout, exit code, and screenshot path under `test-results/`.
+5. Map results to the relevant finding or Rubric criterion.
+
+If Playwright is not installed, file BLOCKED in findings. Do not install
+Playwright mid-inspection; that prerequisite belongs before inspection.
+
 Classify every finding as `MUST_FIX`, `SHOULD_FIX`, `CONSIDER`, or `NITPICK`.
 `MUST_FIX` and `SHOULD_FIX` require a specific request/response excerpt as
 evidence.

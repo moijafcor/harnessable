@@ -89,6 +89,25 @@ do not declare it independently.
 | 2 | [criterion text] | Verification Checklist | PASS / FAIL / PARTIAL / BLOCKED | [actual output or observation] |
 | 3 | [criterion text] | Completion Gate | PASS / FAIL / PARTIAL / BLOCKED | [exit code and output] |
 
+Source values:
+- `Acceptance Criteria` — from DMT
+- `Verification Checklist` — from DIP `[REQUIRED]` items
+- `Completion Gate` — automated AGENTS.md commands
+- `OPERATOR` — human-executed step
+- `PLAYWRIGHT` — browser-automated test
+
+Evidence requirements:
+- Acceptance Criteria / Verification Checklist: command output, commit
+  reference, or observation confirming the criterion is satisfied.
+- Completion Gate: exit code + stdout snippet from re-execution.
+- OPERATOR: human-captured evidence such as screenshot, log, or
+  confirmation text. QA cannot re-execute; verify evidence exists and is
+  consistent with pass criteria. If absent, mark BLOCKED, not PASS.
+- PLAYWRIGHT: re-run the test independently. Evidence is exit code,
+  stdout, and screenshot path. Never accept Coder self-reported pass. If
+  Playwright is not installed, mark BLOCKED and file the missing
+  prerequisite in the NEEDS_REVISION handoff.
+
 Criterion verdict values:
 - `PASS` — criterion satisfied with evidence
 - `FAIL` — criterion not satisfied; MUST_FIX

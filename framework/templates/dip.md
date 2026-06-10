@@ -134,11 +134,15 @@ Content-exposing operations never permitted: `cat`, `less`, `head`,
 *Single-role mandate: list steps as checkboxes without role labels.*
 
 *Multi-role mandate: organise into named phases. Every step must*
-*declare its executing role. Steps without role labels in a*
-*multi-role DIP are a defect — resolve before setting PLANNED.*
+*declare its executing type. Steps without labels in a multi-role*
+*DIP are a defect — resolve before setting PLANNED.*
 
-*Role label format: **[Coder]** | **[SRE]** | **[Security]***
-*| **[QA]** | **[Analyst]** | **[Reviewer]** | **[Inspector]***
+*Agent-executed role labels: **[Coder]** | **[SRE]** | **[Security]** | **[QA]***
+*| **[Analyst]** | **[Reviewer]** | **[Inspector]***
+
+*Human-executed: **[OPERATOR]** — requires human action, cannot be automated*
+
+*Browser-automated: **[PLAYWRIGHT]** — Playwright headless browser test*
 
 *Pre-structure a TIR section for each executing role below.*
 *Downstream roles must not invent their own reporting format.*
@@ -155,6 +159,66 @@ Content-exposing operations never permitted: `cat`, `less`, `head`,
 <!-- DEVIATION notes go inline with affected steps:
 [DEVIATION 001] Original: X. Actual: Y. Reason: Z. See Field Discoveries.
 -->
+
+---
+
+### [OPERATOR] step format
+
+Use when a step requires human hands — UI interaction, SaaS
+dashboard confirmation, 2FA approval, physical access, or any
+action no agent can take.
+
+- [ ] **[OPERATOR]** {what the human must do}
+  - **Action:** {step-by-step instructions for the operator}
+  - **Evidence to capture:** {screenshot | log output | URL |
+                              confirmation text}
+  - **Signal completion:** {how to tell the agent session the
+                            step is done — paste evidence here
+                            or confirm in the session}
+  - **If blocked:** {what to do if the step cannot be completed}
+
+Example:
+
+- [ ] **[OPERATOR]** Verify staging tenant onboarding flow
+      completes without error in the browser
+  - **Action:** Open <https://staging.app.example.com/onboard>,
+    complete the form as a new tenant, confirm the dashboard
+    loads with no error states
+  - **Evidence to capture:** Screenshot of completed dashboard
+  - **Signal completion:** Paste screenshot path or confirm
+    "onboarding complete, dashboard loaded" in session
+  - **If blocked:** Note which step in the flow failed and
+    what error was shown
+
+---
+
+### [PLAYWRIGHT] step format
+
+Use when a step requires browser automation — end-to-end tests,
+visual regression, form submission verification, authenticated
+flows that require a real browser context.
+
+The agent writes the test script (Coder phase) and executes it
+headlessly (QA or Inspector phase). Results are machine-readable.
+
+- [ ] **[PLAYWRIGHT]** {what the test verifies}
+  - **Test file:** {path to .spec.ts or .spec.py}
+  - **Command:** `npx playwright test {file} --reporter=line`
+    or `python -m pytest {file} --tb=short`
+  - **Pass criteria:** {what exit 0 means, what to assert}
+  - **Evidence:** stdout output + screenshot at
+    `test-results/{name}.png`
+  - **On failure:** paste full stdout — do not mark PASS
+    if any assertion fails
+
+Example:
+
+- [ ] **[PLAYWRIGHT]** Verify tenant login and dashboard load
+  - **Test file:** `tests/e2e/tenant_login.spec.ts`
+  - **Command:** `npx playwright test tenant_login --reporter=line`
+  - **Pass criteria:** exit 0, "1 passed" in stdout
+  - **Evidence:** stdout + `test-results/tenant_login.png`
+  - **On failure:** paste full stdout including assertion errors
 
 ---
 
@@ -404,7 +468,12 @@ observed" if the window was clean.]
 
 ## QA Verdict
 
-*QA fills this section. Do not pre-populate.*
+*QA fills this section.*
+*[OPERATOR] steps: verify human-captured evidence is present.*
+*[PLAYWRIGHT] steps: re-run the test and capture fresh output.*
+*Never mark an [OPERATOR] or [PLAYWRIGHT] criterion PASS without*
+*examining the evidence directly.*
+*Do not pre-populate.*
 *Evaluate all three Rubric layers before declaring any verdict.*
 
 **Verdict:** [PASS | CONDITIONAL_PASS | FAIL]

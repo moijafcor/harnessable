@@ -12,6 +12,15 @@ Evaluate the three-layer Rubric:
 - Layer 2: every `[REQUIRED]` item in the DIP Verification Checklists
 - Layer 3: every AGENTS.md Completion Gate command
 
+Use these source values in the Per-Criterion Verdict Table:
+Acceptance Criteria, Verification Checklist, Completion Gate, OPERATOR,
+and PLAYWRIGHT.
+
+For OPERATOR criteria, verify human-captured evidence exists and matches
+the pass criteria; if evidence is absent, mark BLOCKED. For PLAYWRIGHT
+criteria, re-run the browser test independently and capture exit code,
+stdout, and screenshot path; never accept Coder self-report.
+
 Also check:
 - Whether any criterion is blocked by an undeclared pre-existing defect
   (`BLOCKED_CRITERION` is FAIL and never CONDITIONAL_PASS eligible)

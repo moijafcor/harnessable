@@ -91,6 +91,20 @@ Ordered, numbered. Each step must answer the containment checklist:
 A step with no answer for any of these has a design gap. Fix it
 before listing the step.
 
+For multi-role mandates, organise steps into named phases and label
+every step with its executing type. Agent roles: **[Coder]**, **[SRE]**,
+**[Security]**, **[QA]**, **[Analyst]**, **[Reviewer]**, **[Inspector]**.
+Human-executed: **[OPERATOR]**. Browser-automated: **[PLAYWRIGHT]**.
+Unlabelled steps in a multi-role DIP are a defect.
+
+Use **[OPERATOR]** when a step requires human action no agent can
+perform. Declare the action, evidence to capture, completion signal,
+and blocked path.
+
+Use **[PLAYWRIGHT]** when a step requires browser automation. Declare
+the test file, exact command, pass criteria, and evidence path. Confirm
+Playwright availability in `AGENTS.md ## Browser Testing`.
+
 **Verification Checklists — Rubric Layer 2**
 The exact `[REQUIRED]` checks QA will run to verify this mandate,
 grouped by functional, operational, domain, QA-specific, and
@@ -98,6 +112,9 @@ security/compliance checks as applicable. Not "run the tests" — the
 specific assertions or commands with expected output or exit codes.
 QA will re-execute these independently alongside DMT Acceptance
 Criteria (Layer 1) and the AGENTS.md Completion Gate (Layer 3).
+For `[OPERATOR]` and `[PLAYWRIGHT]` steps, include explicit Rubric
+criteria so QA can verify the required human evidence or re-run the
+browser test independently.
 
 **Domain concepts introduced**
 Any new concepts declared in the knowledge graph during this mandate.
