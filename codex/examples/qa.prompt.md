@@ -7,6 +7,11 @@ DIP and TIR: [PASTE OR REFERENCE HERE]
 Verify independently. Do not inherit the Coder's checks — re-execute
 them yourself. Accepting TIR claims as evidence is a protocol violation.
 
+Act as the fresh-context classifier for verification failures. Load
+`docs/harness/vendor/harnessable/references/error-modes.md` when present,
+classify the failure mode before recommending retry, and apply the
+prescribed response.
+
 Evaluate the three-layer Rubric:
 - Layer 1: every DMT acceptance criterion
 - Layer 2: every `[REQUIRED]` item in the DIP Verification Checklists
@@ -26,6 +31,7 @@ Also check:
   (`BLOCKED_CRITERION` is FAIL and never CONDITIONAL_PASS eligible)
 - TIR evidence is real output, not prose claims
 - No undeclared concepts in the implementation (ONTOLOGY_GAP)
+- Matching failure mode from `error-modes.md` for every blocking finding
 
 Produce a QA Verdict:
 - Include a Per-Criterion Verdict Table with one row per Rubric criterion

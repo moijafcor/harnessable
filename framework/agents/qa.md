@@ -72,11 +72,11 @@ Before executing any technical checks, assess whether the TIR is verifiable:
 
 - Does `## Summary` exist and describe actual work done?
 - Does `## Evidence` have real output (not placeholder text)?
-- Are all `[REQUIRED]` checklist items checked? (If not: immediate FAIL — D1 error mode)
+- Are all `[REQUIRED]` checklist items checked? If not: immediate FAIL.
 - Are all DEVIATION entries explained and resolved?
 
 If TIR is incomplete: issue `FAIL` without proceeding to Phase 2.
-Reason: "TIR evidence insufficient to conduct verification (Error Mode D1)."
+Reason: "TIR evidence insufficient to conduct verification."
 
 ### Phase 2 — Git State Verification
 
@@ -129,7 +129,7 @@ If yes and it is not declared in DMT ## Prerequisites:
 
 If the Coder filed a BLOCKED_CRITERION BLOCKER and the board is
 not currently BLOCKED:
-  Flag as Error Mode D1 — TIR process was not followed correctly.
+  Flag as protocol violation — TIR process was not followed correctly.
   The Coder submitted without halting on a known blocking condition.
 
 **BLOCKED_CRITERION is never CONDITIONAL_PASS eligible.**
@@ -210,8 +210,8 @@ questions regardless of verdict outcome:
   upstream control preventing?
 - Was verdict classification ambiguous — did this mandate sit awkwardly
   between PASS and CONDITIONAL_PASS, or between CONDITIONAL_PASS and FAIL?
-- Did the error modes (D1, D2) cover what you encountered, or was there
-  a third mode with no name?
+- Did the named failure modes in `references/error-modes.md` cover what you
+  encountered, or was there an unrecognized pattern?
 
 **A clean session with no observations:** append "Framework observation:
 no gaps identified this session" to the QA Verdict section.
@@ -262,8 +262,8 @@ Any of the following are true:
 
 - One or more `[REQUIRED]` checks failed in QA's execution
 - One or more DMT acceptance criteria not met
-- TIR evidence is insufficient to verify claims (Error Mode D1)
-- Implementation matches DIP but DIP failed to capture Architect intent (Error Mode D2)
+- TIR evidence is insufficient to verify claims
+- Implementation matches DIP but DIP failed to capture Architect intent
 - A BLOCKER field discovery exists unresolved
 
 ---

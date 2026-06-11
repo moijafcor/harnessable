@@ -132,7 +132,10 @@ Acceptance Criteria, DIP Verification Checklists, and the AGENTS.md
 Completion Gate, then derives PASS / CONDITIONAL_PASS / FAIL from the
 Per-Criterion Verdict Table. OPERATOR criteria require direct review of
 human-captured evidence; PLAYWRIGHT criteria require QA to re-run the
-browser test independently. FAIL, or CONDITIONAL_PASS returned to
+browser test independently. QA is also the fresh-context classifier for
+verification failures and uses `references/error-modes.md` to decide whether
+retry, blocker, rollback, context discard, or escalation is appropriate.
+FAIL, or CONDITIONAL_PASS returned to
 NEEDS_REVISION, must include targeted handoff blocks per failing criterion.
 
 ### Security
@@ -261,6 +264,8 @@ The skill loads the full protocol when invoked. This adds:
 - Detailed role rules (what each role must and must not do)
 - The complete discovery classification table including `ONTOLOGY_GAP`
 - Knowledge graph obligations (grounding, amendment, PLANNED and DONE gates)
+- Error Mode classifier obligations: classify failures before retrying, and
+  use fresh context for stop/escalation decisions
 - Rubric obligations for QA: three layers, per-criterion verdict table, and
   NEEDS_REVISION handoff
 - Required output format per role, including TOM, DMT, DIP, TIR, SIR,

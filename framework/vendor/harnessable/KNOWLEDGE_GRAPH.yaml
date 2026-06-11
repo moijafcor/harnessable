@@ -1574,7 +1574,8 @@ concepts:
     constraint: >
       A TIR claiming a BLOCKED_CRITERION passed is a false evidence
       claim equivalent to fabricating test output. Protocol violation
-      at the same severity as Error Mode D1.
+      requiring classifier review against
+      framework/vendor/harnessable/references/error-modes.md.
 
   harnessable.PrerequisiteMandate:
     type: concept
@@ -1618,8 +1619,8 @@ concepts:
     constraint: >
       A DIP section that makes an ExternalFact claim without a cited
       URL and fetch date is incomplete. QA may reject the TIR on
-      this basis under Error Mode D2 (DIP failed to capture current
-      reality).
+      this basis as a requirements / mandate failure; classify using
+      framework/vendor/harnessable/references/error-modes.md.
     see: framework/agents/engineer.md — Pass 4
 
   harnessable.TrainingCutoff:

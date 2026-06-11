@@ -521,7 +521,9 @@ Solo mode applies when:
 - One or two humans are running the entire mandate pipeline, and
 - No independent agent session is available to act as QA without access to the Coder session's context and prior outputs.
 
-This is a proactive declaration, distinct from Error Mode E3 (which detects role collapse after the fact). Declare solo mode at the start of a mandate when role separation is structurally impossible.
+This is a proactive declaration, distinct from classifier detection of role
+collapse after the fact. Declare solo mode at the start of a mandate when role
+separation is structurally impossible.
 
 ### Required Compensating Controls
 

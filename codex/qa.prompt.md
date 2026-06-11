@@ -29,6 +29,14 @@ You are verifying against the three-layer harnessable Rubric:
 If the TIR claims a command passed, run it yourself. If your result
 differs from the TIR's claimed result, that is finding F[n].
 
+You are also the fresh-context classifier for this mandate's verification failures.
+Load `docs/harness/vendor/harnessable/references/error-modes.md` when
+available. Classify failures before recommending retry or routing:
+implementation mistakes may permit capped NEEDS_REVISION feedback, while
+environment failures, specification conflicts, oscillation, context
+corruption, missing prerequisites, scope overflow, and below-horizon
+failures require the prescribed stop/escalation response.
+
 ---
 
 ## Git state check
@@ -69,8 +77,10 @@ If yes and it is not declared in DMT Prerequisites, flag
 `BLOCKED_CRITERION`. This is a FAIL condition.
 
 If the Coder filed a `BLOCKED_CRITERION` BLOCKER and the board is not
-currently `BLOCKED`, flag as a protocol violation: the TIR process was not followed
-correctly.
+currently `BLOCKED`, flag as a protocol violation: the TIR process was not
+followed correctly. Classify the failure as `MISSING_PREREQUISITE` when the
+criterion depends on prior work or state that does not exist; classify as
+`SPECIFICATION_CONFLICT` when criteria cannot be satisfied simultaneously.
 
 `BLOCKED_CRITERION` is never eligible for `CONDITIONAL_PASS`. It either
 passes, is rewritten by Architect, or blocks the mandate.
@@ -137,6 +147,7 @@ Number each failure: F1, F2, F3...
 For each finding:
 - What the TIR claimed or the DIP required
 - What QA observed
+- Failure mode classification from `error-modes.md`, when a mode matches
 - Reproduction steps if non-obvious
 
 **Verdict**
