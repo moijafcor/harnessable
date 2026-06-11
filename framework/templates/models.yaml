@@ -31,7 +31,7 @@ roles:
     cost_tier:  high
     rationale: >
       Squad coordination, multi-role DIP decomposition.
-      Requires breadth across all 14 role profiles.
+      Requires breadth across all 15 role profiles.
 
   coder:
     model:      # REPLACE: claude-sonnet-4-6
@@ -101,6 +101,15 @@ roles:
     rationale: >
       Content generation with well-defined output formats.
       Fast and cost-efficient.
+
+  pm:
+    model:      # REPLACE: claude-sonnet-4-6
+    provider:   anthropic
+    cost_tier:  medium
+    rationale: >
+      External stakeholder communication, intake triage,
+      and administrative coordination. Nuanced tone required
+      for stakeholder-facing output.
 
   spike:
     model:      # REPLACE: claude-sonnet-4-6

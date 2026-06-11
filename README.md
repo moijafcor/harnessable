@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents doing high-stakes production work: fourteen roles across six tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: fifteen roles across seven tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -42,6 +42,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Continuous Improvement](#continuous-improvement)
   - [Governed Credential Operations](#governed-credential-operations)
   - [Spike](#spike)
+  - [Project Manager](#project-manager)
 - [Core Principles](#core-principles)
 - [Getting Started](#getting-started)
   - [1. Set up your project tracker](#1-set-up-your-project-tracker)
@@ -160,6 +161,12 @@ Roles are **functional**, not personal. One human or one agent session may perfo
 | Role | Responsibility | Produces | Track |
 | --- | --- | --- | --- |
 | **Emergency Responder** | Fix a production incident. Create the EIR before the first change. Document concurrent. Hand off to retroactive Engineer + QA. | Emergency Investigation Report (EIR) | Break-glass |
+
+**External-facing roles** — operate at the marketplace boundary; not in the technical pipeline:
+
+| Role | Responsibility | Produces | Track |
+| --- | --- | --- | --- |
+| **Project Manager** | Connect the marketplace to the technical team. Absorb urgency. Handle stakeholder communication, workload intake, customer feedback triage, and administrative work. Route technical decisions to the Orchestrator. Deploy Narrator Communication Packages to declared destinations. | Stakeholder communication, status reports, meeting notes, calendar commitments, contracts | External-facing |
 
 No role approves its own work. The Coder cannot be the QA. The SRE cannot be the QA for the same mandate. The Engineer must not write code. The Security reviewer must not be the Coder, SRE, or QA for the same mandate. The Emergency Responder cannot self-QA the retroactive pass.
 
@@ -325,7 +332,7 @@ harnessable/
 │   ├── agents/                    Tier 1 (copy and own) — role-specific agent protocols
 │   │   ├── orchestrator.md        Engagement CTO: TOM authoring, templated/novel classification, ACT/SKIP
 │   │   ├── architect.md           Intent ownership, DMT authoring, mandate closure discipline
-│   │   ├── engineer.md            Recon passes, DIP authoring, Squad Reference (14 role profiles), multi-role DIP decomposition
+│   │   ├── engineer.md            Recon passes, DIP authoring, Squad Reference (15 role profiles), multi-role DIP decomposition
 │   │   ├── coder.md               Build discipline, pre-completion hook runner, exit gate
 │   │   ├── sre.md                 Pre-change capture, blast radius, incident response, SIR
 │   │   ├── qa.md                  Adversarial verification protocol, verdict criteria
@@ -529,7 +536,7 @@ framework's tier defaults and files the required discovery.
 ### Squad Reference
 
 The `## Squad Reference` section in `framework/agents/engineer.md` is the
-Engineer's authoritative map of all 14 roles: capability surface, hard
+Engineer's authoritative map of all 15 roles: capability surface, hard
 limits, commissioning criteria, DIP step labels, and handoff requirements.
 The Engineer is accountable for multi-role DIP decomposition — when
 implementation crosses role boundaries, the Squad Reference drives which
@@ -754,6 +761,23 @@ branch becomes the input to a proper mandate. Spike is not Emergency —
 production incidents use Emergency. Spike is for the idea that arrived
 during other work, the micro-fix that is obviously right, the prototype
 that needs an afternoon.
+
+### Project Manager
+
+The Project Manager is the connector between the marketplace and the
+technical team. It faces outward — toward stakeholders, customers,
+partners, and other teams — while the Orchestrator faces inward. The
+PM negotiates what comes in; the Orchestrator decides how it gets
+executed. It is not in the technical pipeline: it does not author TOMs
+or DIPs, does not commission Architects, and does not review code. Its
+outputs are communication, coordination, and administrative artifacts —
+stakeholder emails, status reports, meeting notes, calendar commitments,
+and contracts — produced via Gmail, Google Calendar, Google Drive, and
+GitHub Projects MCPs. When the Orchestrator commissions the Narrator
+after DONE, the PM deploys the resulting Communication Package to each
+declared destination. Technical decisions that arrive through stakeholder
+channels are packaged as Decision Requests and routed to the Orchestrator;
+the PM never decides technical matters unilaterally.
 
 ---
 

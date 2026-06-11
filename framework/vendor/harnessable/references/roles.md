@@ -65,7 +65,7 @@ See `agents/engineer.md` for the full recon protocol. Minimum recon:
 **Multi-role decomposition:**
 When implementation spans role boundaries, the DIP must organise steps into
 named phases and label every step with its executing type. See
-`agents/engineer.md ## Squad Reference` for the full 14-role profile table,
+`agents/engineer.md ## Squad Reference` for the full 15-role profile table,
 mandatory decomposition triggers (code + live ops → Coder + SRE; auth/
 credentials/network → Security; DONE → QA always; visual assets → Designer),
 and DIP phase structure.

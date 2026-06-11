@@ -32,8 +32,8 @@ import yaml
 with open(sys.argv[1], encoding="utf-8") as fh:
     data = yaml.safe_load(fh)
 roles = data.get("roles", {})
-if len(roles) != 14:
-    raise SystemExit(f"expected 14 roles, got {len(roles)}")
+if len(roles) != 15:
+    raise SystemExit(f"expected 15 roles, got {len(roles)}")
 PYEOF
 }
 

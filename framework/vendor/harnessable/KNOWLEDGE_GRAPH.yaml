@@ -54,7 +54,8 @@ concepts:
                  harnessable.Coder, harnessable.SRE, harnessable.QA,
                  harnessable.Security, harnessable.Reviewer,
                  harnessable.Inspector, harnessable.EmergencyResponder,
-                 harnessable.Analyst, harnessable.Designer]
+                 harnessable.Analyst, harnessable.Designer,
+                 harnessable.ProjectManager]
     constraints:
       - no_self_approval: true
         note: No Role may verify or accept work it produced.
@@ -523,7 +524,7 @@ concepts:
       provider:   anthropic | openai | google | cisco | local | other
       cost_tier:  low | medium | high
       rationale:  justification for this model for this role
-    roles_declared: 14
+    roles_declared: 15
 
   harnessable.SquadReference:
     type: concept
@@ -535,7 +536,7 @@ concepts:
       rather than emergent. Security is a mandatory decomposition
       trigger for auth, credentials, and network surface changes.
     encoded_in: framework/agents/engineer.md ## Squad Reference
-    role_count: 14
+    role_count: 15
     mandatory_triggers:
       - code_changes_plus_live_operations → Coder + SRE
       - auth_credentials_network_surface  → Security mandatory
@@ -775,6 +776,38 @@ concepts:
       - installing_GUI_design_tools
       - producing_assets_without_specification
       - committing_to_undeclared_paths
+
+  harnessable.ProjectManager:
+    type: harnessable.Role
+    definition: >
+      The connector between the marketplace and the technical team.
+      Faces outward — toward stakeholders, customers, partners, and
+      other teams. The Orchestrator faces inward. The PM negotiates
+      what comes in; the Orchestrator decides how it gets executed.
+      Not in the technical pipeline. Produces communication,
+      coordination, and administrative outputs — not pipeline
+      artifacts. Serves multiple teams simultaneously; may be
+      external to the teams it serves.
+    produces: [stakeholder_communication, status_reports,
+               meeting_notes, calendar_commitments, contracts]
+    tool_surface:
+      - Gmail MCP: email drafting, sending, inbox triage
+      - Google Calendar MCP: scheduling, commitment tracking
+      - Google Drive MCP: documents, contracts, invoices
+      - GitHub Projects MCP: board state reads, issue filing
+      - Narrator output: PM deploys CP to declared destinations
+    pipeline_position: external_facing
+    pipeline_gate: false
+    prohibited_from:
+      - making_technical_decisions
+      - authoring_toms_or_dips_or_pipeline_artifacts
+      - commissioning_or_directing_pipeline_roles
+      - committing_to_technical_timelines_without_orchestrator
+      - exposing_internal_complexity_to_stakeholders
+    orchestrator_interface: >
+      PM is the single point of contact to the Orchestrator.
+      Technical decisions are routed as Decision Requests.
+      The Orchestrator's reasoning is never exposed verbatim.
 
   harnessable.AssetPackage:
     type: harnessable.Artifact
