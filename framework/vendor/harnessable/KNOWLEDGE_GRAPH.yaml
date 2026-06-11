@@ -661,6 +661,76 @@ concepts:
       - Knowledge Extracted
       - WORLD_MODEL.md update
 
+  harnessable.FailureMode:
+    type: concept
+    definition: >
+      A named, classified category of agent failure with
+      observable signals, cause layer, prescribed response,
+      and back-off strategy. The classifier's unit of
+      recognition. Encoded in references/error-modes.md.
+      Every unrecognized failure that recurs becomes a
+      new named mode.
+    document: framework/vendor/harnessable/references/error-modes.md
+    modes:
+      - IMPLEMENTATION_ERROR
+      - ENVIRONMENT_FAILURE
+      - SPECIFICATION_CONFLICT
+      - BELOW_HORIZON
+      - OSCILLATION
+      - REGRESSION
+      - CONTEXT_CORRUPTION
+      - MISSING_PREREQUISITE
+      - SCOPE_OVERFLOW
+      - RATE_EXHAUSTION
+      - UNRECOGNIZED_PATTERN
+    principle: >
+      Failure is information. Classify before acting.
+      No autonomous loop without a structurally separate
+      observer that holds stop authority.
+
+  harnessable.BackPressureSignal:
+    type: concept
+    definition: >
+      Model-layer signal that manifests in output text
+      before any programmatic hook fires. The model itself
+      is an observer. Back-pressure is the earliest
+      warning in the stack — preceding exit codes,
+      test failures, and Completion Gate results.
+      Readable only by a classifier with a fresh context;
+      the acting agent cannot observe its own back-pressure.
+    signals:
+      THROTTLING: >
+        Hedging density rising, unsolicited warnings,
+        unprompted confirmation requests, caveat-to-content
+        ratio increasing. Early CONTEXT_CORRUPTION signal.
+      JAIL_TIME: >
+        Refusals on previously executed actions.
+        Cascade property: contaminates adjacent actions.
+        Requires context discard, not negotiation.
+
+  harnessable.ClassifierAgent:
+    type: concept
+    definition: >
+      A structurally separate observer that reads failure
+      signals from an acting agent's session and routes
+      to the prescribed response per error-modes.md.
+      Must hold a fresh context with no shared
+      contamination from the acting agent.
+      Holds stop authority over the acting agent's loop.
+      In harnessable: instantiated as the QA role
+      (Rubric loop), human (board gate), or a dedicated
+      observer session for high-risk operations.
+      No autonomous loop is safe without one.
+    requirements:
+      - fresh context (no shared contamination)
+      - stop authority
+      - access to error-modes.md
+      - access to WORLD_MODEL.md failure patterns
+    instantiations:
+      - QA role (Rubric evaluation loop)
+      - Human (board state gate)
+      - Dedicated observer session (high-risk loops)
+
   harnessable.OperatorStep:
     type: concept
     definition: >

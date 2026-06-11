@@ -69,7 +69,7 @@ If yes and it is not declared in DMT Prerequisites, flag
 `BLOCKED_CRITERION`. This is a FAIL condition.
 
 If the Coder filed a `BLOCKED_CRITERION` BLOCKER and the board is not
-currently `BLOCKED`, flag Error Mode D1: the TIR process was not followed
+currently `BLOCKED`, flag as a protocol violation: the TIR process was not followed
 correctly.
 
 `BLOCKED_CRITERION` is never eligible for `CONDITIONAL_PASS`. It either

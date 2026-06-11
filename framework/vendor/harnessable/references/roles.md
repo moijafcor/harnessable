@@ -533,8 +533,6 @@ This is a proactive declaration, distinct from Error Mode E3 (which detects role
 
 4. **Declare solo mode in the DIP header.** Add an `Operating Mode:` field with value `solo` or `small-team (N humans)` so the context is visible to any reviewer reading the artifact chain.
 
-### Relationship to E3
+### Relationship to role collapse
 
-Error Mode E3 still applies in solo mode — the QA verdict remains `UNVERIFIED (self-review)` and Architect sign-off is required before `DONE`. The compensating controls above reduce the probability that the Architect review will surface errors that should have been caught during QA.
-
-See: `references/error-modes.md` — E3: Role Collapse
+Role collapse still applies in solo mode — the QA verdict remains `UNVERIFIED (self-review)` and Architect sign-off is required before `DONE`. The compensating controls above reduce the probability that the Architect review will surface errors that should have been caught during QA.

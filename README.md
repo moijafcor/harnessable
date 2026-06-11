@@ -625,6 +625,25 @@ The first time an agent finds the your-vendor virtual KVM
 path in `WORLD_MODEL.md` instead of discovering it under
 pressure is when the file earns its place.
 
+### Error Modes
+
+`references/error-modes.md` is the classifier's
+knowledge base — a structured taxonomy of named
+failure modes, each with observable signals, cause
+layer, prescribed response, and back-off strategy.
+The core principle: failure is information, not just
+an instruction to retry. An implementation error
+warrants targeted feedback and a capped retry loop.
+An environment failure warrants an immediate stop
+and escalation. Oscillation warrants a forcing
+constraint. Context corruption warrants discarding
+the session entirely. The model's own back-pressure
+signals — throttling and jail time — are encoded as
+the earliest warning layer in the stack, firing
+before any programmatic hook. No autonomous loop is
+permitted without a structurally separate classifier
+that holds stop authority and reads from this document.
+
 ### Orchestrator
 
 The Orchestrator is the CTO of the engagement. It sits above the
