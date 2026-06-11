@@ -33,6 +33,8 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Analyst](#analyst)
   - [Rubric](#rubric)
   - [World Model](#world-model)
+  - [Error Modes](#error-modes)
+  - [Classifier](#classifier)
   - [Orchestrator](#orchestrator)
   - [Narrator](#narrator)
   - [Designer](#designer)
@@ -383,6 +385,7 @@ harnessable/
 │               ├── roles.md           Full role definitions, permissions, prohibitions
 │               ├── state-machine.md   Board status transitions and invariants
 │               ├── error-modes.md     Classified failure patterns and expected responses
+│               ├── classifier.md      Classifier architectural pattern — separation, stop authority, observability layers
 │               ├── continuous-improvement.md  Failure → RCA → harness improvement loop
 │               ├── hooks.md           Hook lifecycle events, installation, and extension guide
 │               └── knowledge-graph.md Knowledge graph model, vendoring instructions, and project extension guide
@@ -650,6 +653,28 @@ the earliest warning layer in the stack, firing
 before any programmatic hook. No autonomous loop is
 permitted without a structurally separate classifier
 that holds stop authority and reads from this document.
+
+### Classifier
+
+The classifier is not a role — it is an architectural
+pattern: a structurally separate observer that reads
+failure signals from an acting agent's session,
+matches them against the error mode taxonomy, and
+routes to the prescribed response. No autonomous loop
+is safe without one. The acting agent in a loop cannot
+observe its own back-pressure, cannot determine whether
+it is converging or diverging, and cannot recognize
+when the failure exists below its visibility horizon.
+The classifier's fresh context is what makes the
+difference — the acting agent's accumulated context is
+evidence, not a communication channel. The classifier
+reads two layers: programmatic signals (exit codes,
+test results) and model behaviour signals (throttling,
+jail time) which fire before any hook. It holds
+unconditional stop authority. In harnessable it is
+instantiated as the QA role for the Rubric loop, the
+human for the board gate, or a dedicated observer
+session for high-risk automated operations.
 
 ### Orchestrator
 

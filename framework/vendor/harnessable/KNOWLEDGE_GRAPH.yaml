@@ -747,22 +747,84 @@ concepts:
       A structurally separate observer that reads failure
       signals from an acting agent's session and routes
       to the prescribed response per error-modes.md.
-      Must hold a fresh context with no shared
-      contamination from the acting agent.
-      Holds stop authority over the acting agent's loop.
-      In harnessable: instantiated as the QA role
-      (Rubric loop), human (board gate), or a dedicated
-      observer session for high-risk operations.
-      No autonomous loop is safe without one.
+      Not a role — a pattern. Instantiated as QA role,
+      human board gate, or dedicated observer session
+      depending on risk level. Holds stop authority
+      unconditionally. Must hold a fresh context with
+      no shared contamination from the acting agent.
+    document: >
+      framework/vendor/harnessable/references/classifier.md
     requirements:
-      - fresh context (no shared contamination)
-      - stop authority
-      - access to error-modes.md
-      - access to WORLD_MODEL.md failure patterns
+      - fresh_context: no shared contamination
+      - stop_authority: unconditional
+      - reads: error-modes.md
+      - reads: WORLD_MODEL.md failure patterns
+      - observes: programmatic signals (Layer 1)
+      - observes: model behaviour signals (Layer 2)
     instantiations:
-      - QA role (Rubric evaluation loop)
-      - Human (board state gate)
-      - Dedicated observer session (high-risk loops)
+      qa_role:
+        context: Rubric loop
+        separation: fresh CC session reads TIR as artifact
+        loop: human-gated via board state
+      human:
+        context: board gate (all mandate transitions)
+        separation: inherent
+        loop: explicit human decision to re-open
+      observer_session:
+        context: high-risk automated loops
+        separation: fresh CC session
+        loop: observer holds stop authority
+    principle: >
+      No autonomous loop is safe without a classifier.
+      No classifier is valid without separation.
+      No loop is safe without an iteration cap.
+
+  harnessable.VisibilityHorizon:
+    type: concept
+    definition: >
+      The layer below which neither the acting agent
+      nor the classifier can observe the cause of a
+      failure. Symptoms manifest at the observable layer
+      while the cause lives below it. Agent capability
+      is not the limitation — pattern recognition is.
+      If the pattern exists in WORLD_MODEL.md the agent
+      can execute recovery autonomously. If not, no
+      amount of retrying at the observable layer will
+      reveal a below-horizon cause.
+    layers:
+      below_horizon: Hardware, Firmware, Bootloader, Kernel
+      agent_layer:   OS, Network, Services, Application
+      model_layer:   Model reasoning, back-pressure signals
+    failure_mode: BELOW_HORIZON (see error-modes.md)
+    resolution: >
+      Check WORLD_MODEL.md for matching pattern.
+      If match: execute documented recovery.
+      If no match: package observable state,
+      request lower-layer access, stop.
+
+  harnessable.BackOffStrategy:
+    type: concept
+    definition: >
+      The prescribed response when a failure mode
+      declares Loop permitted: NO. Distinct from retry.
+      Retry attempts the same operation again.
+      Back-off stops, packages observable state,
+      declares what is needed to proceed, and halts
+      further action at the failing layer.
+      Back-off without a package is just stopping.
+      Back-off with a package is actionable escalation.
+    components:
+      - stop: halt all action on the failing path
+      - package: collect observable state completely
+      - declare: what access or prerequisite is needed
+      - halt: do not consume further time at wrong layer
+    contrast_with: retry (same operation, same layer)
+    escalation_package:
+      - observable symptoms (exact)
+      - last known good state (timestamp)
+      - all attempted actions (what, when, result)
+      - exhaustion evidence
+      - access request (KVM, IPMI, console, human)
 
   harnessable.OperatorStep:
     type: concept
