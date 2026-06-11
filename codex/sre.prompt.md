@@ -53,21 +53,29 @@ Flag the incident for encoding on resolution.
 
 **Step 0b — Classify the failure mode**
 
-Read `docs/harness/vendor/harnessable/references/error-modes.md` when
-available. Before action, classify:
+Read these references when available:
+
+- `docs/harness/vendor/harnessable/references/classifier.md`
+- `docs/harness/vendor/harnessable/references/error-modes.md`
+
+Before action, classify using the classifier declaration format:
 
 ```text
-Failure mode:   {mode name}
-Observable signals that match: {list}
-Layer:          {where the cause lives}
-Loop permitted: YES / NO
+Failure mode:        {mode name}
+Signals matched:     {list of observable signals}
+Layer:               {where the cause lives}
+Loop permitted:      YES / NO
 Prescribed response: {from error-modes.md}
+Action:              {what you are doing}
 ```
 
 If the failure is not yet classifiable, classify as
 `UNRECOGNIZED_PATTERN`, gather reconnaissance signal, then re-classify before
 acting. Do not proceed with action on a failure mode that declares
-`Loop permitted: NO` without human approval.
+`Loop permitted: NO` without human approval. Below-horizon failures require
+back-off: stop the failing path, package observable state, declare the lower
+layer access or prerequisite needed, and halt further action at the wrong
+layer.
 
 Before touching live systems:
 

@@ -41,9 +41,17 @@ database commands, secret exposure, or unapproved external communications.
 Load the emergency protocol and reference guide when available:
 
 - `docs/harness/agents/emergency.md`
+- `docs/harness/vendor/harnessable/references/classifier.md`
 - `docs/harness/vendor/harnessable/references/emergency.md`
 - `docs/harness/vendor/harnessable/references/state-machine.md`
 - `WORLD_MODEL.md`
+
+When a fix attempt fails, classify before retrying. Use the classifier pattern
+with fresh-context discipline where possible: read programmatic signals and
+model behaviour signals, declare the failure mode, and stop or escalate when
+the mode is `Loop permitted: NO`. For below-horizon symptoms, package
+observable state, last known good state, attempted actions, exhaustion
+evidence, and the lower-layer access needed before continuing.
 
 ---
 

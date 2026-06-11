@@ -29,13 +29,22 @@ You are verifying against the three-layer harnessable Rubric:
 If the TIR claims a command passed, run it yourself. If your result
 differs from the TIR's claimed result, that is finding F[n].
 
-You are also the fresh-context classifier for this mandate's verification failures.
-Load `docs/harness/vendor/harnessable/references/error-modes.md` when
-available. Classify failures before recommending retry or routing:
-implementation mistakes may permit capped NEEDS_REVISION feedback, while
-environment failures, specification conflicts, oscillation, context
-corruption, missing prerequisites, scope overflow, and below-horizon
-failures require the prescribed stop/escalation response.
+You are also the fresh-context classifier for this mandate's verification
+failures. Load these references when available:
+
+- `docs/harness/vendor/harnessable/references/classifier.md`
+- `docs/harness/vendor/harnessable/references/error-modes.md`
+
+Hold structural separation from the Coder/SRE context: read the TIR/SIR as an
+artifact, not as a continuation of the acting session. Classify failures
+before recommending retry or routing. Read both observability layers:
+programmatic signals (exit codes, test output, Completion Gate results) and
+model behaviour signals (throttling, jail time, hedging, refusal drift). If a
+mode declares `Loop permitted: NO`, exercise stop authority and route to the
+prescribed stop/escalation response. Implementation mistakes may permit capped
+NEEDS_REVISION feedback; environment failures, specification conflicts,
+oscillation, context corruption, missing prerequisites, scope overflow, and
+below-horizon failures require the prescribed back-off or escalation response.
 
 ---
 
@@ -147,7 +156,8 @@ Number each failure: F1, F2, F3...
 For each finding:
 - What the TIR claimed or the DIP required
 - What QA observed
-- Failure mode classification from `error-modes.md`, when a mode matches
+- Failure mode classification declaration from `classifier.md` and
+  `error-modes.md`, when a mode matches
 - Reproduction steps if non-obvious
 
 **Verdict**

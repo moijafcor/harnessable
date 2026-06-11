@@ -10,6 +10,10 @@ trail. The AGENTS.md Safety Floor still applies.
 Read WORLD_MODEL.md when present so known topology, vendor capabilities, and
 failure patterns inform the response.
 
+When a fix attempt fails, use classifier.md and error-modes.md when present:
+classify before retrying, honour `Loop permitted: NO`, and package
+below-horizon symptoms with the access needed to proceed.
+
 If the emergency input is a board URL or item ID, fetch the existing EIR. If it
 is a local EIR path, read it and continue that session. Otherwise treat it as
 the initial symptom report.

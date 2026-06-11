@@ -9,8 +9,11 @@ live systems, confirm:
 
 - Pass 0 is complete: WORLD_MODEL.md searched for Failure Patterns, Vendor
   Capabilities, and Known Edge Cases
-- Failure mode classified using error-modes.md, with Loop permitted and
-  prescribed response recorded
+- Failure mode classified using classifier.md and error-modes.md, with
+  signals matched, layer, Loop permitted, prescribed response, and action
+  recorded
+- Loop permitted: NO handled by stop authority, back-off packaging, and
+  human approval before further action
 - DIP status is PLANNED
 - Rollback procedure exists
 - Blast radius is declared

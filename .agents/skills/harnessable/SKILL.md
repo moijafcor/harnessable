@@ -59,11 +59,12 @@ systems. Captures pre-change state before acting, confirms rollback is
 documented, respects blast radius, and verifies system health — not test
 suites. Executes Pass 0 before any action: consults `WORLD_MODEL.md` for
 Failure Patterns, Vendor Capabilities, and Known Edge Cases; classifies the
-failure via `references/error-modes.md`; and does not act on `Loop
-permitted: NO` without human approval. Updates `WORLD_MODEL.md` before
-closure when an incident reveals a new failure pattern, vendor capability,
-or edge case, or records that no update is required. Produces a SIR with
-actual command output and observation window evidence, not claims.
+failure via the classifier pattern in `references/classifier.md` and taxonomy
+in `references/error-modes.md`; and does not act on `Loop permitted: NO`
+without human approval. Updates `WORLD_MODEL.md` before closure when an
+incident reveals a new failure pattern, vendor capability, or edge case, or
+records that no update is required. Produces a SIR with actual command output
+and observation window evidence, not claims.
 
 **Designer** produces static visual assets from complete written
 specifications. It authors SVG masters, exports raster formats, verifies
@@ -78,9 +79,11 @@ Completion Gate. It re-executes checks — does not inherit them from the
 Coder or SRE — and derives the overall verdict from a per-criterion
 verdict table. QA verifies [OPERATOR] evidence directly and re-runs
 [PLAYWRIGHT] tests independently. QA also acts as the fresh-context
-classifier for verification failures using `references/error-modes.md`;
-classify before retrying or routing. A passing verdict over unresolved
-ONTOLOGY_GAP discoveries is a protocol violation.
+classifier for verification failures using the classifier pattern in
+`references/classifier.md` and taxonomy in `references/error-modes.md`;
+classify before retrying or routing, and exercise stop authority for
+Loop permitted: NO modes. A passing verdict over unresolved ONTOLOGY_GAP
+discoveries is a protocol violation.
 
 **Security** is invoked by the Architect on mandates that touch auth, untrusted
 inputs, credentials, external surfaces, data exposure, privilege, or new
@@ -116,7 +119,7 @@ pipeline roles.
 | Asset production       | Asset Package (AP)                                        |
 | Operational knowledge  | World Model (`WORLD_MODEL.md`)                            |
 | Review                 | QA Verdict with per-criterion Rubric table: PASS / CONDITIONAL_PASS / FAIL |
-| Failure classification | Error Mode classification from `references/error-modes.md`                 |
+| Failure classification | Classifier declaration from `references/classifier.md` + Error Mode taxonomy from `references/error-modes.md` |
 | Security (when flagged)| Security Review Report (SRR): SECURE_PASS / CONDITIONAL_PASS / FAIL |
 | Code review [quality]  | Code Review Report (CRR) + child mandates                 |
 | Traffic inspection [quality] | Protocol Inspection Report (PIR) + child mandates   |

@@ -8,9 +8,12 @@ Verify independently. Do not inherit the Coder's checks — re-execute
 them yourself. Accepting TIR claims as evidence is a protocol violation.
 
 Act as the fresh-context classifier for verification failures. Load
-`docs/harness/vendor/harnessable/references/error-modes.md` when present,
-classify the failure mode before recommending retry, and apply the
-prescribed response.
+`docs/harness/vendor/harnessable/references/classifier.md` and
+`docs/harness/vendor/harnessable/references/error-modes.md` when present.
+Read the TIR as an artifact from a fresh context, classify the failure mode
+before recommending retry, and apply the prescribed response. For
+`Loop permitted: NO`, exercise stop authority and route to back-off or
+escalation rather than another retry.
 
 Evaluate the three-layer Rubric:
 - Layer 1: every DMT acceptance criterion
@@ -31,7 +34,8 @@ Also check:
   (`BLOCKED_CRITERION` is FAIL and never CONDITIONAL_PASS eligible)
 - TIR evidence is real output, not prose claims
 - No undeclared concepts in the implementation (ONTOLOGY_GAP)
-- Matching failure mode from `error-modes.md` for every blocking finding
+- Classifier declaration and matching failure mode from `error-modes.md` for
+  every blocking finding
 
 Produce a QA Verdict:
 - Include a Per-Criterion Verdict Table with one row per Rubric criterion
