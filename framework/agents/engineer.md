@@ -363,6 +363,20 @@ Do not leave the file staged. Do not hand off with an unresolved dirty state.
 
 ## DIP Authoring Standards
 
+### Completion Gate Verification
+
+Before finalising a DIP, verify the Completion Gate in `AGENTS.md`
+is correct for the target project's language and test framework.
+
+If the gate reads `python3 -m pytest` and the project is not Python:
+
+1. File a `DEVIATION` documenting the incorrect gate.
+2. Use the correct command in the DIP's verification section.
+3. File a child task to fix `AGENTS.md`.
+
+Do not execute a Completion Gate that is clearly wrong for the project.
+Document it as OOS (Out of Scope) and continue.
+
 ### Architecture Decisions — Bar for an ADR Entry
 
 Write an ADR for every choice where a reasonable engineer might have chosen differently.
