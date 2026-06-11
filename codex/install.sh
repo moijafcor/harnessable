@@ -12,12 +12,15 @@
 #
 # What this installs:
 #   <target>/AGENTS.md
+#   <target>/WORLD_MODEL.md
+#   <target>/docs/incidents/.gitkeep
 #   <target>/docs/harness/models.yaml
 #   <target>/.agents/skills/harnessable/SKILL.md
 #   <target>/.agents/skills/harnessable/HARNESSABLE_VERSION
 #
 # Output prefixes:
 #   SYNCED  file installed or updated from framework
+#   CREATED project-owned directory created
 #   OK      file already current, no change
 #   MERGE   customised file skipped; MANUAL_MERGE_REQUIRED
 #   ERR     fatal; install halted
@@ -30,6 +33,7 @@ MODE="fresh"
 TARGET=""
 
 AGENTS_SRC="$REPO_ROOT/AGENTS.md"
+WORLD_MODEL_SRC="$REPO_ROOT/framework/templates/world-model.md"
 MODELS_SRC="$REPO_ROOT/framework/templates/models.yaml"
 SKILL_SRC="$REPO_ROOT/.agents/skills/harnessable/SKILL.md"
 VERSION_SRC="$REPO_ROOT/framework/vendor/harnessable/HARNESSABLE_VERSION"
@@ -69,9 +73,10 @@ parse_args() {
 }
 
 check_source() {
-  if [[ ! -f "$AGENTS_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
+  if [[ ! -f "$AGENTS_SRC" || ! -f "$WORLD_MODEL_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
     echo "ERR  Source does not look like a Harnessable checkout:"
     [[ -f "$AGENTS_SRC" ]] || echo "     Missing: $AGENTS_SRC"
+    [[ -f "$WORLD_MODEL_SRC" ]] || echo "     Missing: $WORLD_MODEL_SRC"
     [[ -f "$MODELS_SRC" ]] || echo "     Missing: $MODELS_SRC"
     [[ -f "$SKILL_SRC" ]] || echo "     Missing: $SKILL_SRC"
     exit 3
@@ -160,6 +165,27 @@ install_agents_file() {
   LAST_STATUS="merge"
 }
 
+install_world_model() {
+  local world_model="$TARGET/WORLD_MODEL.md"
+  local incidents_dir="$TARGET/docs/incidents"
+
+  if [[ ! -d "$incidents_dir" ]]; then
+    mkdir -p "$incidents_dir"
+    touch "$incidents_dir/.gitkeep"
+    echo "  CREATED docs/incidents/"
+  fi
+
+  if [[ -f "$world_model" ]]; then
+    echo "  OK      WORLD_MODEL.md"
+    return 0
+  fi
+
+  cp "$WORLD_MODEL_SRC" "$world_model"
+  echo "  SYNCED  WORLD_MODEL.md  (NEW)"
+  echo "          Fill this project-owned file with topology, vendor capabilities,"
+  echo "          failure patterns, and known operational edge cases."
+}
+
 install_models_manifest() {
   local dst="$TARGET/docs/harness/models.yaml"
   ensure_dir "$(dirname "$dst")"
@@ -201,6 +227,8 @@ main() {
 
   install_agents_file
   count_status
+
+  install_world_model
 
   install_models_manifest
   count_status

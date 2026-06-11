@@ -18,6 +18,7 @@ require_pattern ".agents/skills/harnessable/SKILL.md" "per-criterion" "per-crite
 require_pattern ".agents/skills/harnessable/SKILL.md" "executing type" "executing type guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "Designer" "Designer skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "Asset Package" "Asset Package skill guidance"
+require_pattern ".agents/skills/harnessable/SKILL.md" "WORLD_MODEL.md" "World Model skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "OPERATOR" "OPERATOR skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "PLAYWRIGHT" "PLAYWRIGHT skill guidance"
 
@@ -58,8 +59,16 @@ require_pattern "codex/inspector.prompt.md" "Playwright" "Inspector Playwright g
 require_pattern "codex/inspector.prompt.md" "first-class" "Inspector first-class Playwright"
 require_pattern "codex/examples/inspector.prompt.md" "PLAYWRIGHT" "Inspector example PLAYWRIGHT guidance"
 
+require_pattern "codex/sre.prompt.md" "WORLD_MODEL.md" "SRE World Model guidance"
+require_pattern "codex/sre.prompt.md" "no new pattern" "SRE no-new-pattern guidance"
+require_pattern "codex/emergency.prompt.md" "WORLD_MODEL.md" "Emergency World Model guidance"
+require_pattern "codex/emergency.prompt.md" "no new pattern" "Emergency no-new-pattern guidance"
+require_pattern "codex/examples/sre.prompt.md" "WORLD_MODEL.md" "SRE example World Model guidance"
+require_pattern "codex/examples/emergency.prompt.md" "WORLD_MODEL.md" "Emergency example World Model guidance"
+
 require_pattern "codex/README.md" "harnessable Rubric loop" "README Rubric loop"
 require_pattern "codex/README.md" "per-criterion verdict table" "README per-criterion table"
+require_pattern "codex/README.md" "WORLD_MODEL.md" "README World Model guidance"
 require_pattern "codex/README.md" "Designer" "README Designer guidance"
 require_pattern "codex/README.md" "Asset Package" "README Asset Package guidance"
 require_pattern "codex/README.md" "OPERATOR" "README OPERATOR guidance"

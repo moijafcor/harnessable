@@ -1,6 +1,6 @@
 # Harnessable — Codex Integration
 
-Harnessable works with Codex through four mechanisms:
+Harnessable works with Codex through five mechanisms:
 
 1. **`AGENTS.md`** at the repo root — persistent repository instructions
    loaded automatically by Codex at session start. Declares role boundaries,
@@ -15,7 +15,11 @@ Harnessable works with Codex through four mechanisms:
    Orchestrator reads it before commissioning roles so each role can be
    assigned an explicit model/provider/cost tier.
 
-4. **`codex/*.prompt.md` and `codex/examples/`** — role prompt templates. Use
+4. **`WORLD_MODEL.md`** — project-owned operational knowledge base at the
+   project root. It records topology, vendor capabilities, failure patterns,
+   and known operational edge cases.
+
+5. **`codex/*.prompt.md` and `codex/examples/`** — role prompt templates. Use
    these as your starting point for each engagement, pipeline, quality
    lifecycle, lightweight, or emergency role rather than writing prompts from
    scratch.
@@ -26,10 +30,12 @@ Harnessable works with Codex through four mechanisms:
 bash codex/install.sh /path/to/your-project
 ```
 
-The script installs `AGENTS.md`, `docs/harness/models.yaml`, and the
-harnessable skill. It will not overwrite a customised `AGENTS.md` or
-model manifest; it reports `MERGE` so you can merge the Harnessable
-blocks without losing project-specific instructions or model choices.
+The script installs `AGENTS.md`, `WORLD_MODEL.md`,
+`docs/harness/models.yaml`, `docs/incidents/`, and the harnessable skill. It
+will not overwrite a customised `AGENTS.md`, `WORLD_MODEL.md`, or model
+manifest; it reports `MERGE` where manual review is needed so you can merge
+Harnessable blocks without losing project-specific instructions, operational
+knowledge, or model choices.
 
 To install the full enforcement layer (hooks, guards, audit logger,
 completion gate), run the root installer from this checkout:
@@ -98,7 +104,9 @@ have a `## Rollback Procedure` section and a blast radius declaration, or the
 SRE must file a BLOCKER before proceeding. If the DIP declares credential
 files in `## Credential Operations`, the SRE must create the session-scoped
 `.harnessable/credential_ops.json` before credential steps; it permits only
-verify-only operations and is removed by the Stop hook.
+verify-only operations and is removed by the Stop hook. SRE also reads
+`WORLD_MODEL.md` before operational work and updates it when an incident
+reveals a new failure pattern, vendor capability, or edge case.
 
 ### Designer
 
@@ -223,7 +231,8 @@ before the first change. When the full enforcement layer is installed, the
 Emergency prompt arms `.harnessable/emergency_gate`, which blocks code edits
 until a local EIR exists. The `AGENTS.md` Safety Floor still applies, and the
 session ends at `NEEDS_REVISION` with retroactive Engineer, Coder, and QA work
-required within 24 hours.
+required within 24 hours. Any new operational knowledge from the incident
+must be encoded in `WORLD_MODEL.md`, or the EIR must state "no new pattern".
 
 ## What AGENTS.md does automatically
 
@@ -236,6 +245,14 @@ Codex loads `AGENTS.md` at session start without being asked. This means:
 - The model manifest location is declared for Orchestrator commissioning
 
 You do not need to repeat these in your prompts.
+
+## World Model
+
+The Codex installer creates `WORLD_MODEL.md` at the project root and
+`docs/incidents/` for incident records when absent. The file is
+project-owned and never overwritten by updates. SRE and Emergency sessions
+read it before operational action and update it before closing any incident
+that reveals a new failure pattern, vendor capability, or known edge case.
 
 ## What the skill adds
 

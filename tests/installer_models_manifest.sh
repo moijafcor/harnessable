@@ -37,6 +37,14 @@ if len(roles) != 14:
 PYEOF
 }
 
+assert_world_model() {
+  local target="$1"
+  [[ -f "$target/WORLD_MODEL.md" ]] || fail "WORLD_MODEL.md missing"
+  [[ -d "$target/docs/incidents" ]] || fail "docs/incidents missing"
+  [[ -f "$target/docs/incidents/.gitkeep" ]] || fail "docs/incidents/.gitkeep missing"
+  grep -q "## Failure Patterns" "$target/WORLD_MODEL.md" || fail "WORLD_MODEL.md missing Failure Patterns section"
+}
+
 assert_version_file() {
   local path="$1"
   [[ -f "$path" ]] || fail "version file missing: $path"
@@ -47,30 +55,37 @@ assert_version_file() {
 target="$(new_target)"
 bash "$ROOT/install.sh" "$target" > "$TMP_ROOT/full.out"
 assert_models_manifest "$target"
+assert_world_model "$target"
 assert_version_file "$target/docs/harness/vendor/harnessable/HARNESSABLE_VERSION"
 [[ ! -f "$target/docs/harness/templates/models.yaml" ]] || fail "models.yaml copied under templates"
 grep -q "SYNCED  docs/harness/models.yaml  (NEW)" "$TMP_ROOT/full.out" || fail "full installer did not report models manifest sync"
 grep -q "HARNESSABLE_VERSION → $EXPECTED_VERSION" "$TMP_ROOT/full.out" || fail "full installer did not report resolved version"
 
 echo "# project-selected models" >> "$target/docs/harness/models.yaml"
+echo "# project-owned world" >> "$target/WORLD_MODEL.md"
 git -C "$target" add -A
 git -C "$target" commit -m "customize models" >/dev/null
 bash "$ROOT/install.sh" --update "$target" > "$TMP_ROOT/full-update.out"
 grep -q "MERGE   docs/harness/models.yaml" "$TMP_ROOT/full-update.out" || fail "full installer did not protect customized models manifest"
 grep -q "# project-selected models" "$target/docs/harness/models.yaml" || fail "full installer overwrote customized models manifest"
+grep -q "# project-owned world" "$target/WORLD_MODEL.md" || fail "full installer overwrote WORLD_MODEL.md"
 
 target="$(new_target)"
 bash "$ROOT/codex/install.sh" "$target" > "$TMP_ROOT/codex.out"
 assert_models_manifest "$target"
+assert_world_model "$target"
 assert_version_file "$target/.agents/skills/harnessable/HARNESSABLE_VERSION"
 grep -q "SYNCED  docs/harness/models.yaml  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report models manifest sync"
+grep -q "SYNCED  WORLD_MODEL.md  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report world model sync"
 grep -q "harnessable Codex adapter $EXPECTED_VERSION" "$TMP_ROOT/codex.out" || fail "codex installer did not report resolved version"
 
 echo "# codex project-selected models" >> "$target/docs/harness/models.yaml"
+echo "# codex project-owned world" >> "$target/WORLD_MODEL.md"
 git -C "$target" add -A
 git -C "$target" commit -m "customize codex models" >/dev/null
 bash "$ROOT/codex/install.sh" --update "$target" > "$TMP_ROOT/codex-update.out"
 grep -q "MERGE   docs/harness/models.yaml" "$TMP_ROOT/codex-update.out" || fail "codex installer did not protect customized models manifest"
 grep -q "# codex project-selected models" "$target/docs/harness/models.yaml" || fail "codex installer overwrote customized models manifest"
+grep -q "# codex project-owned world" "$target/WORLD_MODEL.md" || fail "codex installer overwrote WORLD_MODEL.md"
 
 echo "installer_models_manifest: OK"

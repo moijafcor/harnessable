@@ -21,12 +21,14 @@ Before touching live systems:
 1. Confirm the DIP status is `PLANNED`.
 2. Confirm the DIP contains a `## Rollback Procedure`.
 3. Confirm the DIP contains a blast radius declaration.
-4. Read the DIP `## Credential Operations` section. If it declares
+4. Read `WORLD_MODEL.md` when present, especially Infrastructure Topology,
+   Vendor Capabilities, Failure Patterns, and Known Edge Cases.
+5. Read the DIP `## Credential Operations` section. If it declares
    credential files, create `.harnessable/credential_ops.json` before any
    credential step with only the declared paths and a max four-hour
    expiry.
-5. Capture pre-change state and baseline health.
-6. File a `BLOCKER` if any required safety condition is absent.
+6. Capture pre-change state and baseline health.
+7. File a `BLOCKER` if any required safety condition is absent.
 
 If the baseline is degraded, halt before applying changes.
 Credential exemptions are verify-only: checksums, counts, metadata, and
@@ -54,6 +56,13 @@ Post-change health checks with actual output and the observation period.
 
 **Discoveries filed**
 List any discoveries filed during execution with class and resolution.
+
+**World Model**
+If an incident revealed a failure pattern, vendor capability, or known edge
+case not already in `WORLD_MODEL.md`, update it before closing. Add the
+failure pattern, add an incident index entry, and create
+`docs/incidents/{YYYY-MM-DD}-{slug}.md`. If no new pattern was discovered,
+state "no new pattern" here.
 
 ---
 

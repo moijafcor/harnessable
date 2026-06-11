@@ -43,6 +43,7 @@ Load the emergency protocol and reference guide when available:
 - `docs/harness/agents/emergency.md`
 - `docs/harness/vendor/harnessable/references/emergency.md`
 - `docs/harness/vendor/harnessable/references/state-machine.md`
+- `WORLD_MODEL.md`
 
 ---
 
@@ -88,6 +89,8 @@ Append to the EIR continuously:
 - Every file changed with one-line rationale
 - Every finding beyond the immediate bug as:
   `DISCOVERY: {class} - {one-line description}`
+- Any new failure pattern, vendor capability, or known edge case that must be
+  encoded in `WORLD_MODEL.md`
 
 Valid discovery classes are `INFO`, `DEVIATION`, `BLOCKER`, `ONTOLOGY_GAP`,
 and `HARNESS_IMPROVEMENT`.
@@ -105,12 +108,16 @@ The emergency session is not done until all are true:
 - [ ] All changed files are listed with rationale
 - [ ] Every architectural finding is classified as a discovery
 - [ ] Fix verification output is pasted verbatim into the EIR
+- [ ] `WORLD_MODEL.md` is updated with any new failure pattern, vendor
+      capability, or edge case discovered during this incident, or the EIR
+      states "no new pattern"
 - [ ] EIR includes:
   ```text
   ## Retroactive pass required
   DIP and QA verification required within 24 hours.
   Architectural findings above require child mandates.
   Engineer: read this board item and author a retroactive DIP.
+  WORLD_MODEL.md updated, or no new pattern discovered.
   ```
 - [ ] Board status is set to `NEEDS_REVISION`
 
@@ -121,4 +128,6 @@ The emergency session is not done until all are true:
 Hand off to Engineer for a retroactive DIP, Coder for a TIR from the emergency
 notes, and QA for independent verification within 24 hours. The emergency
 mandate cannot reach `DONE` until that retroactive pass is complete and every
-emergency `DISCOVERY` has a corresponding child mandate.
+emergency `DISCOVERY` has a corresponding child mandate. Any new operational
+knowledge discovered during the emergency must be encoded in `WORLD_MODEL.md`
+before closure.
