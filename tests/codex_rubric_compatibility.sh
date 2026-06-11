@@ -20,6 +20,8 @@ require_pattern ".agents/skills/harnessable/SKILL.md" "Designer" "Designer skill
 require_pattern ".agents/skills/harnessable/SKILL.md" "Asset Package" "Asset Package skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "Project Manager" "Project Manager skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "WORLD_MODEL.md" "World Model skill guidance"
+require_pattern ".agents/skills/harnessable/SKILL.md" "Token budget" "Token budget skill guidance"
+require_pattern ".agents/skills/harnessable/SKILL.md" "cost_per_1k_tokens" "Token cost skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "OPERATOR" "OPERATOR skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "PLAYWRIGHT" "PLAYWRIGHT skill guidance"
 
@@ -100,6 +102,9 @@ require_pattern "codex/examples/emergency.prompt.md" "Knowledge Extracted" "Emer
 require_pattern "codex/README.md" "harnessable Rubric loop" "README Rubric loop"
 require_pattern "codex/README.md" "per-criterion verdict table" "README per-criterion table"
 require_pattern "codex/README.md" "WORLD_MODEL.md" "README World Model guidance"
+require_pattern "codex/README.md" "Token Budget" "README Token Budget guidance"
+require_pattern "codex/README.md" "cost_per_1k_tokens" "README token cost guidance"
+require_pattern "codex/README.md" "session_cost_report.py" "README session cost report guidance"
 require_pattern "codex/README.md" "classifier.md" "README classifier pattern guidance"
 require_pattern "codex/README.md" "error-modes.md" "README error modes guidance"
 require_pattern "codex/README.md" "stop authority" "README stop authority guidance"

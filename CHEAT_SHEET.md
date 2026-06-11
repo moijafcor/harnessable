@@ -540,7 +540,8 @@ stdin payload:
   PostToolUse → python3 docs/harness/hooks/run.py post_tool_use
                     └── audit_logger.py        (.harnessable/logs/audit.YYYY-MM-DD.jsonl)
   Stop        → python3 docs/harness/hooks/run.py stop
-                    └── completion_gate.py     (AGENTS.md ## Completion Gate)
+                    ├── completion_gate.py     (AGENTS.md ## Completion Gate)
+                    └── session_cost.py        (.harnessable/logs/session-cost.YYYY-MM.jsonl)
 ```
 
 **To add a check:** drop a `.py` file into the relevant subdirectory.

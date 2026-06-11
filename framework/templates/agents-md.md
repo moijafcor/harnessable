@@ -246,6 +246,23 @@ playwright:
 
 manifest: docs/harness/models.yaml
 
+## Token Budget
+
+# Optional. Declares cost expectations per role so the
+# Orchestrator can flag sessions that exceed them.
+# Used by session_cost_report.py for budget comparison.
+# Omit if no budget constraints apply.
+
+# REPLACE: set per-role budgets or remove this section
+
+# token_budget:
+#   Architect:    max_usd_per_session: 2.00
+#   Engineer:     max_usd_per_session: 1.00
+#   Coder:        max_usd_per_session: 0.50
+#   SRE:          max_usd_per_session: 1.50
+#   QA:           max_usd_per_session: 0.30
+#   Orchestrator: max_usd_per_session: 3.00
+
 ## Communication Channels
 
 # The Narrator produces content for these destinations.

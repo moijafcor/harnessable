@@ -364,6 +364,7 @@ harnessable/
 │   │   │   └── mandate_snapshot.py    Writes .harness/compaction-handover.md with board + git state
 │   │   ├── stop/                  Scripts run on Stop (add files here to extend)
 │   │   │   ├── completion_gate.py Runs AGENTS.md ## Completion Gate commands; blocks if any fail
+│   │   │   ├── session_cost.py    Logs token consumption to .harnessable/logs/session-cost.YYYY-MM.jsonl
 │   │   │   ├── credential_ops_cleanup.py  Removes .harnessable/credential_ops.json at session end
 │   │   │   ├── emergency_cleanup.py  Removes .harnessable/emergency_gate at session end
 │   │   │   └── spike_cleanup.py   Removes .harnessable/spike_gate at session end
@@ -528,8 +529,10 @@ Full model and extension guide: [framework/vendor/harnessable/references/knowled
 run each Harnessable role in the installed project. The installer creates it
 from [framework/templates/models.yaml](framework/templates/models.yaml) and
 treats it as project-owned configuration: fill the `# REPLACE` model fields
-for the models your team can actually use. On update, customised manifests
-are reported as `MERGE` rather than overwritten.
+for the models your team can actually use. Also fill `cost_per_1k_tokens`
+(input and output rates in USD) for each role — these are read by
+`hooks/stop/session_cost.py` to estimate session cost at completion. On
+update, customised manifests are reported as `MERGE` rather than overwritten.
 
 The Orchestrator reads this manifest at INITIALISING before commissioning
 any role, then declares the selected model explicitly in the commission. If

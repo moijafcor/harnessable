@@ -16,6 +16,9 @@ roles:
     rationale: >
       Complex multi-mandate planning, TOM authoring, cross-domain
       synthesis. Highest reasoning requirement in the framework.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   architect:
     model:      # REPLACE: claude-opus-4-7 | claude-sonnet-4-6
@@ -24,6 +27,9 @@ roles:
     rationale: >
       Mandate definition, acceptance criteria, forward scout.
       Benefits from extended reasoning capability.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   engineer:
     model:      # REPLACE: claude-opus-4-7 | claude-sonnet-4-6
@@ -32,6 +38,9 @@ roles:
     rationale: >
       Squad coordination, multi-role DIP decomposition.
       Requires breadth across all 15 role profiles.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   coder:
     model:      # REPLACE: claude-sonnet-4-6
@@ -40,6 +49,9 @@ roles:
     rationale: >
       File creation, IaC authoring, git operations.
       Well-defined tasks with explicit specifications.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   designer:
     model:      # REPLACE: claude-sonnet-4-6
@@ -48,6 +60,9 @@ roles:
     rationale: >
       Pixel-precise SVG and asset package production from
       complete written specifications.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   sre:
     model:      # REPLACE: claude-sonnet-4-6
@@ -56,6 +71,9 @@ roles:
     rationale: >
       Operational execution, Ansible, service management.
       Precision over reasoning depth.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   qa:
     model:      # REPLACE: claude-sonnet-4-6
@@ -63,6 +81,9 @@ roles:
     cost_tier:  medium
     rationale: >
       Verification and gap analysis against TIR evidence.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   security:
     model:      # REPLACE: claude-opus-4-7 | cisco-security
@@ -71,6 +92,9 @@ roles:
     rationale: >
       Adversarial reasoning, threat surface analysis.
       Domain specialist models preferred where available.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   reviewer:
     model:      # REPLACE: claude-sonnet-4-6
@@ -78,6 +102,9 @@ roles:
     cost_tier:  medium
     rationale: >
       Code quality review. Time-boxed. Pattern matching.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   inspector:
     model:      # REPLACE: claude-sonnet-4-6
@@ -85,6 +112,9 @@ roles:
     cost_tier:  medium
     rationale: >
       Runtime verification. Observation and reporting.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   analyst:
     model:      # REPLACE: claude-opus-4-7 | claude-sonnet-4-6
@@ -93,6 +123,9 @@ roles:
     rationale: >
       Intelligence synthesis and web research. Benefits from
       extended context for multi-source synthesis.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   narrator:
     model:      # REPLACE: claude-sonnet-4-6
@@ -101,6 +134,9 @@ roles:
     rationale: >
       Content generation with well-defined output formats.
       Fast and cost-efficient.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   pm:
     model:      # REPLACE: claude-sonnet-4-6
@@ -110,6 +146,9 @@ roles:
       External stakeholder communication, intake triage,
       and administrative coordination. Nuanced tone required
       for stakeholder-facing output.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   spike:
     model:      # REPLACE: claude-sonnet-4-6
@@ -117,6 +156,9 @@ roles:
     cost_tier:  medium
     rationale: >
       Time-boxed exploration. Speed over depth.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
 
   emergency:
     model:      # REPLACE: claude-sonnet-4-6
@@ -125,3 +167,6 @@ roles:
     rationale: >
       Minimum viable change under incident conditions.
       Speed critical.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens

@@ -34,6 +34,12 @@ with open(sys.argv[1], encoding="utf-8") as fh:
 roles = data.get("roles", {})
 if len(roles) != 15:
     raise SystemExit(f"expected 15 roles, got {len(roles)}")
+for name, role in roles.items():
+    cost = role.get("cost_per_1k_tokens")
+    if not isinstance(cost, dict):
+        raise SystemExit(f"{name} missing cost_per_1k_tokens")
+    if "input" not in cost or "output" not in cost:
+        raise SystemExit(f"{name} missing input/output token costs")
 PYEOF
 }
 

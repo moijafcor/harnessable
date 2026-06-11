@@ -13,7 +13,8 @@ Harnessable works with Codex through five mechanisms:
 
 3. **`docs/harness/models.yaml`** — project-owned model manifest. The
    Orchestrator reads it before commissioning roles so each role can be
-   assigned an explicit model/provider/cost tier.
+   assigned an explicit model/provider/cost tier and `cost_per_1k_tokens`
+   values for budget reporting.
 
 4. **`WORLD_MODEL.md`** — project-owned operational knowledge base at the
    project root. It records topology, vendor capabilities, failure patterns,
@@ -35,7 +36,7 @@ The script installs `AGENTS.md`, `WORLD_MODEL.md`,
 will not overwrite a customised `AGENTS.md`, `WORLD_MODEL.md`, or model
 manifest; it reports `MERGE` where manual review is needed so you can merge
 Harnessable blocks without losing project-specific instructions, operational
-knowledge, or model choices.
+knowledge, model choices, or model cost values.
 
 To install the full enforcement layer (hooks, guards, audit logger,
 completion gate), run the root installer from this checkout:
@@ -290,6 +291,8 @@ The skill loads the full protocol when invoked. This adds:
 - Detailed role rules (what each role must and must not do)
 - The complete discovery classification table including `ONTOLOGY_GAP`
 - Knowledge graph obligations (grounding, amendment, PLANNED and DONE gates)
+- Token Budget guidance: model cost fields in `docs/harness/models.yaml`,
+  session cost logs, and `session_cost_report.py` when logs are available
 - Classifier obligations: use `references/classifier.md` for separation,
   stop authority, observability layers, visibility horizon, and back-off
   strategy; use `references/error-modes.md` for the taxonomy
@@ -305,8 +308,25 @@ alone may be sufficient.
 
 The Codex installer places the default manifest at
 `docs/harness/models.yaml`. Fill the `# REPLACE` model fields for the
-providers available to your project. The Orchestrator reads this file at
-INITIALISING and should name the selected model when commissioning any role.
+providers available to your project, including `cost_per_1k_tokens.input` and
+`cost_per_1k_tokens.output` for every role. The Orchestrator reads this file
+at INITIALISING and should name the selected model when commissioning any
+role. Cost values are used by session cost reporting; leave them explicit so
+budget reviews can compare spend by role, mandate, and model.
+
+## Token Budget
+
+Full Harnessable installs include Claude Code stop-hook token logging:
+`hooks/stop/session_cost.py` delegates to
+`docs/harness/tools/session_cost.py` and appends
+`.harnessable/logs/session-cost.YYYY-MM.jsonl`. The reporting tool
+`docs/harness/tools/session_cost_report.py` summarises logs by role, mandate,
+and model.
+
+Codex-only installs do not receive Claude Code stop-hook payloads
+automatically. They still install the model manifest with cost fields, and can
+read reports from logs produced by the full enforcement layer or by manual
+calls to `session_cost.py` when token counts are available.
 
 ## Knowledge graph
 

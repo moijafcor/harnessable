@@ -95,7 +95,10 @@ verdict.
 **Orchestrator** is the CTO of the engagement. Receives marketplace signals,
 classifies engagements as templated or novel, dispatches Analysts only for
 genuine unknowns, authors or revises TOMs, commissions Architects per
-constituent TOM, and judges DONE against parent TOM outcomes.
+constituent TOM, reads `docs/harness/models.yaml` including
+`cost_per_1k_tokens` before role commissioning, monitors token budget pressure
+when `.harnessable/logs/session-cost.*.jsonl` exists, and judges DONE against
+parent TOM outcomes.
 
 **Narrator** is the voice of finished work to the marketplace. Reads finished
 DIPs and AGENTS.md Communication Channels, then produces a destination-shaped
@@ -126,6 +129,17 @@ pipeline roles.
 | External intelligence [quality] | Intelligence Brief (IB)                          |
 | Marketplace communication [quality] | Communication Package (CP)                 |
 | Stakeholder coordination | PM communication, status, calendar, and admin outputs |
+
+## Token budget and session cost
+
+`docs/harness/models.yaml` declares model/provider/cost tier per role and
+must include `cost_per_1k_tokens` for input and output tokens. Full
+Harnessable installs log Claude Code stop-hook token usage to
+`.harnessable/logs/session-cost.YYYY-MM.jsonl` via `session_cost.py`.
+Use `session_cost_report.py` to summarise spend by role, mandate, and model
+when those logs exist. Codex-only installs do not receive Claude Code stop-hook
+payloads automatically; use the report tool only against logs produced by the
+full enforcement layer or manually logged sessions.
 
 ## Discovery classes
 

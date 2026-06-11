@@ -826,6 +826,50 @@ concepts:
       - exhaustion evidence
       - access request (KVM, IPMI, console, human)
 
+  harnessable.SessionCostLog:
+    type: harnessable.Artifact
+    label: Session Cost Log
+    definition: >
+      Monthly JSONL log of token consumption per agent
+      session. Written by hooks/stop/session_cost.py at
+      session end. Each entry declares role, mandate,
+      model, token counts, and estimated USD cost
+      cross-referenced against the Models Manifest.
+      Feeds session_cost_report.py for Orchestrator
+      budget decisions.
+    path_convention: .harnessable/logs/session-cost.YYYY-MM.jsonl
+    written_by: hooks/stop/session_cost.py
+    read_by: framework/tools/session_cost_report.py
+    entry_fields:
+      - ts
+      - session_id
+      - role
+      - mandate
+      - model
+      - input_tokens
+      - output_tokens
+      - total_tokens
+      - tool_calls
+      - duration_seconds
+      - estimated_cost_usd
+
+  harnessable.TokenBudget:
+    type: concept
+    definition: >
+      Optional per-role cost ceiling declared in
+      AGENTS.md ## Token Budget. Allows the Orchestrator
+      to make informed model assignment decisions and
+      flag sessions that exceed expected cost. Compared
+      against SessionCostLog entries by
+      session_cost_report.py.
+    declared_in: AGENTS.md ## Token Budget
+    enforced_by: session_cost_report.py (advisory)
+    note: >
+      Enforcement is advisory — the Stop hook logs cost
+      but does not block session exit on budget overrun.
+      Budget overruns surface in the report for human
+      review, not as automated blocks.
+
   harnessable.OperatorStep:
     type: concept
     definition: >
