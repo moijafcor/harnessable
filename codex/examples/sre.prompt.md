@@ -7,6 +7,10 @@ DIP: [PASTE OR REFERENCE DIP HERE]
 Execute only the operational steps specified in the DIP. Before touching
 live systems, confirm:
 
+- Pass 0 is complete: WORLD_MODEL.md searched for Failure Patterns, Vendor
+  Capabilities, and Known Edge Cases
+- Failure mode classified using error-modes.md, with Loop permitted and
+  prescribed response recorded
 - DIP status is PLANNED
 - Rollback procedure exists
 - Blast radius is declared
@@ -31,7 +35,9 @@ Produce an SRE Implementation Report (SIR) with:
 - Rollback status
 - Observation window evidence
 - Discoveries filed, if any
+- Pass 0 classification and WORLD_MODEL.md match/no-match declaration
 - WORLD_MODEL.md updated for any new failure pattern, vendor capability,
-  or edge case, or "no new pattern" recorded
+  or edge case, or "No new patterns discovered. WORLD_MODEL.md does not
+  require update." recorded
 
 Set board status to IN_REVIEW when complete. Do not perform QA yourself.

@@ -105,8 +105,11 @@ SRE must file a BLOCKER before proceeding. If the DIP declares credential
 files in `## Credential Operations`, the SRE must create the session-scoped
 `.harnessable/credential_ops.json` before credential steps; it permits only
 verify-only operations and is removed by the Stop hook. SRE also reads
-`WORLD_MODEL.md` before operational work and updates it when an incident
-reveals a new failure pattern, vendor capability, or edge case.
+`WORLD_MODEL.md` before operational work, classifies the failure mode using
+`references/error-modes.md`, and does not act on a `Loop permitted: NO` mode
+without human approval. After resolution, SRE updates `WORLD_MODEL.md` when
+an incident reveals a new failure pattern, vendor capability, or edge case,
+or records that no update is required.
 
 ### Designer
 

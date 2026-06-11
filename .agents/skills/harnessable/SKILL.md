@@ -57,10 +57,13 @@ Discovery before deviating. Produces a TIR with evidence, not claims.
 **SRE** executes infrastructure and operational mandates against live
 systems. Captures pre-change state before acting, confirms rollback is
 documented, respects blast radius, and verifies system health — not test
-suites. Reads `WORLD_MODEL.md` before operational work and updates it when
-an incident reveals a new failure pattern, vendor capability, or edge case.
-Produces a SIR with actual command output and observation window evidence,
-not claims.
+suites. Executes Pass 0 before any action: consults `WORLD_MODEL.md` for
+Failure Patterns, Vendor Capabilities, and Known Edge Cases; classifies the
+failure via `references/error-modes.md`; and does not act on `Loop
+permitted: NO` without human approval. Updates `WORLD_MODEL.md` before
+closure when an incident reveals a new failure pattern, vendor capability,
+or edge case, or records that no update is required. Produces a SIR with
+actual command output and observation window evidence, not claims.
 
 **Designer** produces static visual assets from complete written
 specifications. It authors SVG masters, exports raster formats, verifies

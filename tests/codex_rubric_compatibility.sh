@@ -72,9 +72,13 @@ require_pattern "codex/examples/inspector.prompt.md" "PLAYWRIGHT" "Inspector exa
 
 require_pattern "codex/sre.prompt.md" "WORLD_MODEL.md" "SRE World Model guidance"
 require_pattern "codex/sre.prompt.md" "no new pattern" "SRE no-new-pattern guidance"
+require_pattern "codex/sre.prompt.md" "Pass 0" "SRE Pass 0 guidance"
+require_pattern "codex/sre.prompt.md" "Loop permitted" "SRE loop permission guidance"
+require_pattern "codex/sre.prompt.md" "UNRECOGNIZED_PATTERN" "SRE unrecognized pattern guidance"
 require_pattern "codex/emergency.prompt.md" "WORLD_MODEL.md" "Emergency World Model guidance"
 require_pattern "codex/emergency.prompt.md" "no new pattern" "Emergency no-new-pattern guidance"
 require_pattern "codex/examples/sre.prompt.md" "WORLD_MODEL.md" "SRE example World Model guidance"
+require_pattern "codex/examples/sre.prompt.md" "Pass 0" "SRE example Pass 0 guidance"
 require_pattern "codex/examples/emergency.prompt.md" "WORLD_MODEL.md" "Emergency example World Model guidance"
 
 require_pattern "codex/README.md" "harnessable Rubric loop" "README Rubric loop"
