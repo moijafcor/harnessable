@@ -610,6 +610,57 @@ concepts:
       Human approves each loop iteration via board state.
       No max_iterations cap — Architect decides when to escalate.
 
+  harnessable.WorldModel:
+    type: harnessable.Artifact
+    label: World Model
+    definition: >
+      Project-level operational knowledge base. Encodes
+      what the world looks like from this project —
+      vendor capabilities, infrastructure topology,
+      failure patterns discovered in production, known
+      edge cases. Lives at the project root alongside
+      AGENTS.md, outside docs/harness/, so the framework
+      is swappable without losing accumulated knowledge.
+      Every resolved incident that reveals a new pattern
+      must update WORLD_MODEL.md before the mandate closes.
+    path_convention: WORLD_MODEL.md (project root)
+    template: framework/templates/world-model.md
+    project_owned: true
+    framework_never_modifies: true
+    sections:
+      - Infrastructure Topology
+      - Vendor Capabilities
+      - Failure Patterns
+      - Service Dependencies
+      - Known Edge Cases
+      - Incident Index
+    update_obligation: >
+      Mandatory after every incident that reveals a
+      pattern not previously encoded. Filed before
+      mandate closure. SIR ## Knowledge Extracted
+      section declares the update.
+
+  harnessable.IncidentRecord:
+    type: harnessable.Artifact
+    label: Incident Record
+    definition: >
+      Full record of a resolved production incident.
+      Captures what was learned — the pattern, the tool,
+      the procedure — distinct from what was done (SIR).
+      Lives in docs/incidents/ at project root.
+      Project-owned, outside docs/harness/.
+    path_convention: docs/incidents/YYYY-MM-DD-{slug}.md
+    project_owned: true
+    framework_never_modifies: true
+    required_sections:
+      - Symptom
+      - Root Cause
+      - Layer
+      - Discovery Path
+      - Resolution
+      - Knowledge Extracted
+      - WORLD_MODEL.md update
+
   harnessable.OperatorStep:
     type: concept
     definition: >

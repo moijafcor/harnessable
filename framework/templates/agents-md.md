@@ -205,6 +205,23 @@ principle: >
   the canonical tool are undocumented drift and must be flagged
   as ONTOLOGY_GAP or BLOCKER in the mandate artifact.
 
+## World Model
+
+# Operational knowledge base for this project.
+# Agents read this alongside AGENTS.md before acting.
+# Lives at the project root — outside docs/harness/.
+
+world_model: WORLD_MODEL.md
+incidents:   docs/incidents/
+
+# The World Model encodes:
+#   Infrastructure topology and vendor capabilities
+#   Failure patterns extracted from incidents
+#   Known edge cases and non-obvious operational facts
+#
+# Every resolved incident that reveals new knowledge
+# must update WORLD_MODEL.md before the mandate closes.
+
 ## Browser Testing
 
 # Declares Playwright availability for [PLAYWRIGHT] DIP steps.

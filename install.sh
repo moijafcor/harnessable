@@ -514,6 +514,48 @@ bootstrap_agents_md() {
   ACTION_ITEMS+=("Fill AGENTS.md REPLACE markers then re-run install.sh --update")
 }
 
+# ── bootstrap_world_model ─────────────────────────────────────────────────────
+# Greenfield only. Creates WORLD_MODEL.md from template if absent.
+# Never overwrites existing. Creates docs/incidents/ directory.
+bootstrap_world_model() {
+  local WORLD_MODEL="$TARGET/WORLD_MODEL.md"
+  local INCIDENTS_DIR="$TARGET/docs/incidents"
+  local TEMPLATE="$FRAMEWORK_ROOT/framework/templates/world-model.md"
+
+  # Create docs/incidents/ regardless — project-owned, never harness
+  if [[ ! -d "$INCIDENTS_DIR" ]]; then
+    mkdir -p "$INCIDENTS_DIR"
+    touch "$INCIDENTS_DIR/.gitkeep"
+    echo "  CREATED docs/incidents/"
+  fi
+
+  # Never overwrite existing WORLD_MODEL.md
+  if [[ -f "$WORLD_MODEL" ]]; then
+    return 0
+  fi
+
+  if [[ ! -f "$TEMPLATE" ]]; then
+    echo "  WARN  WORLD_MODEL.md template not found at $TEMPLATE"
+    return 1
+  fi
+
+  cp "$TEMPLATE" "$WORLD_MODEL"
+
+  echo ""
+  echo "  ┌─────────────────────────────────────────────────────┐"
+  echo "  │  WORLD_MODEL.md created                             │"
+  echo "  │                                                     │"
+  echo "  │  Fill in what you know about this project's world: │"
+  echo "  │  ## Infrastructure Topology  — your nodes          │"
+  echo "  │  ## Vendor Capabilities      — recovery tools      │"
+  echo "  │  ## Failure Patterns         — after incidents     │"
+  echo "  │  ## Known Edge Cases         — operational facts   │"
+  echo "  │                                                     │"
+  echo "  │  Every resolved incident must update this file.    │"
+  echo "  └─────────────────────────────────────────────────────┘"
+  echo ""
+}
+
 # ── setup_github_board ────────────────────────────────────────────────────────
 # Handles --github-board=<N|new|empty>.
 # Writes result to AGENTS.md ## Project Tracker.
@@ -1466,6 +1508,7 @@ main() {
   echo ""
 
   bootstrap_agents_md
+  bootstrap_world_model
   cleanup_vendor_templates
   setup_github_board
   sync_tier2

@@ -384,6 +384,19 @@ Before closing the mandate, encode the resolution steps as a playbook.
 is an unencoded procedure that will need to be rediscovered next time.
 The playbook goes into the repo. The SIR references it.
 
+If the incident revealed a failure pattern, vendor capability, or
+edge case not already in `WORLD_MODEL.md`, update it before closing.
+This is a mandatory step — not optional cleanup. An incident that
+produced a new pattern and closed without encoding it is an
+unencoded procedure at the operational knowledge level.
+
+- Add a `### Pattern:` entry under `## Failure Patterns`
+- Add a record to `## Incident Index`
+- Add an entry to `docs/incidents/{YYYY-MM-DD}-{slug}.md`
+
+If no new pattern was discovered: note "no new pattern" in the SIR
+`## SRE Sign-Off` so the obligation is explicitly satisfied, not silently skipped.
+
 ### What constitutes degradation
 
 The baseline captured in Step 0 defines the comparison point. A service

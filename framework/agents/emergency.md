@@ -105,6 +105,9 @@ Findings above require child mandates.
 ```
 
 - [ ] Board status set to `NEEDS_REVISION`
+- [ ] `WORLD_MODEL.md` updated with any new failure pattern, vendor
+  capability, or edge case discovered during this incident
+  (or note "no new pattern" in the EIR if nothing new was found)
 
 ---
 
@@ -126,6 +129,7 @@ Within 24 hours of this session ending:
 1. The Engineer authors a DIP from the EIR content
 2. QA verifies the fix independently
 3. Child mandates are created for every DISCOVERY filed
+4. `WORLD_MODEL.md` updated if a new failure pattern was discovered
 
 The EmergencyMandate cannot reach `DONE` without this retroactive pass.
 `NEEDS_REVISION` is intentional — it signals ungoverned work, not a failed fix.

@@ -32,6 +32,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Quality Lifecycle](#quality-lifecycle)
   - [Analyst](#analyst)
   - [Rubric](#rubric)
+  - [World Model](#world-model)
   - [Orchestrator](#orchestrator)
   - [Narrator](#narrator)
   - [Designer](#designer)
@@ -364,6 +365,7 @@ harnessable/
 │   │   ├── dip.md                 Design Implementation Plan template (all required sections)
 │   │   ├── knowledge-graph.yaml   Project knowledge graph bootstrap template
 │   │   ├── models.yaml            Project model manifest bootstrap template
+│   │   ├── world-model.md         WORLD_MODEL.md bootstrap template — operational knowledge base
 │   │   └── skills/                Role skill wrappers (installed as .claude/commands/ — framework-owned)
 │   │
 │   └── vendor/                    Tier 2 (pin and never modify)
@@ -379,6 +381,7 @@ harnessable/
 │               └── knowledge-graph.md Knowledge graph model, vendoring instructions, and project extension guide
 │
 ├── CHEAT_SHEET.md                 Condensed harness engineering reference
+├── WORLD_MODEL.md                 Framework repo operational knowledge base (topology, failure patterns)
 └── docs/                          Mandate history and implementation plans (not part of the install)
 ```
 
@@ -604,6 +607,23 @@ failed and exactly what evidence would satisfy it. This is the
 harnessable Rubric loop — the same pattern LangChain formalises
 as RubricMiddleware, human-gated by design because high-stakes
 production work should not loop autonomously.
+
+### World Model
+
+`WORLD_MODEL.md` is the project's operational knowledge
+base — the complement to `AGENTS.md`. Where `AGENTS.md`
+governs how agents behave, `WORLD_MODEL.md` grounds them
+in what they are operating on: infrastructure topology,
+vendor capabilities and recovery tools, failure patterns
+extracted from real incidents, known edge cases. It lives
+at the project root alongside `AGENTS.md`, outside
+`docs/harness/`, so the framework can be updated or
+replaced without losing accumulated operational knowledge.
+Every resolved incident that reveals a new failure pattern
+must update `WORLD_MODEL.md` before the mandate closes.
+The first time an agent finds the your-vendor virtual KVM
+path in `WORLD_MODEL.md` instead of discovering it under
+pressure is when the file earns its place.
 
 ### Orchestrator
 
@@ -834,6 +854,8 @@ It installs:
 | `KNOWLEDGE_GRAPH.yaml`, `references/`, `HARNESSABLE_VERSION` | `docs/harness/vendor/harnessable/` | 2 — never modify |
 | `agents/`, `hooks/`, `tools/web_verify.py`, `templates/` | `docs/harness/` | 1 — copy and own |
 | Project model manifest | `docs/harness/models.yaml` | project-owned config |
+| `WORLD_MODEL.md` (greenfield only — never overwrites) | project root | project-owned — fill after install |
+| `docs/incidents/` (greenfield only) | project root | project-owned — filled after each incident |
 | Fourteen role skills | `.claude/commands/` | framework-owned — do not edit |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |
