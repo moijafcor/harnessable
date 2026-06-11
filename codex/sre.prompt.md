@@ -110,21 +110,21 @@ Post-change health checks with actual output and the observation period.
 **Discoveries filed**
 List any discoveries filed during execution with class and resolution.
 
-**World Model**
-If an incident revealed a failure pattern, vendor capability, or known edge
-case not already in `WORLD_MODEL.md`, update it before closing. Add the
-failure pattern, add an incident index entry, and create
-`docs/incidents/{YYYY-MM-DD}-{slug}.md`. If no new pattern was discovered,
-state "no new pattern" here.
+**Knowledge Extracted**
+Required. Complete before mandate closes. Silence is not permitted —
+declare YES or NO.
 
-The SIR must include the Pass 0 classification and the final declaration
-either way:
+*YES — new pattern discovered:* Encode the full pattern in
+`WORLD_MODEL.md ## Failure Patterns` (pattern name, vendor, layer,
+symptoms, cause, diagnosis, tool, procedure). Add an incident index
+entry. Create `docs/incidents/{YYYY-MM-DD}-{slug}.md`. Record
+`WORLD_MODEL.md updated: YES — commit {SHA}` in the SIR.
 
-```text
-No new patterns discovered. WORLD_MODEL.md does not require update.
-```
+*NO — no new pattern:* State explicitly:
+`No new patterns discovered. WORLD_MODEL.md does not require update.`
 
-or the exact `WORLD_MODEL.md` / `docs/incidents/` updates made.
+The SIR must include the Pass 0 classification alongside the Knowledge
+Extracted declaration before it is handed to QA.
 
 ---
 

@@ -36,8 +36,8 @@ Produce an SRE Implementation Report (SIR) with:
 - Observation window evidence
 - Discoveries filed, if any
 - Pass 0 classification and WORLD_MODEL.md match/no-match declaration
-- WORLD_MODEL.md updated for any new failure pattern, vendor capability,
-  or edge case, or "No new patterns discovered. WORLD_MODEL.md does not
-  require update." recorded
+- Knowledge Extracted: YES (full pattern encoded in WORLD_MODEL.md with
+  commit SHA, incident record filed) or NO (explicit declaration:
+  "No new patterns discovered. WORLD_MODEL.md does not require update.")
 
 Set board status to IN_REVIEW when complete. Do not perform QA yourself.

@@ -109,6 +109,54 @@ Findings above require child mandates.
   capability, or edge case discovered during this incident
   (or note "no new pattern" in the EIR if nothing new was found)
 
+## Knowledge Extracted
+
+*Required. Complete before mandate closes.*
+*Silence is not permitted — declare YES or NO.*
+
+**New pattern discovered:** YES / NO
+
+---
+
+*Complete the YES branch if a failure pattern, vendor
+capability, or operational edge case was encountered
+that is not already in WORLD_MODEL.md.*
+
+### YES — Pattern details
+
+  Pattern name:    {short descriptive name for
+                    WORLD_MODEL.md entry}
+  Vendor:          {vendor name or 'any'}
+  Layer:           {Hardware | Boot | OS | Network |
+                    Service | Application | Auth}
+  Symptoms:        {observable signals at agent layer}
+  Cause:           {what actually caused it}
+  Diagnosis:       {how to confirm the cause}
+  Tool:            {what accessed the correct layer}
+  Procedure:
+    1. {step}
+    2. {step}
+  Prevention:      {optional — how to avoid in future}
+  Discovered:      {YYYY-MM-DD}
+
+  WORLD_MODEL.md updated:   YES — commit {SHA}
+  docs/incidents/ record:   {filed at path | deferred:
+                              reason}
+
+### NO — Explicit declaration
+
+  No new patterns discovered.
+  WORLD_MODEL.md does not require update.
+  Reason: {known pattern / no novel failure /
+           other}
+
+*Note for Emergency sessions: escalation to Emergency
+status is itself a signal. If the failure required
+Emergency protocol, ask whether the pattern should have
+been in WORLD_MODEL.md. If it should have been there
+and wasn't, the Knowledge Extracted section is the
+mechanism that prevents recurrence.*
+
 ---
 
 ## What This Session Must Not Do

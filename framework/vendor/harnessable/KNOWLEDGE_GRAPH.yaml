@@ -1133,6 +1133,17 @@ concepts:
       - pre_change_baseline_required: true
       - observation_window_required: true
       - rollback_viability_confirmed: true
+    knowledge_extracted:
+      required: true
+      timing: before mandate closes
+      branches:
+        YES: >
+          Full pattern encoding matching
+          WORLD_MODEL.md ## Failure Patterns format.
+          WORLD_MODEL.md update confirmed with commit SHA.
+        NO: >
+          Explicit declaration required.
+          Silence is not permitted.
 
   harnessable.QAVerdict:
     type: harnessable.Artifact
@@ -1297,6 +1308,22 @@ concepts:
       mechanism: >
         Gate file arms before first code edit. Hook blocks Write/Edit/
         MultiEdit until EIR file exists in docs/mandates/emergency/.
+    knowledge_extracted:
+      required: true
+      timing: before mandate closes
+      note: >
+        If the failure required Emergency protocol,
+        ask whether the pattern should have been in
+        WORLD_MODEL.md. If yes: this section prevents
+        recurrence.
+      branches:
+        YES: >
+          Full pattern encoding matching
+          WORLD_MODEL.md ## Failure Patterns format.
+          WORLD_MODEL.md update confirmed with commit SHA.
+        NO: >
+          Explicit declaration required.
+          Silence is not permitted.
 
   harnessable.ADR:
     type: harnessable.Artifact
