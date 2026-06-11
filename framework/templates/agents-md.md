@@ -131,25 +131,19 @@ The bouncer hook enforces this list where supported.
 
 ## Completion Gate
 
-# REPLACE: Commands that must pass before reporting work complete.
-# Be specific — generic placeholders here undermine the gate.
-# Examples:
-#
-# Python projects:
-#   python3 -m pytest -x -q --tb=short
-#   python3 -m py_compile {hook files}
-#
-# Node/TypeScript projects:
-#   npx tsc --noEmit
-#   npx eslint src/
-#   npx jest --passWithNoTests
-#
-# Laravel/PHP:
-#   php artisan test --stop-on-failure
-#   php artisan route:list --no-ansi > /dev/null
-#
-# Always include:
-  git diff --check
+Run the project test suite before closing any mandate.
+Replace this placeholder with the actual test command for this project.
+
+**This placeholder must be replaced. Do not execute it as written.**
+
+# REPLACE THIS with the project's actual test commands, e.g.:
+# PHP/Laravel:  php artisan test --compact
+# Python:       python3 -m pytest
+# Node:         npm test
+# Ruby:         bundle exec rspec
+# Go:           go test ./...
+# General:      git diff --check
+- echo "ERROR: Completion Gate not configured for this project. Update AGENTS.md." && exit 1
 
 For mandate-specific work, also run the verification commands
 stated in the DIP. If a check requires network, credentials, live
