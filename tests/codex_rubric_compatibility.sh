@@ -18,6 +18,7 @@ require_pattern ".agents/skills/harnessable/SKILL.md" "per-criterion" "per-crite
 require_pattern ".agents/skills/harnessable/SKILL.md" "executing type" "executing type guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "Designer" "Designer skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "Asset Package" "Asset Package skill guidance"
+require_pattern ".agents/skills/harnessable/SKILL.md" "Project Manager" "Project Manager skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "WORLD_MODEL.md" "World Model skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "OPERATOR" "OPERATOR skill guidance"
 require_pattern ".agents/skills/harnessable/SKILL.md" "PLAYWRIGHT" "PLAYWRIGHT skill guidance"
@@ -59,6 +60,12 @@ require_pattern "codex/designer.prompt.md" "DESIGN_AMBIGUITY" "Designer prompt b
 require_pattern "codex/examples/designer.prompt.md" "Act as Designer" "Designer example role"
 require_pattern "codex/examples/designer.prompt.md" "Asset Package" "Designer example AP"
 
+require_pattern "codex/pm.prompt.md" "Act as Project Manager" "PM prompt role"
+require_pattern "codex/pm.prompt.md" "Decision Request" "PM decision request"
+require_pattern "codex/pm.prompt.md" "Orchestrator" "PM Orchestrator boundary"
+require_pattern "codex/examples/pm.prompt.md" "Act as Project Manager" "PM example role"
+require_pattern "codex/examples/pm.prompt.md" "Communication Package" "PM example CP deployment"
+
 require_pattern "codex/inspector.prompt.md" "Playwright" "Inspector Playwright guidance"
 require_pattern "codex/inspector.prompt.md" "first-class" "Inspector first-class Playwright"
 require_pattern "codex/examples/inspector.prompt.md" "PLAYWRIGHT" "Inspector example PLAYWRIGHT guidance"
@@ -75,6 +82,7 @@ require_pattern "codex/README.md" "per-criterion verdict table" "README per-crit
 require_pattern "codex/README.md" "WORLD_MODEL.md" "README World Model guidance"
 require_pattern "codex/README.md" "error-modes.md" "README error modes guidance"
 require_pattern "codex/README.md" "Designer" "README Designer guidance"
+require_pattern "codex/README.md" "Project Manager" "README PM guidance"
 require_pattern "codex/README.md" "Asset Package" "README Asset Package guidance"
 require_pattern "codex/README.md" "OPERATOR" "README OPERATOR guidance"
 require_pattern "codex/README.md" "PLAYWRIGHT" "README PLAYWRIGHT guidance"

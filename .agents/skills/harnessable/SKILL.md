@@ -20,6 +20,8 @@ Architect [REVIEW] → Reviewer → CRR + child mandates
 Architect [INSPECT] → Inspector → PIR + child mandates
 Architect [RESEARCH] → Analyst → IB (no child mandates required)
 Orchestrator → Narrator → CP (when marketplace-facing communication is needed)
+Orchestrator → Project Manager (when stakeholder communication,
+intake, administration, or CP deployment is needed)
 
 No role approves its own work. The Coder cannot be the QA.
 The SRE cannot be the QA for the same mandate.
@@ -28,6 +30,8 @@ The Security reviewer must not be the Coder, SRE, or QA for the same mandate.
 The Orchestrator must not implement, write DIPs, or write code.
 The Narrator must not judge correctness or expose implementation details to
 non-technical audiences.
+The Project Manager must not make technical decisions, author TOMs or DIPs,
+commission pipeline roles, or expose internal team complexity to stakeholders.
 The Designer must not make aesthetic decisions or produce assets from
 ambiguous specifications.
 Emergency Responder and SRE sessions must not close incidents that reveal
@@ -91,6 +95,12 @@ constituent TOM, and judges DONE against parent TOM outcomes.
 DIPs and AGENTS.md Communication Channels, then produces a destination-shaped
 Communication Package. Does not issue verdicts or invent unsupported outcomes.
 
+**Project Manager** is the marketplace-facing connector between external
+stakeholders and the technical team. Handles intake, status reports,
+stakeholder communication, calendar commitments, administrative work, and CP
+deployment. Routes technical decisions to the Orchestrator and never directs
+pipeline roles.
+
 ## Required outputs
 
 | Stage                  | Output                                                     |
@@ -109,6 +119,7 @@ Communication Package. Does not issue verdicts or invent unsupported outcomes.
 | Traffic inspection [quality] | Protocol Inspection Report (PIR) + child mandates   |
 | External intelligence [quality] | Intelligence Brief (IB)                          |
 | Marketplace communication [quality] | Communication Package (CP)                 |
+| Stakeholder coordination | PM communication, status, calendar, and admin outputs |
 
 ## Discovery classes
 

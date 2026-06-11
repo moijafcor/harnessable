@@ -205,6 +205,21 @@ produces a destination-calibrated Communication Package (CP) at
 `narrator-out/{feature-slug}/`. It creates one artifact per declared audience
 without exposing implementation details to non-technical destinations.
 
+### External-Facing Track
+
+#### Project Manager
+
+```bash
+codex "$(cat codex/pm.prompt.md)"
+```
+
+Project Manager connects external stakeholders to the technical team. PM
+handles intake, status reports, stakeholder communication, calendar
+commitments, administrative work, and deployment of Narrator Communication
+Packages. PM routes technical decisions to the Orchestrator and does not
+author TOMs or DIPs, commission pipeline roles, verify implementations, or
+commit to technical timelines without Orchestrator sign-off.
+
 ### Lightweight Track
 
 #### Spike
