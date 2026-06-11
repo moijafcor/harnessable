@@ -37,6 +37,9 @@ Append to the EIR as you work:
 - Verification output
 - WORLD_MODEL.md updates for any new failure pattern, vendor capability, or
   edge case, or "no new pattern"
+- Knowledge Extracted: YES (full pattern encoded in WORLD_MODEL.md with
+  commit SHA, incident record filed) or NO (explicit declaration:
+  "No new patterns discovered. WORLD_MODEL.md does not require update.")
 
 End by appending:
 ```text

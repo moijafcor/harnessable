@@ -119,9 +119,28 @@ The emergency session is not done until all are true:
   Engineer: read this board item and author a retroactive DIP.
   WORLD_MODEL.md updated, or no new pattern discovered.
   ```
+- [ ] EIR includes `## Knowledge Extracted` with YES or NO completed
 - [ ] Board status is set to `NEEDS_REVISION`
 
 ---
+
+## Knowledge Extracted
+
+Required. Complete before the emergency session closes. Silence is not
+permitted — declare YES or NO.
+
+*YES — new pattern discovered:* Encode the full pattern in
+`WORLD_MODEL.md ## Failure Patterns` (pattern name, vendor, layer,
+symptoms, cause, diagnosis, tool, procedure). Add an incident index entry.
+Create or reference `docs/incidents/{YYYY-MM-DD}-{slug}.md`. Record
+`WORLD_MODEL.md updated: YES — commit {SHA}` in the EIR.
+
+*NO — no new pattern:* State explicitly:
+`No new patterns discovered. WORLD_MODEL.md does not require update.`
+
+Emergency sessions are high-signal sources of novel patterns. If the failure
+required Emergency protocol, ask whether the pattern should have been in
+`WORLD_MODEL.md`. If yes, this section prevents recurrence.
 
 ## On completion
 
