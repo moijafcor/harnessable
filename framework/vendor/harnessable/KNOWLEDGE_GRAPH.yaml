@@ -261,11 +261,43 @@ concepts:
     knowledge_graph_obligations:
       - file_ontology_gap_for_undeclared_infra_concepts: true
       - absent_file_exception: true
+    protocol: harnessable.SREProtocol
     rsi_obligations:
       frequency: every_session
       conditional_on_failure: false
       closing_step: Phase 5 Framework Observation
       recorded_in: "SIR ## SRE Sign-Off"
+
+  harnessable.SREProtocol:
+    type: concept
+    definition: >
+      The ordered protocol the SRE agent executes
+      during any infrastructure mandate. Begins with
+      Pass 0 (world model consultation + failure
+      classification) before any reconnaissance or
+      action. Closes with post-resolution encoding
+      obligation before mandate closure.
+    world_model_consultation:
+      pass: 0 (first, unconditional)
+      searches:
+        - WORLD_MODEL.md ## Failure Patterns
+        - WORLD_MODEL.md ## Vendor Capabilities
+        - WORLD_MODEL.md ## Known Edge Cases
+      if_match: declare explicitly, follow documented procedure
+      if_no_match: proceed with recon, flag for encoding
+    failure_classification:
+      pass: 0b (before any action)
+      document: references/error-modes.md
+      declares: mode, signals, layer, loop_permitted,
+                prescribed_response
+      constraint: >
+        Do not act on Loop permitted: NO without
+        human approval
+    encoding_obligation:
+      timing: before mandate closes (not after, not eventually)
+      trigger: any pattern not already in WORLD_MODEL.md
+      format: WORLD_MODEL.md ## Failure Patterns entry
+      declaration_required: YES (even when no new pattern)
 
   harnessable.QA:
     type: harnessable.Role
@@ -545,7 +577,7 @@ concepts:
       - Role-annotated Implementation Steps in multi-role DIPs
       - Pre-structured TIR sections per executing role
       - Coder boundary rule: BLOCKER not workaround at boundaries
-      - SRE handoff: baseline + rollback + observation window
+      - SRE handoff: Pass 0 (world model + failure classification) + baseline + rollback + observation window
       - Security non-optional for security-relevant mandates
 
   harnessable.Rubric:
