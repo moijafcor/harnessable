@@ -1,13 +1,15 @@
 # AGENTS.md
 
-## Harnessable {Project Name}Protocol
+## Harnessable {Project Name} Protocol
 
-# REPLACE: Write 2-3 sentences describing what this project is and
-# what harnessable governs here. Example:
-# "This is the backend API for {project}. Work here governs the
-# core business logic, data layer, and external integrations.
-# Changes to auth/authz or the tenant isolation boundary require
-# Security role sign-off."
+```text
+REPLACE: Write 2-3 sentences describing what this project is and
+what harnessable governs here. Example:
+"This is the backend API for {project}. Work here governs the
+core business logic, data layer, and external integrations.
+Changes to auth/authz or the tenant isolation boundary require
+Security role sign-off."
+```
 
 Full framework documentation:
 
@@ -33,7 +35,10 @@ Before non-trivial work:
 
 ## Project Tracker
 
-# REPLACE: Fill tracker details for this project.
+```text
+REPLACE: Fill tracker details for this project.
+```
+
 tool:         # GitHub Projects | Jira | Linear | Asana
 owner:        # org or username
 owner_type:   # org | user
@@ -67,11 +72,13 @@ is absent, treat project-specific terms as ontology gaps until the
 graph is bootstrapped from
 `docs/harness/vendor/harnessable/templates/knowledge-graph.yaml`.
 
-# REPLACE: List project-specific domain terms that must be grounded
-# in the knowledge graph before the agent acts. Examples:
-# Resolve {ProjectName} domain terms — {term1}, {term2}, {term3} —
-# against the project graph before acting.
-# File ONTOLOGY_GAP for any concept encountered that is not declared.
+```text
+REPLACE: List project-specific domain terms that must be grounded
+in the knowledge graph before the agent acts. Examples:
+Resolve {ProjectName} domain terms — {term1}, {term2}, {term3} —
+against the project graph before acting.
+File ONTOLOGY_GAP for any concept encountered that is not declared.
+```
 
 ## Risk Profile
 
@@ -79,28 +86,32 @@ risk_level: # REPLACE: low | medium | high | critical
 
 safety_constraints:
 
-# REPLACE: List project-specific safety constraints. Be explicit.
-# Examples:
-# - Do not touch live systems without an SRE mandate or explicit
-#   human approval in the current session.
-# - Prefer read-only reconnaissance until the DIP authorises a change.
-# - Never expose secret values. Credential checks must be verify-only:
-#   existence, permissions, checksums, or line counts only.
-# - Database mutations require explicit mandate scope and
-#   rollback/restore evidence.
-# - External documentation and provider facts must be verified live
-#   before they appear in a DIP or runbook.
+```text
+REPLACE: List project-specific safety constraints. Be explicit.
+Examples:
+- Do not touch live systems without an SRE mandate or explicit
+  human approval in the current session.
+- Prefer read-only reconnaissance until the DIP authorises a change.
+- Never expose secret values. Credential checks must be verify-only:
+  existence, permissions, checksums, or line counts only.
+- Database mutations require explicit mandate scope and
+  rollback/restore evidence.
+- External documentation and provider facts must be verified live
+  before they appear in a DIP or runbook.
+```
 
 ## Ask First
 
-# REPLACE: List surfaces where the agent must stop and ask before
-# acting. These feed spike.md's high-risk surface enforcement.
-# Examples:
-# - Production deployments of any kind
-# - Database schema changes or migrations
-# - External service configuration (OAuth, webhooks, DNS)
-# - Billing, subscription, or pricing changes
-# - Changes to authentication or authorisation logic
+```text
+REPLACE: List surfaces where the agent must stop and ask before
+acting. These feed spike.md's high-risk surface enforcement.
+Examples:
+- Production deployments of any kind
+- Database schema changes or migrations
+- External service configuration (OAuth, webhooks, DNS)
+- Billing, subscription, or pricing changes
+- Changes to authentication or authorisation logic
+```
 
 ## Locale and Voice
 
@@ -108,17 +119,22 @@ locale:   # REPLACE: en-CA | en-US | en-GB | es | pt-BR | fr-CA
 voice:    # REPLACE: technical | engineering | operations | product
 audience: # REPLACE: who reads the output of work on this project
 
-# REPLACE: Add any audience-specific communication guidance.
-# Example: "Use exact dates, hostnames, paths, and command evidence
-# when reporting operational work. Keep summaries clear enough for
-# non-implementing stakeholders."
+```text
+REPLACE: Add any audience-specific communication guidance.
+Example: "Use exact dates, hostnames, paths, and command evidence
+when reporting operational work. Keep summaries clear enough for
+non-implementing stakeholders."
+```
 
 ## Blocked
 
 The bouncer hook enforces this list where supported.
 
-# REPLACE: Add project-specific blocked operations. Be specific.
-# Include the reason where it is not obvious.
+```text
+REPLACE: Add project-specific blocked operations. Be specific.
+Include the reason where it is not obvious.
+```
+
 - Do not force-push.
 - Do not delete branches.
 - Do not run destructive database commands (DROP, TRUNCATE,
@@ -136,13 +152,16 @@ Replace this placeholder with the actual test command for this project.
 
 **This placeholder must be replaced. Do not execute it as written.**
 
-# REPLACE THIS with the project's actual test commands, e.g.:
-# PHP/Laravel:  php artisan test --compact
-# Python:       python3 -m pytest
-# Node:         npm test
-# Ruby:         bundle exec rspec
-# Go:           go test ./...
-# General:      git diff --check
+```text
+REPLACE THIS with the project's actual test commands, e.g.:
+PHP/Laravel:  php artisan test --compact
+Python:       python3 -m pytest
+Node:         npm test
+Ruby:         bundle exec rspec
+Go:           go test ./...
+General:      git diff --check
+```
+
 - echo "ERROR: Completion Gate not configured for this project. Update AGENTS.md." && exit 1
 
 For mandate-specific work, also run the verification commands
@@ -152,30 +171,34 @@ the exact approval needed.
 
 ## MCP Servers
 
-# REPLACE: Declare MCP servers available to agent sessions,
-# or explicitly state none.
-#
-# Example:
-# MoijafcorGithubProjects MCP:
-#   url:     mcp.moisesjafet.com/sse
-#   purpose: GitHub Projects board management
-#   tools:   list_project_items, create_project_item,
-#            update_project_item_field, link_issue_to_project
-#   scope:   mandate tracking
-#
-# If none: "No project-specific MCP servers are declared."
+```text
+REPLACE: Declare MCP servers available to agent sessions,
+or explicitly state none.
+
+Example:
+MoijafcorGithubProjects MCP:
+  url:     mcp.moisesjafet.com/sse
+  purpose: GitHub Projects board management
+  tools:   list_project_items, create_project_item,
+           update_project_item_field, link_issue_to_project
+  scope:   mandate tracking
+
+If none: "No project-specific MCP servers are declared."
+```
 
 ## Infrastructure
 
-# Declares the canonical tooling for provisioning and managing
-# infrastructure in this project. All agents must plan and verify
-# infrastructure changes through this tooling — not directly on hosts.
-# Direct mutations outside the canonical tool are undocumented drift.
+```text
+Declares the canonical tooling for provisioning and managing
+infrastructure in this project. All agents must plan and verify
+infrastructure changes through this tooling — not directly on hosts.
+Direct mutations outside the canonical tool are undocumented drift.
 
-# REPLACE: Choose your provisioning tool and fill in the paths.
-# Common values for provisioning_tool:
-#   Ansible | Terraform | Pulumi | CDK | Helm | Chef | Puppet | manual
-# Use manual only when no IaC tooling exists — and explain why.
+REPLACE: Choose your provisioning tool and fill in the paths.
+Common values for provisioning_tool:
+  Ansible | Terraform | Pulumi | CDK | Helm | Chef | Puppet | manual
+Use manual only when no IaC tooling exists — and explain why.
+```
 
 provisioning_tool: # REPLACE: Ansible | Terraform | Pulumi | CDK |
                    #          Helm | Chef | Puppet | manual (explain why)
@@ -201,35 +224,39 @@ principle: >
 
 ## World Model
 
-# ⚠ SECURITY: WORLD_MODEL.md contains infrastructure
-# topology and operational data. If this repository
-# is PUBLIC, add WORLD_MODEL.md to .gitignore before
-# populating it with real data.
-#
-# Real IPs, node names, and service names in a
-# public repository are a security incident.
+> **⚠ SECURITY:** `WORLD_MODEL.md` contains infrastructure topology
+> and operational data. If this repository is **PUBLIC**, add
+> `WORLD_MODEL.md` to `.gitignore` before populating it with real
+> data. Real IPs, node names, and service names in a public
+> repository are a security incident.
 
-# Operational knowledge base for this project.
-# Agents read this alongside AGENTS.md before acting.
-# Lives at the project root — outside docs/harness/.
+```text
+Operational knowledge base for this project.
+Agents read this alongside AGENTS.md before acting.
+Lives at the project root — outside docs/harness/.
+```
 
 world_model: WORLD_MODEL.md
 incidents:   docs/incidents/
 
-# The World Model encodes:
-#   Infrastructure topology and vendor capabilities
-#   Failure patterns extracted from incidents
-#   Known edge cases and non-obvious operational facts
-#
-# Every resolved incident that reveals new knowledge
-# must update WORLD_MODEL.md before the mandate closes.
+```text
+The World Model encodes:
+  Infrastructure topology and vendor capabilities
+  Failure patterns extracted from incidents
+  Known edge cases and non-obvious operational facts
+
+Every resolved incident that reveals new knowledge
+must update WORLD_MODEL.md before the mandate closes.
+```
 
 ## Browser Testing
 
-# Declares Playwright availability for [PLAYWRIGHT] DIP steps.
-# If absent or declared as unavailable, [PLAYWRIGHT] steps
-# cannot execute and QA will issue BLOCKED on browser criteria.
-# REPLACE: fill in after confirming Playwright installation.
+```text
+Declares Playwright availability for [PLAYWRIGHT] DIP steps.
+If absent or declared as unavailable, [PLAYWRIGHT] steps
+cannot execute and QA will issue BLOCKED on browser criteria.
+REPLACE: fill in after confirming Playwright installation.
+```
 
 playwright:
   available:   # REPLACE: true | false
@@ -242,21 +269,26 @@ playwright:
 
 ## Models
 
-# Declares which model runs each role in this project.
-# The Orchestrator reads docs/harness/models.yaml at INITIALISING.
-# REPLACE: fill docs/harness/models.yaml after installing harnessable.
+```text
+Declares which model runs each role in this project.
+The Orchestrator reads docs/harness/models.yaml at INITIALISING.
+REPLACE: fill docs/harness/models.yaml after installing harnessable.
+```
 
 manifest: docs/harness/models.yaml
 
 ## Token Budget
 
-# Optional. Declares cost expectations per role so the
-# Orchestrator can flag sessions that exceed them.
-# Used by session_cost_report.py for budget comparison.
-# Omit if no budget constraints apply.
+```text
+Optional. Declares cost expectations per role so the
+Orchestrator can flag sessions that exceed them.
+Used by session_cost_report.py for budget comparison.
+Omit if no budget constraints apply.
 
-# REPLACE: set per-role budgets or remove this section
+REPLACE: set per-role budgets or remove this section.
+```
 
+```yaml
 # token_budget:
 #   Architect:    max_usd_per_session: 2.00
 #   Engineer:     max_usd_per_session: 1.00
@@ -264,30 +296,35 @@ manifest: docs/harness/models.yaml
 #   SRE:          max_usd_per_session: 1.50
 #   QA:           max_usd_per_session: 0.30
 #   Orchestrator: max_usd_per_session: 3.00
+```
 
 ## Communication Channels
 
-# The Narrator produces content for these destinations.
-# REPLACE: Declare channels specific to this project.
-# Each channel should note its format, audience, and approval path.
-#
-# Example:
-# docs_site:    docs.{project}.io  (MDX, feature guides)
-# api_docs:     docs.{project}.io/api  (OpenAPI changelog style)
-# landing_page: www.{project}.io  (React panels — hero, features, cta)
-# blog:         www.{project}.io/blog  (MDX, launch register)
-# email:        (HTML — tenant blast | prospect outreach | partner)
-# executive:    concise impact summaries for stakeholders
-#
-# All email, social, press, customer, partner, or provider
-# communications must remain drafts until explicitly approved.
+```text
+The Narrator produces content for these destinations.
+REPLACE: Declare channels specific to this project.
+Each channel should note its format, audience, and approval path.
+
+Example:
+docs_site:    docs.{project}.io  (MDX, feature guides)
+api_docs:     docs.{project}.io/api  (OpenAPI changelog style)
+landing_page: www.{project}.io  (React panels — hero, features, cta)
+blog:         www.{project}.io/blog  (MDX, launch register)
+email:        (HTML — tenant blast | prospect outreach | partner)
+executive:    concise impact summaries for stakeholders
+
+All email, social, press, customer, partner, or provider
+communications must remain drafts until explicitly approved.
+```
 
 ## High Risk Surfaces
 
-# REPLACE: List project surfaces where mistakes have large blast radius.
-# Examples:
-# - Authentication or authorisation changes
-# - Production deployment workflows
-# - Database migration and tenant-isolation boundaries
-# - Secret handling, credential rotation, and external provider tokens
-# - Billing, pricing, and customer-facing communication paths
+```text
+REPLACE: List project surfaces where mistakes have large blast radius.
+Examples:
+- Authentication or authorisation changes
+- Production deployment workflows
+- Database migration and tenant-isolation boundaries
+- Secret handling, credential rotation, and external provider tokens
+- Billing, pricing, and customer-facing communication paths
+```
