@@ -623,20 +623,26 @@ production work should not loop autonomously.
 
 ### World Model
 
-`WORLD_MODEL.md` is the project's operational knowledge
-base — the complement to `AGENTS.md`. Where `AGENTS.md`
-governs how agents behave, `WORLD_MODEL.md` grounds them
-in what they are operating on: infrastructure topology,
-vendor capabilities and recovery tools, failure patterns
-extracted from real incidents, known edge cases. It lives
-at the project root alongside `AGENTS.md`, outside
-`docs/harness/`, so the framework can be updated or
-replaced without losing accumulated operational knowledge.
-Every resolved incident that reveals a new failure pattern
-must update `WORLD_MODEL.md` before the mandate closes.
-The first time an agent finds the vendor's emergency
-console path in `WORLD_MODEL.md` instead of discovering
-it under pressure is when the file earns its place.
+World models live in `world_models/` — a directory
+of domain-specific files, each modeling one
+operational domain precisely. The same lesson as
+`agents/*.md`: one file trying to model everything
+grows unbounded and becomes incoherent. Each
+`*_world_model.md` file is bounded, focused, and
+coherent. Agents scan the directory and read only
+what the mandate requires. Files may point to
+world models in other private fleet repositories,
+stitching a distributed knowledge graph across the
+fleet. `WORLD_MODEL.md` at the project root is a
+thin discovery index. Three seed templates ship with
+the framework: `fleet_world_model.md` (topology,
+service graph, trust boundaries, deployment order),
+`vendor_world_model.md` (vendor capabilities and
+recovery tools), and `staging_world_model.md`
+(staging-specific topology and edge cases). All
+world model files must live in a PRIVATE repository.
+Real IPs, node names, and service topology in a
+public repository are a security incident.
 
 ### Error Modes
 

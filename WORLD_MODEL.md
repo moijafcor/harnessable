@@ -1,61 +1,56 @@
-# WORLD_MODEL.md — harnessable framework repository
-
-## Infrastructure Topology
+# WORLD_MODEL.md
 
 ```text
-The harnessable framework repository itself has no
-dedicated infrastructure — it is a development tool
-deployed into other projects.
+Discovery index for this project's world models.
 
-Infrastructure topology belongs in the WORLD_MODEL.md
-of each project that uses harnessable, not here.
+World models live in world_models/
+Each file models one domain precisely.
+Agents: scan the directory, read what's relevant.
+Do not read everything — read what the mandate needs.
 ```
+
+> **SECURITY NOTICE**
+>
+> `world_models/` contains operational infrastructure knowledge.
+>
+> If this repository is **PUBLIC**:
+>
+> - Add `world_models/` to `.gitignore`
+> - Real IPs, node names, service names, and dependency
+>   graphs must never appear in a public repository.
 
 ---
 
-## Vendor Capabilities
+## Discovery
 
-```text
-No vendor-specific capabilities declared at framework
-level. Vendor knowledge belongs in the WORLD_MODEL.md
-of each project, populated after real incidents.
+Find all world models for this project:
+
+```bash
+find world_models/ -name "*_world_model.md" | sort
 ```
 
----
+Read the index entry of each. Follow pointers to
+relevant domain models. Read deeply only what the
+mandate requires.
 
-## Failure Patterns
-
-```text
-No patterns declared at framework level.
-Patterns are project-specific operational knowledge.
-See the harnessable documentation for the pattern
-format to use in your project's WORLD_MODEL.md.
-```
-
----
-
-## Known Edge Cases
+## World models in this project
 
 ```text
-No edge cases declared at framework level.
+REPLACE: list your domain world models
+→ world_models/fleet_world_model.md
+→ world_models/vendor_world_model.md
+→ world_models/staging_world_model.md
 ```
 
----
-
-## Incident Index
+## Cross-repo world models
 
 ```text
-No incidents at framework level.
+REPLACE: pointers to world models in other
+private fleet repositories
+→ ../your-sre-repo/world_models/infra_world_model.md
+→ ../your-api-repo/world_models/api_world_model.md
 ```
 
----
+## Incident records
 
-## Note for framework contributors
-
-```text
-If you are contributing to harnessable itself and
-encounter a failure pattern during development,
-encode it here using generic, non-client-specific
-language. Never reference real infrastructure,
-real IPs, real node names, or real client data.
-```
+`docs/incidents/` — full incident records, one file per resolved incident

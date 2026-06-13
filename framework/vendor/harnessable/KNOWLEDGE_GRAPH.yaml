@@ -643,35 +643,55 @@ concepts:
       Human approves each loop iteration via board state.
       No max_iterations cap — Architect decides when to escalate.
 
-  harnessable.WorldModel:
-    type: harnessable.Artifact
-    label: World Model
+  harnessable.WorldModelDirectory:
+    type: concept
     definition: >
-      Project-level operational knowledge base. Encodes
-      what the world looks like from this project —
-      vendor capabilities, infrastructure topology,
-      failure patterns discovered in production, known
-      edge cases. Lives at the project root alongside
-      AGENTS.md, outside docs/harness/, so the framework
-      is swappable without losing accumulated knowledge.
-      Every resolved incident that reveals a new pattern
-      must update WORLD_MODEL.md before the mandate closes.
-    path_convention: WORLD_MODEL.md (project root)
-    template: framework/templates/world-model.md
+      A directory of domain-specific world model files.
+      Each file models one operational domain precisely
+      using the *_world_model.md naming convention.
+      Replaces the single WORLD_MODEL.md approach which
+      cannot model something as complex as a fleet
+      application's operational world. The same lesson
+      as agents/*.md — one file trying to hold everything
+      grows unbounded and becomes incoherent.
+    path_convention: world_models/*_world_model.md
+    discovery: find world_models/ -name "*_world_model.md"
+    pointer_syntax: >
+      → world_models/domain_world_model.md
+      → ../other-repo/world_models/domain_world_model.md
+    index: WORLD_MODEL.md (thin discovery index at root)
+    security: >
+      Must be in a PRIVATE repository.
+      Real IPs, node names, and service topology
+      in a public repo are a security incident.
+    seed_templates:
+      - framework/templates/world_models/fleet_world_model.md
+      - framework/templates/world_models/vendor_world_model.md
+      - framework/templates/world_models/staging_world_model.md
+
+  harnessable.DomainWorldModel:
+    type: harnessable.Artifact
+    label: Domain World Model
+    definition: >
+      A single world model file scoped to one
+      operational domain. Bounded, coherent, focused.
+      Agents read only the domain files relevant to
+      their mandate. New domains add new files.
+      Files may point to world models in other
+      private fleet repositories.
+    naming_convention: "{domain}_world_model.md"
+    path_convention: world_models/{domain}_world_model.md
     project_owned: true
     framework_never_modifies: true
-    sections:
-      - Infrastructure Topology
-      - Vendor Capabilities
-      - Failure Patterns
-      - Service Dependencies
-      - Known Edge Cases
-      - Incident Index
-    update_obligation: >
-      Mandatory after every incident that reveals a
-      pattern not previously encoded. Filed before
-      mandate closure. SIR ## Knowledge Extracted
-      section declares the update.
+    pointer_graph: distributed across private fleet repos
+    domain_examples:
+      - fleet (topology, service graph, trust boundaries)
+      - vendor (capabilities, recovery tools)
+      - staging (staging-specific topology and edge cases)
+      - oauth (complete auth flow across fleet)
+      - tenant (isolation model, blast radius)
+      - billing (payment states, activation flows)
+      - api (contract surface, quota limits)
 
   harnessable.IncidentRecord:
     type: harnessable.Artifact

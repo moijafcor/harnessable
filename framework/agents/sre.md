@@ -130,47 +130,56 @@ The exemption file is automatically removed at session end by
 This pass is unconditional. Execute before any
 reconnaissance, before any tool call, before any action.
 
-### Step 0a — Consult WORLD_MODEL.md
+### Step 0a — Consult world_models/
 
-Read WORLD_MODEL.md in full. Then search specifically:
+Discover available world models:
 
-**## Failure Patterns**
-Match current symptoms against every documented pattern:
-  - Do the observable signals match?
-  - Does the vendor match?
-  - Does the layer match?
+```bash
+find world_models/ -name "*_world_model.md" | sort
+```
 
-If match found:
-  Declare it explicitly before proceeding:
-    "WORLD_MODEL.md match: {pattern name}
-     Documented tool: {tool}
-     Following documented procedure."
-  Execute the documented procedure.
-  Do not deviate without documenting the deviation.
-  If the documented procedure fails: encode the
-  failure as an update to the pattern entry.
+Read the index entry of each. Then search specifically:
 
-If no match found:
-  State: "No matching pattern in WORLD_MODEL.md.
-          Proceeding with reconnaissance."
-  Flag for encoding on resolution.
+**Fleet world model** (`fleet_world_model.md`)
+  What is the blast radius of this change?
+  What services depend on what I am touching?
+  What is the deployment dependency order?
 
-**## Vendor Capabilities**
-Before concluding that a recovery path is unavailable,
-confirm what the vendor actually offers:
-  - Does the vendor have a virtual KVM or rescue mode?
-  - Does the vendor have a management console?
-  - Does the vendor have a support escalation path?
+**Vendor world model** (`vendor_world_model.md`)
+  What recovery tools does this vendor offer?
+  What non-obvious vendor behaviours are documented?
+  Check before concluding a recovery path is unavailable.
 
-The agent cannot access what it does not know exists.
-WORLD_MODEL.md ## Vendor Capabilities encodes
-non-obvious recovery tools per vendor.
-Check it before declaring a path unavailable.
+**Staging world model** (`staging_world_model.md`)
+  If operating on staging — what are the known
+  edge cases specific to this environment?
 
-**## Known Edge Cases**
-Review all known edge cases for this vendor and
-infrastructure. Non-obvious operational facts that
-affect how this session should proceed.
+**Domain-specific world models**
+  Any `*_world_model.md` relevant to the current mandate.
+
+**Failure Patterns — across all world models**
+  Match current symptoms against every documented
+  pattern across all files.
+
+```bash
+grep -r "### Pattern" world_models/ \
+  --include="*_world_model.md" -l
+```
+
+  If match found:
+    Declare explicitly before proceeding.
+    Follow documented procedure.
+
+  If no match found:
+    State: "No matching pattern in world_models/.
+            Proceeding with reconnaissance."
+    Flag for encoding on resolution.
+
+Cross-repo world models:
+  Follow any pointers in `WORLD_MODEL.md`
+  `## Cross-repo world models` to relevant private
+  repos. Read those too if the mandate is
+  cross-service.
 
 ### Step 0b — Classify the failure mode
 
@@ -482,19 +491,32 @@ that is a protocol violation. Stop. Assess. Decide. Do not continue.
 
 Before this mandate closes, answer:
 
-**Did this session reveal a pattern not in WORLD_MODEL.md?**
+**Did this session reveal a pattern not in world_models/?**
 
-A pattern is new if:
-  - The failure mode was not in ## Failure Patterns
-  - A vendor tool was discovered that is not in
-    ## Vendor Capabilities
-  - A non-obvious operational fact emerged that is
-    not in ## Known Edge Cases
+```bash
+grep -r "{symptom keywords}" world_models/ \
+  --include="*_world_model.md"
+```
 
-If YES — encode before closing. Not after. Not eventually.
-The session does not close until WORLD_MODEL.md is updated.
+If no match: encode before closing.
 
-Encoding format (copy into WORLD_MODEL.md ## Failure Patterns):
+Which world model file does this pattern belong in?
+
+- Fleet pattern (cross-service)  → `fleet_world_model.md`
+- Vendor pattern                 → `vendor_world_model.md`
+- Staging-specific               → `staging_world_model.md`
+- New domain                     → create new file:
+                                   `world_models/{domain}_world_model.md`
+                                   add pointer to `WORLD_MODEL.md`
+
+New domain file format:
+  Copy `framework/templates/world_models/vendor_world_model.md`
+  as a structural reference.
+  Name: `world_models/{domain}_world_model.md`
+  Content: one domain, one concern, REPLACE markers replaced
+           with real operational knowledge.
+
+Encoding format:
 
 ```markdown
 ### Pattern: {short descriptive name}
@@ -518,12 +540,10 @@ Encoding format (copy into WORLD_MODEL.md ## Failure Patterns):
 ```
 
 Also update:
-  WORLD_MODEL.md ## Incident Index — one line entry
-  docs/incidents/ — full incident record if warranted
+  `docs/incidents/` — full incident record if warranted
 
 **If NO** — state explicitly:
-  "No new patterns discovered. WORLD_MODEL.md
-   does not require update."
+  "No new patterns discovered. world_models/ does not require update."
 
 This declaration is required either way.
 

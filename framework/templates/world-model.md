@@ -1,134 +1,56 @@
 # WORLD_MODEL.md
 
 ```text
-Operational knowledge base for this project.
-Encodes what the world looks like from here —
-vendor capabilities, infrastructure topology,
-failure patterns, known edge cases.
+Discovery index for this project's world models.
+
+World models live in world_models/
+Each file models one domain precisely.
+Agents: scan the directory, read what's relevant.
+Do not read everything — read what the mandate needs.
 ```
 
 > **SECURITY NOTICE**
 >
-> This file contains infrastructure topology and operational data
-> specific to your project.
+> `world_models/` contains operational infrastructure knowledge.
 >
-> If your repository is **PUBLIC**:
+> If this repository is **PUBLIC**:
 >
-> - Add `WORLD_MODEL.md` to `.gitignore`
-> - Never commit real IPs, node names, service names, or client topology
-> - Keep this file in a **private** repo alongside your codebase
->
-> Real infrastructure data in a public repo is a security incident.
+> - Add `world_models/` to `.gitignore`
+> - Real IPs, node names, service names, and dependency
+>   graphs must never appear in a public repository.
 
 ---
 
-## Infrastructure Topology
+## Discovery
 
-```text
-REPLACE: declare your nodes, roles, and connections.
-Keep real IPs and hostnames in a private repository.
+Find all world models for this project:
 
-nodes:
-  your-primary-node:
-    role:    REPLACE (e.g. primary application host)
-    vendor:  REPLACE (e.g. your hosting provider)
-    ip:      REPLACE — private repo only, never public
-    os:      REPLACE
-
-  your-database-node:
-    role:    REPLACE
-    vendor:  REPLACE
-    ip:      REPLACE — private repo only, never public
-    os:      REPLACE
-
-network:
-  vpn:     REPLACE (e.g. Tinc, Tailscale, WireGuard)
-  colo:    REPLACE (e.g. your-colo.example.com)
+```bash
+find world_models/ -name "*_world_model.md" | sort
 ```
 
----
+Read the index entry of each. Follow pointers to
+relevant domain models. Read deeply only what the
+mandate requires.
 
-## Vendor Capabilities
-
-```text
-REPLACE: declare what each vendor can do that
-agents should know about — especially non-obvious
-recovery tools and access methods.
-
-your-vendor:
-  console:    REPLACE (URL to vendor management console)
-  rescue:     REPLACE (how to access rescue/KVM mode)
-  support:    REPLACE (support URL or contact)
-  note: >
-    REPLACE: any non-obvious vendor behaviour
-    that agents need to know before acting.
-    e.g. "hot-swap leaves boot stack broken"
-```
-
----
-
-## Failure Patterns
+## World models in this project
 
 ```text
-Structured knowledge extracted from resolved incidents.
-Add entries after every incident that reveals a new pattern.
-
-### Pattern: {short descriptive name}
-
-  Vendor:      {vendor name or 'any'}
-  Layer:       {Hardware | Boot | OS | Network |
-                Service | Application | Auth}
-  Symptoms:    {observable signals at agent layer}
-  Cause:       {what actually caused it}
-  Diagnosis:   {how to confirm the cause}
-  Tool:        {what accessed the correct layer}
-  Procedure:
-    1. {step}
-    2. {step}
-  Prevention:  {optional}
-  Discovered:  {YYYY-MM-DD}
-  Incident:    {docs/incidents/filename.md}
-  Verified:    {YYYY-MM-DD}
+REPLACE: list your domain world models
+→ world_models/fleet_world_model.md
+→ world_models/vendor_world_model.md
+→ world_models/staging_world_model.md
 ```
 
----
-
-## Service Dependencies
+## Cross-repo world models
 
 ```text
-REPLACE: declare what depends on what.
-The blast radius map — what breaks when X goes down.
-Use generic service names, not client-specific names.
-
-your-app → your-database
-your-app → your-cache
-your-console → your-api (internal)
+REPLACE: pointers to world models in other
+private fleet repositories
+→ ../your-sre-repo/world_models/infra_world_model.md
+→ ../your-api-repo/world_models/api_world_model.md
 ```
 
----
+## Incident records
 
-## Known Edge Cases
-
-```text
-REPLACE: things that behave unexpectedly and why.
-Non-obvious operational facts agents need before acting.
-
-Example (generic):
-- fail2ban bans source IP after MaxAuthTries exhaustion.
-  GSSAPI burns 2 slots per attempt.
-  Unban: fail2ban-client set sshd unbanip {ip}
-
-- Vendor hot-swap may leave boot stack broken.
-  Requires console/KVM access to diagnose.
-  See Failure Patterns for vendor-specific procedure.
-```
-
----
-
-## Incident Index
-
-```text
-One line per resolved incident.
-Full records in docs/incidents/
-Format: YYYY-MM-DD | node | pattern | file
-```
+`docs/incidents/` — full incident records, one file per resolved incident

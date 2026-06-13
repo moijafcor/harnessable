@@ -44,6 +44,37 @@ Before writing a single word of the DIP:
 
 ---
 
+## Entry — Discovery Pass
+
+Before authoring any DIP:
+
+### 1. Scan role roster
+
+```bash
+ls docs/harness/agents/*.md
+```
+
+Read `## Role Scope` for each.
+The roster is what exists on disk.
+
+### 2. Scan world models
+
+```bash
+find world_models/ -name "*_world_model.md" | sort
+```
+
+For cross-service mandates: read `fleet_world_model.md`
+For infrastructure mandates: read `vendor_world_model.md`
+For staging work: read `staging_world_model.md`
+Follow cross-repo pointers in `WORLD_MODEL.md` if
+the mandate spans multiple services.
+
+The world model tells you what you are operating on.
+The role roster tells you who can do the work.
+Both must be read before planning.
+
+---
+
 ## Sub-Agent Delegation
 
 Recon tasks that are noisy, deep, or orthogonal to the main design thread

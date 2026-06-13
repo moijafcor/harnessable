@@ -514,59 +514,66 @@ bootstrap_agents_md() {
   ACTION_ITEMS+=("Fill AGENTS.md REPLACE markers then re-run install.sh --update")
 }
 
-# ── bootstrap_world_model ─────────────────────────────────────────────────────
-# Greenfield only. Creates WORLD_MODEL.md from template if absent.
-# Never overwrites existing. Creates docs/incidents/ directory.
-bootstrap_world_model() {
-  local WORLD_MODEL="$TARGET/WORLD_MODEL.md"
+# ── bootstrap_world_models ────────────────────────────────────────────────────
+# Greenfield only. Creates world_models/ directory with seed templates.
+# Creates docs/incidents/ directory.
+# Never overwrites existing files.
+bootstrap_world_models() {
+  local WM_DIR="$TARGET/world_models"
   local INCIDENTS_DIR="$TARGET/docs/incidents"
-  local TEMPLATE="$FRAMEWORK_ROOT/framework/templates/world-model.md"
+  local TEMPLATES="$FRAMEWORK_ROOT/framework/templates/world_models"
+  local INDEX_TEMPLATE="$FRAMEWORK_ROOT/framework/templates/world-model.md"
+  local INDEX="$TARGET/WORLD_MODEL.md"
 
-  # Create docs/incidents/ regardless — project-owned, never harness
+  # Create docs/incidents/ — project-owned, never harness
   if [[ ! -d "$INCIDENTS_DIR" ]]; then
     mkdir -p "$INCIDENTS_DIR"
     touch "$INCIDENTS_DIR/.gitkeep"
     echo "  CREATED docs/incidents/"
   fi
 
-  # Never overwrite existing WORLD_MODEL.md
-  if [[ -f "$WORLD_MODEL" ]]; then
-    return 0
+  # Create world_models/ directory
+  if [[ ! -d "$WM_DIR" ]]; then
+    mkdir -p "$WM_DIR"
+
+    # Seed domain templates if available
+    if [[ -d "$TEMPLATES" ]]; then
+      for template in "$TEMPLATES"/*_world_model.md; do
+        local fname
+        fname=$(basename "$template")
+        if [[ ! -f "$WM_DIR/$fname" ]]; then
+          cp "$template" "$WM_DIR/$fname"
+          echo "  CREATED world_models/$fname"
+        fi
+      done
+    fi
+
+    touch "$WM_DIR/.gitkeep"
+    echo "  CREATED world_models/"
   fi
 
-  if [[ ! -f "$TEMPLATE" ]]; then
-    echo "  WARN  WORLD_MODEL.md template not found at $TEMPLATE"
-    return 1
+  # Create WORLD_MODEL.md thin index
+  if [[ ! -f "$INDEX" ]]; then
+    if [[ -f "$INDEX_TEMPLATE" ]]; then
+      cp "$INDEX_TEMPLATE" "$INDEX"
+      echo "  CREATED WORLD_MODEL.md (discovery index)"
+    fi
   fi
 
-  cp "$TEMPLATE" "$WORLD_MODEL"
-
   echo ""
-  echo "  ┌─────────────────────────────────────────────────────┐"
-  echo "  │  WORLD_MODEL.md created                             │"
-  echo "  │                                                     │"
-  echo "  │  Fill in what you know about this project's world: │"
-  echo "  │  ## Infrastructure Topology  — your nodes          │"
-  echo "  │  ## Vendor Capabilities      — recovery tools      │"
-  echo "  │  ## Failure Patterns         — after incidents     │"
-  echo "  │  ## Known Edge Cases         — operational facts   │"
-  echo "  │                                                     │"
-  echo "  │  Every resolved incident must update this file.    │"
-  echo "  └─────────────────────────────────────────────────────┘"
-  echo ""
-  echo "  ╔══════════════════════════════════════════════╗"
-  echo "  ║  SECURITY: WORLD_MODEL.md created            ║"
-  echo "  ║                                              ║"
-  echo "  ║  This file will contain infrastructure      ║"
-  echo "  ║  topology and operational data.              ║"
-  echo "  ║                                              ║"
-  echo "  ║  If this repository is PUBLIC:               ║"
-  echo "  ║    Add WORLD_MODEL.md to .gitignore NOW      ║"
-  echo "  ║    before adding any real data.              ║"
-  echo "  ║                                              ║"
-  echo "  ║  Real IPs and node names in a public repo   ║"
-  echo "  ║  are a security incident.                    ║"
-  echo "  ╚══════════════════════════════════════════════╝"
+  echo "  ╔══════════════════════════════════════════════════╗"
+  echo "  ║  SECURITY: world_models/ created                 ║"
+  echo "  ║                                                  ║"
+  echo "  ║  This directory will contain infrastructure      ║"
+  echo "  ║  topology and operational data.                  ║"
+  echo "  ║                                                  ║"
+  echo "  ║  If this repository is PUBLIC:                   ║"
+  echo "  ║    Add world_models/ to .gitignore NOW           ║"
+  echo "  ║    before adding any real data.                  ║"
+  echo "  ║                                                  ║"
+  echo "  ║  Real IPs and infrastructure topology in a       ║"
+  echo "  ║  public repo are a security incident.            ║"
+  echo "  ╚══════════════════════════════════════════════════╝"
   echo ""
 }
 
@@ -1522,7 +1529,7 @@ main() {
   echo ""
 
   bootstrap_agents_md
-  bootstrap_world_model
+  bootstrap_world_models
   cleanup_vendor_templates
   setup_github_board
   sync_tier2

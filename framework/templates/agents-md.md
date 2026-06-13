@@ -224,29 +224,23 @@ principle: >
 
 ## World Model
 
-> **⚠ SECURITY:** `WORLD_MODEL.md` contains infrastructure topology
-> and operational data. If this repository is **PUBLIC**, add
-> `WORLD_MODEL.md` to `.gitignore` before populating it with real
-> data. Real IPs, node names, and service names in a public
-> repository are a security incident.
+> **⚠ SECURITY:** `world_models/` contains operational infrastructure
+> data. Keep this directory **PRIVATE**. Never commit real IPs, node
+> names, or service topology to a public repository.
+
+world_models: world_models/
+incidents:    docs/incidents/
 
 ```text
-Operational knowledge base for this project.
-Agents read this alongside AGENTS.md before acting.
-Lives at the project root — outside docs/harness/.
-```
+Domain world models in this project:
+REPLACE: list your *_world_model.md files
+→ world_models/fleet_world_model.md
+→ world_models/vendor_world_model.md
+→ world_models/staging_world_model.md
 
-world_model: WORLD_MODEL.md
-incidents:   docs/incidents/
-
-```text
-The World Model encodes:
-  Infrastructure topology and vendor capabilities
-  Failure patterns extracted from incidents
-  Known edge cases and non-obvious operational facts
-
-Every resolved incident that reveals new knowledge
-must update WORLD_MODEL.md before the mandate closes.
+Cross-repo pointers (private fleet repos):
+REPLACE: add pointers to other fleet world models
+→ ../your-sre-repo/world_models/infra_world_model.md
 ```
 
 ## Browser Testing
