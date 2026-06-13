@@ -554,6 +554,20 @@ bootstrap_world_model() {
   echo "  │  Every resolved incident must update this file.    │"
   echo "  └─────────────────────────────────────────────────────┘"
   echo ""
+  echo "  ╔══════════════════════════════════════════════╗"
+  echo "  ║  SECURITY: WORLD_MODEL.md created            ║"
+  echo "  ║                                              ║"
+  echo "  ║  This file will contain infrastructure      ║"
+  echo "  ║  topology and operational data.              ║"
+  echo "  ║                                              ║"
+  echo "  ║  If this repository is PUBLIC:               ║"
+  echo "  ║    Add WORLD_MODEL.md to .gitignore NOW      ║"
+  echo "  ║    before adding any real data.              ║"
+  echo "  ║                                              ║"
+  echo "  ║  Real IPs and node names in a public repo   ║"
+  echo "  ║  are a security incident.                    ║"
+  echo "  ╚══════════════════════════════════════════════╝"
+  echo ""
 }
 
 # ── setup_github_board ────────────────────────────────────────────────────────

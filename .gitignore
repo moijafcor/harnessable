@@ -6,3 +6,15 @@ docs/
 !docs/
 docs/*
 !docs/knowledge-graph.yaml
+
+# Never commit these anywhere
+*.env
+.env*
+secrets/
+credentials/
+
+# WORLD_MODEL.md is project-specific and may contain infrastructure data.
+# Projects using harnessable keep their own WORLD_MODEL.md in a private repo.
+# The framework ships a sanitized template at framework/templates/world-model.md.
+# Uncomment the line below if you want to prevent accidental commits:
+# WORLD_MODEL.md

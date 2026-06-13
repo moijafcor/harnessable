@@ -201,6 +201,14 @@ principle: >
 
 ## World Model
 
+# ⚠ SECURITY: WORLD_MODEL.md contains infrastructure
+# topology and operational data. If this repository
+# is PUBLIC, add WORLD_MODEL.md to .gitignore before
+# populating it with real data.
+#
+# Real IPs, node names, and service names in a
+# public repository are a security incident.
+
 # Operational knowledge base for this project.
 # Agents read this alongside AGENTS.md before acting.
 # Lives at the project root — outside docs/harness/.
