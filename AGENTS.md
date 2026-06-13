@@ -18,7 +18,7 @@ Full framework documentation:
 - Knowledge graph:      `framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml`
 - References:           `framework/vendor/harnessable/references/`
 - Installer:            `install.sh`
-- Deployed projects:    `~/code/your-project.d/` and `~/code/fleet-mcp`
+- Deployed projects:    check `~/code/` for projects using harnessable
 
 Before non-trivial work:
 
