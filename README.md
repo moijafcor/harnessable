@@ -634,9 +634,9 @@ at the project root alongside `AGENTS.md`, outside
 replaced without losing accumulated operational knowledge.
 Every resolved incident that reveals a new failure pattern
 must update `WORLD_MODEL.md` before the mandate closes.
-The first time an agent finds the your-vendor virtual KVM
-path in `WORLD_MODEL.md` instead of discovering it under
-pressure is when the file earns its place.
+The first time an agent finds the vendor's emergency
+console path in `WORLD_MODEL.md` instead of discovering
+it under pressure is when the file earns its place.
 
 ### Error Modes
 
