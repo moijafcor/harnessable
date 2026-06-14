@@ -146,6 +146,8 @@ require_pattern "codex/README.md" "Protocol Enhancement Request" "README PER gui
 require_pattern "codex/README.md" "Execution Manifest" "README Execution Manifest guidance"
 require_pattern "codex/README.md" "packages/\\*/PACKAGE.md" "README package adapter guidance"
 require_pattern "codex/README.md" "package commands" "README package command guidance"
+require_pattern "codex/README.md" "packages/hallmark" "README Hallmark adapter guidance"
+require_pattern "codex/README.md" "agents/skills/hallmark" "README Hallmark install path guidance"
 require_pattern "codex/README.md" "Token Budget" "README Token Budget guidance"
 require_pattern "codex/README.md" "cost_per_1k_tokens" "README token cost guidance"
 require_pattern "codex/README.md" "session_cost_report.py" "README session cost report guidance"

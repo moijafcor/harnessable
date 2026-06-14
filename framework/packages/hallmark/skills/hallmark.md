@@ -27,7 +27,7 @@ Designer session. Two protocols apply:
 
 1. harnessable Designer protocol:
    docs/harness/agents/designer.md
-   + docs/harness/packages/hallmark/adapter/designer_ext.md
+   + packages/hallmark/adapter/designer_ext.md
 
 2. Hallmark skill protocol:
    ~/.agents/skills/hallmark/SKILL.md
@@ -60,11 +60,11 @@ Hallmark rules take precedence on design decisions.
    ~/.agents/skills/hallmark/SKILL.md
 
 6. Run Rubric verification (65-gate slop test)
-   per docs/harness/packages/hallmark/adapter/rubric.md
+   per packages/hallmark/adapter/rubric.md
    before declaring output complete.
 
 7. Commit outputs, file Asset Package (AP) in TIR.
 
 # REPLACE: update base path if not docs/harness/
 - docs/harness/agents/designer.md
-- docs/harness/packages/hallmark/adapter/designer_ext.md
+- packages/hallmark/adapter/designer_ext.md

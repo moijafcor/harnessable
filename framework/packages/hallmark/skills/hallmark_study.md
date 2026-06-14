@@ -64,4 +64,4 @@ Output options after diagnosis:
 
 # REPLACE: update base path if not docs/harness/
 - docs/harness/agents/designer.md
-- docs/harness/packages/hallmark/adapter/designer_ext.md
+- packages/hallmark/adapter/designer_ext.md

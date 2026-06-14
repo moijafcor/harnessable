@@ -357,6 +357,13 @@ sync_packages() {
       "$dst_pkg/PACKAGE.md" \
       "packages/$pkg_name/PACKAGE.md"
 
+    if [[ -f "$pkg_dir/README.md" ]]; then
+      sync_package_file \
+        "$pkg_dir/README.md" \
+        "$dst_pkg/README.md" \
+        "packages/$pkg_name/README.md"
+    fi
+
     if [[ -d "$pkg_dir/skills" ]]; then
       ensure_dir "$dst_pkg/skills"
       for f in "$pkg_dir/skills/"*.md; do

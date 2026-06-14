@@ -44,6 +44,12 @@ it reports `MERGE` where manual review is needed so you can merge Harnessable
 blocks without losing project-specific instructions, operational knowledge,
 model choices, or model cost values.
 
+Package adapters are governance bridges, not the packages themselves. For
+example, the installer syncs `packages/hallmark/`, but Hallmark still must be
+installed with `npx skills add nutlope/hallmark` and verified at
+`~/.agents/skills/hallmark/SKILL.md` before `/hallmark` or `/hallmark-study`
+can run.
+
 To install the full enforcement layer (hooks, guards, audit logger,
 completion gate), run the root installer from this checkout:
 
