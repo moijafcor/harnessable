@@ -328,6 +328,24 @@ communications must remain drafts until explicitly approved.
 # standard:                     dream_reports_threshold: 4
 # aggressive (high velocity):   dream_reports_threshold: 2
 
+## Packages
+
+# Declares installed package adapters for this project.
+# Package adapters are governance bridges — the packages
+# themselves live at their install paths.
+# Agents discover packages via:
+#   ls packages/*/PACKAGE.md
+
+# REPLACE: list installed packages or leave empty
+
+# packages:
+#   hallmark:
+#     installed:   ~/.claude/skills/hallmark/
+#     adapter:     packages/hallmark/
+#     extends:     Designer
+#     commands:    /hallmark, /hallmark-study
+#     verify:      ls ~/.claude/skills/hallmark/SKILL.md
+
 ## High Risk Surfaces
 
 ```text

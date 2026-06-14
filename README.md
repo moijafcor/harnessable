@@ -374,11 +374,15 @@ harnessable/
 │   │   │   └── spike_cleanup.py   Removes .harnessable/spike_gate at session end
 │   │   └── claude_code_settings_template.json  Drop-in .claude/settings.json — all events wired through run.py
 │   │
+│   ├── packages/                  Seed package adapters (synced to packages/ in each target by install.sh)
+│   │   └── {name}/                One subdirectory per adapter — must contain PACKAGE.md
+│   │
 │   ├── templates/                 Tier 1 (copy and own)
 │   │   ├── agents-md.md           AGENTS.md template — all standard sections including Communication Channels
 │   │   ├── dip.md                 Design Implementation Plan template (all required sections)
 │   │   ├── knowledge-graph.yaml   Project knowledge graph bootstrap template
 │   │   ├── models.yaml            Project model manifest bootstrap template
+│   │   ├── package.md             Package adapter manifest template (PACKAGE.md scaffold)
 │   │   ├── world-model.md         WORLD_MODEL.md thin discovery index template
 │   │   ├── world_models/          Seed templates for project-owned operational world models
 │   │   └── skills/                Role skill wrappers (installed as .claude/commands/ — framework-owned)
@@ -396,7 +400,7 @@ harnessable/
 │               ├── hooks.md           Hook lifecycle events, installation, and extension guide
 │               └── knowledge-graph.md Knowledge graph model, vendoring instructions, and project extension guide
 │
-├── packages/                      Project-local package adapters: PACKAGE.md, skills/, adapter/
+├── packages/                      Project-local package adapters (synced from framework/packages/ by install.sh): PACKAGE.md, skills/, adapter/
 │
 ├── CHEAT_SHEET.md                 Condensed harness engineering reference
 ├── WORLD_MODEL.md                 Thin discovery index for framework repo world models

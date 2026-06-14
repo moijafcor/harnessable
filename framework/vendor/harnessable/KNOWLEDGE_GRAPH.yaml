@@ -2273,3 +2273,46 @@ concepts:
       The same signal across 3+ instances is a pattern.
       The same pattern across 5+ instances is a defect.
       Only patterns warrant Evolution actions.
+
+  harnessable.Package:
+    type: concept
+    definition: >
+      A third-party tool, skill, or library that
+      provides domain expertise to harnessable-governed
+      pipelines. Lives where installed — harnessable
+      never copies or modifies it. Connected to
+      harnessable via a PackageAdapter that provides
+      discovery, governance bridge, and Rubric
+      integration without touching the package itself.
+    lives_at: install_path (declared in PACKAGE.md)
+    connected_via: harnessable.PackageAdapter
+    examples:
+      - hallmark (design execution + slop gates)
+      - playwright (browser testing)
+      - terraform (infrastructure tooling)
+    principle: >
+      The package provides domain expertise.
+      harnessable provides governance.
+      Neither needs to know the other's internals.
+
+  harnessable.PackageManifest:
+    type: harnessable.Artifact
+    label: Package Manifest
+    abbreviation: PACKAGE.md
+    definition: >
+      Declares what a package adapter wraps and what
+      it contributes to the harnessable pipeline.
+      Required in every packages/{name}/ directory.
+      The harnessable: block is read by the Engineer
+      during roster scan to discover skills, role
+      extensions, and Rubric additions.
+    path_convention: packages/{name}/PACKAGE.md
+    template: framework/templates/package.md
+    required_fields:
+      - name
+      - source
+      - install_path
+      - capabilities
+      - harnessable.extends_role
+      - harnessable.adds_skills
+      - harnessable.requires

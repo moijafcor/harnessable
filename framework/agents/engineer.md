@@ -69,7 +69,20 @@ For each package manifest returned, read `PACKAGE.md` and any
 model templates, or package commands. Package skills are governance
 bridges to installed third-party expertise; they are not framework roles.
 When a mandate step is covered by a package skill, include the package
-command in the Execution Manifest and record the package adapter path.
+command in the Execution Manifest and record the package adapter path:
+
+```text
+  N) /hallmark       docs/mandates/brand/identity.md
+  N) /hallmark-study docs/mandates/brand/identity.md
+```
+
+If a PER gap could be answered by installing a package adapter rather
+than creating a new role, note this in the PER:
+
+```text
+  Alternative: install packages/{name} adapter
+  (see framework/packages/{name}/PACKAGE.md)
+```
 
 ### 3. Scan world models
 

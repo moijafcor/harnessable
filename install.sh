@@ -35,6 +35,7 @@ TL_SYNCED=0; TL_OK=0
 TM_SYNCED=0; TM_OK=0
 MM_SYNCED=0; MM_OK=0; MM_MERGE=0
 SK_SYNCED=0; SK_OK=0; SK_MERGE=0
+PKG_SYNCED=0; PKG_OK=0
 REPLACE_COUNT=0
 REPLACE_FILES=()
 MERGE_FILES=()
@@ -575,6 +576,44 @@ bootstrap_world_models() {
   echo "  ║  public repo are a security incident.            ║"
   echo "  ╚══════════════════════════════════════════════════╝"
   echo ""
+}
+
+# ── bootstrap_packages ────────────────────────────────────────────────────────
+# Greenfield only. Creates packages/ directory with README.
+bootstrap_packages() {
+  local PKG_DIR="$TARGET/packages"
+  local README="$PKG_DIR/README.md"
+
+  if [[ -d "$PKG_DIR" ]]; then
+    return 0
+  fi
+
+  mkdir -p "$PKG_DIR"
+
+  cat > "$README" << 'EOF'
+# packages/
+
+Third-party package adapters for this project.
+
+Each subdirectory is a governance bridge between
+a third-party package and harnessable conventions.
+The package lives where installed. The adapter lives here.
+
+## Discovery
+
+  ls packages/*/PACKAGE.md       # installed adapters
+  ls packages/*/skills/*.md      # available commands
+
+## Installing a package adapter
+
+Run install.sh --update after adding the adapter
+to the harnessable framework source, or manually
+copy from framework/packages/{name}/.
+
+See framework/packages/README.md for the convention.
+EOF
+
+  echo "  CREATED packages/"
 }
 
 # ── bootstrap_per_directory ───────────────────────────────────────────────────
@@ -1231,6 +1270,98 @@ PYEOF
   echo ""
 }
 
+# ── sync_packages ─────────────────────────────────────────────────────────────
+# Syncs framework package adapters to target packages/ directory.
+# Package adapters are governance bridges — not the packages themselves.
+# Skips packages that have been locally customised (MANUAL_MERGE).
+
+sync_packages() {
+  local SRC_DIR="$FRAMEWORK_ROOT/framework/packages"
+  local DST_DIR="$TARGET/packages"
+
+  # No framework packages to sync — skip silently
+  [[ -d "$SRC_DIR" ]] || return 0
+
+  local found=0
+  for pkg_dir in "$SRC_DIR"/*/; do
+    [[ -d "$pkg_dir" ]] || continue
+    [[ -f "$pkg_dir/PACKAGE.md" ]] || continue
+    found=$((found + 1))
+  done
+
+  [[ "$found" -gt 0 ]] || return 0
+
+  echo "── Packages ─────────────────────────────────────────────────────────────"
+  ensure_dir "$DST_DIR"
+
+  for pkg_dir in "$SRC_DIR"/*/; do
+    [[ -d "$pkg_dir" ]] || continue
+    local pkg_name
+    pkg_name="$(basename "$pkg_dir")"
+    local dst_pkg="$DST_DIR/$pkg_name"
+    [[ -f "$pkg_dir/PACKAGE.md" ]] || continue
+
+    ensure_dir "$dst_pkg"
+
+    # Sync PACKAGE.md unconditionally
+    _sync_package_file \
+      "$pkg_dir/PACKAGE.md" \
+      "$dst_pkg/PACKAGE.md" \
+      "packages/$pkg_name/PACKAGE.md"
+
+    # Sync skills/ — framework-owned, replace unconditionally
+    if [[ -d "$pkg_dir/skills" ]]; then
+      ensure_dir "$dst_pkg/skills"
+      local f name
+      for f in "$pkg_dir/skills/"*.md; do
+        [[ -f "$f" ]] || continue
+        name="$(basename "$f")"
+        _sync_package_file \
+          "$f" \
+          "$dst_pkg/skills/$name" \
+          "packages/$pkg_name/skills/$name"
+      done
+    fi
+
+    # Sync adapter/ — framework-owned, replace unconditionally
+    if [[ -d "$pkg_dir/adapter" ]]; then
+      ensure_dir "$dst_pkg/adapter"
+      for f in "$pkg_dir/adapter/"*; do
+        [[ -f "$f" ]] || continue
+        name="$(basename "$f")"
+        _sync_package_file \
+          "$f" \
+          "$dst_pkg/adapter/$name" \
+          "packages/$pkg_name/adapter/$name"
+      done
+    fi
+  done
+
+  echo ""
+}
+
+_sync_package_file() {
+  local SRC="$1" DST="$2" LABEL="$3"
+  ensure_dir "$(dirname "$DST")"
+
+  if [[ ! -f "$DST" ]]; then
+    cp "$SRC" "$DST"
+    echo "  SYNCED  $LABEL  (NEW)"
+    PKG_SYNCED=$((PKG_SYNCED + 1))
+    return
+  fi
+
+  if diff -q "$SRC" "$DST" &>/dev/null; then
+    echo "  OK      $LABEL"
+    PKG_OK=$((PKG_OK + 1))
+    return
+  fi
+
+  cp "$SRC" "$DST"
+  echo "  SYNCED  $LABEL"
+  PKG_SYNCED=$((PKG_SYNCED + 1))
+}
+
 # ── merge_settings ────────────────────────────────────────────────────────────
 
 merge_settings() {
@@ -1493,6 +1624,10 @@ report() {
     "Models manifest:" "$MM_SYNCED" "$MM_OK" "$MM_MERGE"
   printf "  %-24s %d synced / %d current\n" \
     "Skills ($(( SK_SYNCED + SK_OK ))):" "$SK_SYNCED" "$SK_OK"
+  if [[ $((PKG_SYNCED + PKG_OK)) -gt 0 ]]; then
+    printf "  %-24s %d synced / %d current\n" \
+      "Packages ($(( PKG_SYNCED + PKG_OK ))):" "$PKG_SYNCED" "$PKG_OK"
+  fi
   printf "  %-24s settings=%s  .gitignore=%s  config=%s\n" \
     "Config:" "$CFG_SETTINGS" "$CFG_GITIGNORE" "$CFG_CONFIG"
   printf "  %-24s %s\n" "Audit:" "$AUDIT_RESULT"
@@ -1560,6 +1695,7 @@ main() {
 
   bootstrap_agents_md
   bootstrap_world_models
+  bootstrap_packages
   bootstrap_per_directory
   bootstrap_evolutions_directory
   cleanup_vendor_templates
@@ -1571,6 +1707,7 @@ main() {
   sync_templates
   sync_models_manifest
   sync_skills
+  sync_packages
   merge_settings
   patch_gitignore
   merge_config
