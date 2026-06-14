@@ -1234,20 +1234,20 @@ The items that may require manual configuration:
 Invoke any role with:
 
 ```text
-/project:architect "docs/mandates/auth/login_feature.md"
-/project:engineer "docs/mandates/my-feature.md"
-/project:engineer 190778951
-/project:coder "docs/mandates/auth/login_implementation_plan.md"
-/project:sre "docs/mandates/ops/deploy-vhost.md"
-/project:qa 190778951
-/project:security "docs/mandates/auth/login_implementation_plan.md"
-/project:reviewer "src/auth/"
-/project:inspector "docs/mandates/auth/login_implementation_plan.md"
-/project:analyst "Google Ads automated bidding for SMBs, 90 days, competitor moves + user pain"
-/project:orchestrator "docs/toms/tenant-platform/TOM-1.0-product.md"
-/project:narrator "docs/mandates/feature/tenant-activation-dip.md → docs-site,email,social"
-/project:spike "add reports menu item"
-/project:emergency "login service is returning 500s on all POST requests"
+/architect "docs/mandates/auth/login_feature.md"
+/engineer "docs/mandates/my-feature.md"
+/engineer 190778951
+/coder "docs/mandates/auth/login_implementation_plan.md"
+/sre "docs/mandates/ops/deploy-vhost.md"
+/qa 190778951
+/security "docs/mandates/auth/login_implementation_plan.md"
+/reviewer "src/auth/"
+/inspector "docs/mandates/auth/login_implementation_plan.md"
+/analyst "Google Ads automated bidding for SMBs, 90 days, competitor moves + user pain"
+/orchestrator "docs/toms/tenant-platform/TOM-1.0-product.md"
+/narrator "docs/mandates/feature/tenant-activation-dip.md → docs-site,email,social"
+/spike "add reports menu item"
+/emergency "login service is returning 500s on all POST requests"
 ```
 
 `$ARGUMENTS` accepts a board item ID, a local file path, or an inline description. See [framework/vendor/harnessable/references/skills.md](framework/vendor/harnessable/references/skills.md) for the full pattern and customisation guide.
@@ -1304,7 +1304,7 @@ Every agent protocol loads this file at session start. If it does not exist when
 **With CC skills installed (recommended):** invoke the role directly. The skill loads all required context automatically.
 
 ```text
-/project:engineer "docs/mandates/my-feature.md"
+/engineer "docs/mandates/my-feature.md"
 ```
 
 **Without CC skills** (or for non-Claude Code runtimes): load context manually at session start.
