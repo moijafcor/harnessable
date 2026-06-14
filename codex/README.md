@@ -344,6 +344,20 @@ SRE and Emergency sessions scan `world_models/` before operational action and
 update the relevant `*_world_model.md` before closing any incident that
 reveals a new failure pattern, vendor capability, or known edge case.
 
+### World Model Scout
+
+```bash
+codex "$(cat codex/world_model_scout.prompt.md)"
+```
+
+World Model Scout bootstraps project world models from reconnaissance. It
+reads project structure, `.env.example`, dependency manifests, safe
+infrastructure hints, mandate artifacts, incident records, and git history;
+then drafts `world_models/*_world_model.md` entries with FOUND / INFERRED / UNKNOWN
+classifications. It never reads bare `.env`, never
+overwrites existing world model files, and never commits. Operator review is
+required before any generated topology is committed.
+
 ## What the skill adds
 
 The skill loads the full protocol when invoked. This adds:
