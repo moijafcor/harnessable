@@ -17,6 +17,8 @@
 #   <target>/docs/incidents/.gitkeep
 #   <target>/docs/mandates/per/.gitkeep
 #   <target>/docs/harness/templates/per.md
+#   <target>/docs/evolutions/.gitkeep
+#   <target>/docs/harness/templates/er.md
 #   <target>/docs/harness/models.yaml
 #   <target>/.agents/skills/harnessable/SKILL.md
 #   <target>/.agents/skills/harnessable/HARNESSABLE_VERSION
@@ -39,6 +41,7 @@ AGENTS_SRC="$REPO_ROOT/AGENTS.md"
 WORLD_MODEL_SRC="$REPO_ROOT/framework/templates/world-model.md"
 WORLD_MODELS_SRC="$REPO_ROOT/framework/templates/world_models"
 PER_SRC="$REPO_ROOT/framework/templates/per.md"
+ER_SRC="$REPO_ROOT/framework/templates/er.md"
 MODELS_SRC="$REPO_ROOT/framework/templates/models.yaml"
 SKILL_SRC="$REPO_ROOT/.agents/skills/harnessable/SKILL.md"
 VERSION_SRC="$REPO_ROOT/framework/vendor/harnessable/HARNESSABLE_VERSION"
@@ -78,12 +81,13 @@ parse_args() {
 }
 
 check_source() {
-  if [[ ! -f "$AGENTS_SRC" || ! -f "$WORLD_MODEL_SRC" || ! -d "$WORLD_MODELS_SRC" || ! -f "$PER_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
+  if [[ ! -f "$AGENTS_SRC" || ! -f "$WORLD_MODEL_SRC" || ! -d "$WORLD_MODELS_SRC" || ! -f "$PER_SRC" || ! -f "$ER_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
     echo "ERR  Source does not look like a Harnessable checkout:"
     [[ -f "$AGENTS_SRC" ]] || echo "     Missing: $AGENTS_SRC"
     [[ -f "$WORLD_MODEL_SRC" ]] || echo "     Missing: $WORLD_MODEL_SRC"
     [[ -d "$WORLD_MODELS_SRC" ]] || echo "     Missing: $WORLD_MODELS_SRC"
     [[ -f "$PER_SRC" ]] || echo "     Missing: $PER_SRC"
+    [[ -f "$ER_SRC" ]] || echo "     Missing: $ER_SRC"
     [[ -f "$MODELS_SRC" ]] || echo "     Missing: $MODELS_SRC"
     [[ -f "$SKILL_SRC" ]] || echo "     Missing: $SKILL_SRC"
     exit 3
@@ -250,6 +254,22 @@ install_per_support() {
   copy_if_changed "$PER_SRC" "$per_template" "docs/harness/templates/per.md"
 }
 
+install_evolution_support() {
+  local evolutions_dir="$TARGET/docs/evolutions"
+  local er_template="$TARGET/docs/harness/templates/er.md"
+
+  if [[ ! -d "$evolutions_dir" ]]; then
+    mkdir -p "$evolutions_dir"
+    touch "$evolutions_dir/.gitkeep"
+    echo "  CREATED docs/evolutions/"
+  elif [[ ! -f "$evolutions_dir/.gitkeep" ]]; then
+    touch "$evolutions_dir/.gitkeep"
+    echo "  CREATED docs/evolutions/.gitkeep"
+  fi
+
+  copy_if_changed "$ER_SRC" "$er_template" "docs/harness/templates/er.md"
+}
+
 main() {
   parse_args "$@"
   check_source
@@ -276,6 +296,9 @@ main() {
   count_status
 
   install_per_support
+  count_status
+
+  install_evolution_support
   count_status
 
   SKILL_DIR="$TARGET/.agents/skills/harnessable"

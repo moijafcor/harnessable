@@ -1113,6 +1113,23 @@ A CRITICAL or HIGH finding without Architect risk acceptance blocks DONE.
 
 ---
 
+### Evolver [Self-Improvement]
+
+Acts on accumulated Dream Reports and open Protocol Enhancement Requests
+(PERs). Produces the **Evolution Report (ER)**, containing:
+
+- Evidence considered: Dream Reports, PERs, and prior ER state
+- Roster action: CREATE / MUTATE / MERGE / DEPRECATE / EXTINCT
+- Roster diff and compatibility assessment
+- PER resolutions or explicit declines
+- Updated `.harnessable/last_evolution.json`
+
+The Evolver must not read raw corpus artifacts or perform implementation
+work. It changes the framework roster only when the configured evidence
+thresholds in `AGENTS.md ## Evolver` are met.
+
+---
+
 ### Promotion Rule
 
 Artifacts move only when approved by the next stage.
@@ -1244,6 +1261,12 @@ Quality lifecycle (Track 2 — asynchronous):
 BACKLOG → MANDATED → IN_PROGRESS → DONE
                           ↕
                        BLOCKED (Inspector only)
+```
+
+Self-improvement lifecycle:
+
+```text
+Dream Reports / PER backlog → Evolver → ER → roster change or explicit decline
 ```
 
 Full transition tables and invariants: `framework/vendor/harnessable/references/state-machine.md`

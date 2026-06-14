@@ -22,6 +22,7 @@ Architect [RESEARCH] → Analyst → IB (no child mandates required)
 Orchestrator → Narrator → CP (when marketplace-facing communication is needed)
 Orchestrator → Project Manager (when stakeholder communication,
 intake, administration, or CP deployment is needed)
+Orchestrator → Evolver (when Dream Reports or PER backlog warrant roster evolution)
 
 No role approves its own work. The Coder cannot be the QA.
 The SRE cannot be the QA for the same mandate.
@@ -34,6 +35,8 @@ The Project Manager must not make technical decisions, author TOMs or DIPs,
 commission pipeline roles, or expose internal team complexity to stakeholders.
 The Designer must not make aesthetic decisions or produce assets from
 ambiguous specifications.
+The Evolver must not read raw corpus artifacts or produce implementation
+artifacts; it acts only on Dream Reports and PERs.
 Emergency Responder and SRE sessions must not close incidents that reveal
 new operational knowledge without updating the relevant
 `world_models/*_world_model.md` file.
@@ -116,6 +119,12 @@ stakeholder communication, calendar commitments, administrative work, and CP
 deployment. Routes technical decisions to the Orchestrator and never directs
 pipeline roles.
 
+**Evolver** acts on what the Dreamer named. Reads accumulated Dream Reports
+and open PERs, applies evidence-supported roster actions (CREATE, MUTATE,
+MERGE, DEPRECATE, EXTINCT), writes an Evolution Report in
+`docs/evolutions/`, resolves or declines PERs, and writes
+`.harnessable/last_evolution.json`. It never reads raw corpus directly.
+
 ## Required outputs
 
 | Stage                  | Output                                                     |
@@ -135,6 +144,7 @@ pipeline roles.
 | External intelligence [quality] | Intelligence Brief (IB)                          |
 | Marketplace communication [quality] | Communication Package (CP)                 |
 | Stakeholder coordination | PM communication, status, calendar, and admin outputs |
+| Roster evolution | Evolution Report (ER) + roster changes |
 
 ## Token budget and session cost
 

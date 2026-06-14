@@ -32,8 +32,8 @@ import yaml
 with open(sys.argv[1], encoding="utf-8") as fh:
     data = yaml.safe_load(fh)
 roles = data.get("roles", {})
-if len(roles) != 15:
-    raise SystemExit(f"expected 15 roles, got {len(roles)}")
+if len(roles) != 16:
+    raise SystemExit(f"expected 16 roles, got {len(roles)}")
 for name, role in roles.items():
     cost = role.get("cost_per_1k_tokens")
     if not isinstance(cost, dict):
@@ -77,11 +77,21 @@ assert_per_support() {
   grep -q "## Roster at time of filing" "$target/docs/harness/templates/per.md" || fail "PER template missing roster section"
 }
 
+assert_evolution_support() {
+  local target="$1"
+  [[ -d "$target/docs/evolutions" ]] || fail "docs/evolutions missing"
+  [[ -f "$target/docs/evolutions/.gitkeep" ]] || fail "docs/evolutions/.gitkeep missing"
+  [[ -f "$target/docs/harness/templates/er.md" ]] || fail "ER template missing"
+  grep -q "## Roster diff" "$target/docs/harness/templates/er.md" || fail "ER template missing roster diff"
+  grep -q "## PER resolutions" "$target/docs/harness/templates/er.md" || fail "ER template missing PER resolutions"
+}
+
 target="$(new_target)"
 bash "$ROOT/install.sh" "$target" > "$TMP_ROOT/full.out"
 assert_models_manifest "$target"
 assert_world_model "$target"
 assert_per_support "$target"
+assert_evolution_support "$target"
 assert_version_file "$target/docs/harness/vendor/harnessable/HARNESSABLE_VERSION"
 [[ ! -f "$target/docs/harness/templates/models.yaml" ]] || fail "models.yaml copied under templates"
 grep -q "SYNCED  docs/harness/models.yaml  (NEW)" "$TMP_ROOT/full.out" || fail "full installer did not report models manifest sync"
@@ -103,6 +113,7 @@ bash "$ROOT/codex/install.sh" "$target" > "$TMP_ROOT/codex.out"
 assert_models_manifest "$target"
 assert_world_model "$target"
 assert_per_support "$target"
+assert_evolution_support "$target"
 assert_version_file "$target/.agents/skills/harnessable/HARNESSABLE_VERSION"
 grep -q "SYNCED  docs/harness/models.yaml  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report models manifest sync"
 grep -q "SYNCED  WORLD_MODEL.md  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report world model sync"
@@ -111,6 +122,8 @@ grep -q "CREATED world_models/vendor_world_model.md" "$TMP_ROOT/codex.out" || fa
 grep -q "CREATED world_models/staging_world_model.md" "$TMP_ROOT/codex.out" || fail "codex installer did not report staging world model seed"
 grep -q "CREATED docs/mandates/per/" "$TMP_ROOT/codex.out" || fail "codex installer did not report PER directory seed"
 grep -q "SYNCED  docs/harness/templates/per.md  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report PER template sync"
+grep -q "CREATED docs/evolutions/" "$TMP_ROOT/codex.out" || fail "codex installer did not report evolutions directory seed"
+grep -q "SYNCED  docs/harness/templates/er.md  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report ER template sync"
 grep -q "harnessable Codex adapter $EXPECTED_VERSION" "$TMP_ROOT/codex.out" || fail "codex installer did not report resolved version"
 
 echo "# codex project-selected models" >> "$target/docs/harness/models.yaml"

@@ -34,8 +34,9 @@ bash codex/install.sh /path/to/your-project
 
 The script installs `AGENTS.md`, `WORLD_MODEL.md`, three
 `world_models/*_world_model.md` seed files, `docs/harness/models.yaml`,
-`docs/harness/templates/per.md`, `docs/mandates/per/`, `docs/incidents/`,
-and the harnessable skill. It will not overwrite a
+`docs/harness/templates/per.md`, `docs/harness/templates/er.md`,
+`docs/mandates/per/`, `docs/evolutions/`, `docs/incidents/`, and the
+harnessable skill. It will not overwrite a
 customised `AGENTS.md`, `WORLD_MODEL.md`, world model file, or model manifest;
 it reports `MERGE` where manual review is needed so you can merge Harnessable
 blocks without losing project-specific instructions, operational knowledge,
@@ -241,6 +242,22 @@ Packages. PM routes technical decisions to the Orchestrator and does not
 author TOMs or DIPs, commission pipeline roles, verify implementations, or
 commit to technical timelines without Orchestrator sign-off.
 
+### Self-Improvement Track
+
+#### Evolver
+
+```bash
+codex "$(cat codex/evolver.prompt.md)"
+```
+
+Evolver acts on what the Dreamer named. It reads accumulated Dream Reports
+and open PERs, checks `AGENTS.md ## Evolver` thresholds, applies one of five
+roster actions (`CREATE`, `MUTATE`, `MERGE`, `DEPRECATE`, `EXTINCT`) when
+evidence warrants, writes an Evolution Report at
+`docs/evolutions/ER-{NNN}.md`, resolves or declines PERs, and updates
+`.harnessable/last_evolution.json`. Evolver does not read raw corpus
+artifacts directly and does not produce implementation artifacts.
+
 ### Lightweight Track
 
 #### Spike
@@ -320,8 +337,10 @@ The skill loads the full protocol when invoked. This adds:
   strategy; use `references/error-modes.md` for the taxonomy
 - Rubric obligations for QA: three layers, per-criterion verdict table, and
   NEEDS_REVISION handoff
+- Evolution obligations for Evolver: Dream Report and PER intake, five roster
+  actions, Evolution Report, and `last_evolution.json`
 - Required output format per role, including TOM, DMT, DIP, TIR, SIR,
-  AP, QA Verdict, SRR, CRR, PIR, IB, CP, EIR, and Spike Branch
+  AP, QA Verdict, SRR, CRR, PIR, IB, CP, ER, EIR, and Spike Branch
 
 Invoke it for any non-trivial mandate. For simple bounded tasks, `AGENTS.md`
 alone may be sufficient.

@@ -592,6 +592,21 @@ bootstrap_per_directory() {
   fi
 }
 
+# ── bootstrap_evolutions_directory ────────────────────────────────────────────
+# Greenfield/update safe. Creates the project-owned Evolution Report directory.
+bootstrap_evolutions_directory() {
+  local EVOLUTIONS_DIR="$TARGET/docs/evolutions"
+
+  if [[ ! -d "$EVOLUTIONS_DIR" ]]; then
+    mkdir -p "$EVOLUTIONS_DIR"
+    touch "$EVOLUTIONS_DIR/.gitkeep"
+    echo "  CREATED docs/evolutions/"
+  elif [[ ! -f "$EVOLUTIONS_DIR/.gitkeep" ]]; then
+    touch "$EVOLUTIONS_DIR/.gitkeep"
+    echo "  CREATED docs/evolutions/.gitkeep"
+  fi
+}
+
 # ── setup_github_board ────────────────────────────────────────────────────────
 # Handles --github-board=<N|new|empty>.
 # Writes result to AGENTS.md ## Project Tracker.
@@ -1546,6 +1561,7 @@ main() {
   bootstrap_agents_md
   bootstrap_world_models
   bootstrap_per_directory
+  bootstrap_evolutions_directory
   cleanup_vendor_templates
   setup_github_board
   sync_tier2

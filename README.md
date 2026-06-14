@@ -983,7 +983,8 @@ It installs:
 | `WORLD_MODEL.md` thin index and `world_models/*_world_model.md` seeds (greenfield only — never overwrites) | project root | project-owned — fill after install |
 | `docs/incidents/` (greenfield only) | project root | project-owned — filled after each incident |
 | `docs/mandates/per/` | project root | project-owned — Protocol Enhancement Requests |
-| Fifteen role skills | `.claude/commands/` | framework-owned — do not edit |
+| `docs/evolutions/` | project root | project-owned — Evolution Reports |
+| Sixteen role skills | `.claude/commands/` | framework-owned — do not edit |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |
 | Audit defaults | `.harnessable/config.json` | config |

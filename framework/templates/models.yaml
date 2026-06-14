@@ -36,8 +36,9 @@ roles:
     provider:   anthropic
     cost_tier:  high
     rationale: >
-      Squad coordination, multi-role DIP decomposition.
-      Requires breadth across all 15 role profiles.
+      Role roster scanning, Execution Manifest authoring,
+      PER gap detection, multi-role DIP decomposition.
+      Requires breadth across all 16 role profiles.
     cost_per_1k_tokens:
       input:  # REPLACE: USD per 1k input tokens
       output: # REPLACE: USD per 1k output tokens
@@ -146,6 +147,17 @@ roles:
       External stakeholder communication, intake triage,
       and administrative coordination. Nuanced tone required
       for stakeholder-facing output.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
+
+  evolver:
+    model:      # REPLACE: claude-opus-4-7 | claude-sonnet-4-6
+    provider:   anthropic
+    cost_tier:  high
+    rationale: >
+      Roster evolution requires cross-role reasoning over
+      Dream Reports, PERs, role protocols, and framework graph impact.
     cost_per_1k_tokens:
       input:  # REPLACE: USD per 1k input tokens
       output: # REPLACE: USD per 1k output tokens
