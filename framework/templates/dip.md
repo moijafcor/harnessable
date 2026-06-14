@@ -228,8 +228,8 @@ Example:
 *One line per agent session. Fire in order.*
 *Do not proceed to step N+1 until step N is complete.*
 
-1. /role-name   docs/mandates/{path}/this-dip.md
-2. /role-name   docs/mandates/{path}/this-dip.md
+1. /role-name   "docs/mandates/{path}/this-dip.md"
+2. /role-name   "docs/mandates/{path}/this-dip.md"
 
 Package command entries must cite the matching packages/{name}/ adapter
 manifest discovered during package adapter scan.

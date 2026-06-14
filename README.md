@@ -20,6 +20,11 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Harness Layers](#harness-layers)
   - [Guards in Action](#guards-in-action)
 - [Repository Structure](#repository-structure)
+- [Getting Started](#getting-started)
+  - [1. Install](#1-install)
+  - [2. Fill AGENTS.md REPLACE markers](#2-fill-agentsmd-replace-markers)
+  - [3. Prime the world models](#3-prime-the-world-models)
+  - [4. Begin work](#4-begin-work)
 - [Key Concepts](#key-concepts)
   - [Why outcomes, not operations](#why-outcomes-not-operations)
   - [Target Outcome Mandate (TOM)](#target-outcome-mandate-tom)
@@ -47,18 +52,11 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Spike](#spike)
   - [Project Manager](#project-manager)
   - [Evolver](#evolver)
+  - [World Model Scout](#world-model-scout)
   - [Dreamer](#dreamer)
   - [Extensibility — Packages](#extensibility--packages)
 - [Core Principles](#core-principles)
-- [Getting Started](#getting-started)
-  - [1. Set up your project tracker](#1-set-up-your-project-tracker)
-  - [2. Install the framework](#2-install-the-framework)
-  - [2a. After install: configure skills](#2a-after-install-configure-skills)
-  - [2b. Verify the enforcement layer](#2b-verify-the-enforcement-layer)
-  - [2c. Seed the project knowledge graph](#2c-seed-the-project-knowledge-graph)
-  - [3. Load agent context at session start](#3-load-agent-context-at-session-start)
-  - [4. Create your first DMT](#4-create-your-first-dmt)
-  - [5. Run the workflow](#5-run-the-workflow)
+- [Installation Reference](#installation-reference)
 - [Codex compatibility](#codex-compatibility)
 - [Anti-Patterns](#anti-patterns)
 - [Engineering Model](#engineering-model)
@@ -408,6 +406,44 @@ harnessable/
 ├── WORLD_MODEL.md                 Thin discovery index for framework repo world models
 └── docs/                          Mandate history and implementation plans (not part of the install)
 ```
+
+---
+
+## Getting Started
+
+### 1. Install
+
+```bash
+bash /path/to/harnessable/install.sh /path/to/project
+```
+
+### 2. Fill AGENTS.md REPLACE markers
+
+Open `AGENTS.md`. Replace every `# REPLACE` marker with your project's actual
+values: name, stack, vendor, tracker, communication channels.
+
+### 3. Prime the world models
+
+In a Claude Code session from your project root:
+
+```text
+/world-model-scout
+```
+
+The Scout scans your project — docker-compose, .env.example, Ansible inventory,
+existing mandates, git history — and drafts `world_models/` files with discovered
+content. Review, fill remaining REPLACE markers, then commit. Never commit
+`world_models/` to a public repository.
+
+### 4. Begin work
+
+```text
+/architect  "docs/mandates/your-feature.md"
+/coder      "docs/mandates/your-feature.md"
+/qa         "docs/mandates/your-feature.md"
+```
+
+The Execution Manifest in each DIP declares the exact sequence. Follow it in order.
 
 ---
 
@@ -872,6 +908,19 @@ together form the framework's self-improvement loop:
 Dreamer names what the fleet experienced, Evolver
 decides what the framework becomes.
 
+### World Model Scout
+
+`/world-model-scout` populates `world_models/` from project reconnaissance.
+It scans configuration files (docker-compose, .env.example, Ansible inventory,
+nginx.conf), reads existing mandates for Knowledge Extracted sections and
+failure patterns, checks git history for incident signals, and drafts world
+model files with discovered content. It classifies findings as FOUND
+(confirmed), INFERRED (guessed from context), or leaves REPLACE markers where
+it could not determine the value. It never reads `.env`, never overwrites
+existing world model files, and never commits — the operator reviews and
+commits. Run once per deployment after install to bootstrap the operational
+knowledge base.
+
 ### Dreamer
 
 The Dreamer runs when the framework feels the weight
@@ -1005,7 +1054,7 @@ The packages stay canonical.
 
 ---
 
-## Getting Started
+## Installation Reference
 
 ### 1. Set up your project tracker
 

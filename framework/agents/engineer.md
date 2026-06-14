@@ -501,9 +501,9 @@ Fire in order. Each session receives this DIP as
 its argument. Do not proceed to step N+1 until
 step N is complete and its artifact is filed.
 
-1. /role-name   docs/mandates/{path}/dip.md
-2. /role-name   docs/mandates/{path}/dip.md
-3. /role-name   docs/mandates/{path}/dip.md
+1. /role-name   "docs/mandates/{path}/dip.md"
+2. /role-name   "docs/mandates/{path}/dip.md"
+3. /role-name   "docs/mandates/{path}/dip.md"
 
 Rules
 One line per agent session.
@@ -526,10 +526,10 @@ Example
 
 ## Execution Manifest
 
-1. /coder   docs/mandates/app/oauth_consent.md
-2. /qa      docs/mandates/app/oauth_consent.md
-3. /sre     docs/mandates/infra/deploy_oauth.md
-4. /qa      docs/mandates/infra/deploy_oauth.md
+1. /coder   "docs/mandates/app/oauth_consent.md"
+2. /qa      "docs/mandates/app/oauth_consent.md"
+3. /sre     "docs/mandates/infra/deploy_oauth.md"
+4. /qa      "docs/mandates/infra/deploy_oauth.md"
 ```
 
 ---
