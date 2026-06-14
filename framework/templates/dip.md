@@ -222,6 +222,20 @@ Example:
 
 ---
 
+## Execution Manifest
+
+*Engineer fills this section when authoring the DIP.*
+*One line per agent session. Fire in order.*
+*Do not proceed to step N+1 until step N is complete.*
+
+1. /role-name   docs/mandates/{path}/this-dip.md
+2. /role-name   docs/mandates/{path}/this-dip.md
+
+Gap notation when PER filed:
+N) [GAP] — PER: docs/mandates/per/PER-NNN.md
+
+---
+
 ## Rollback Procedure
 
 *Required for all SRE mandates. Recommended for code mandates with destructive steps.*

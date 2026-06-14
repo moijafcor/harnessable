@@ -1031,7 +1031,7 @@ named phases and label every step with its executing type — agent roles:
 are a defect. Mandatory splits: code + live ops → Coder + SRE;
 auth/credentials/network → Security (non-optional); reaching DONE → QA
 (always); visual asset steps → Designer. See
-`agents/engineer.md ## Squad Reference` for all 15 role profiles and
+`agents/engineer.md ## Role Roster` for the roster scan protocol and
 decomposition triggers.
 
 ---

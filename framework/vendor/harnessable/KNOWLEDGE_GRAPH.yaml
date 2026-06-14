@@ -561,15 +561,17 @@ concepts:
 
   harnessable.SquadReference:
     type: concept
+    deprecated: true
+    superseded_by: harnessable.RosterScan
     definition: >
-      The section of the Engineer protocol declaring the capability
-      surface, hard limitations, commissioning criteria, DIP step
-      labels, and handoff requirements for all 13 framework roles.
-      Ensures multi-role DIP decomposition is framework-prescribed
-      rather than emergent. Security is a mandatory decomposition
-      trigger for auth, credentials, and network surface changes.
-    encoded_in: framework/agents/engineer.md ## Squad Reference
-    role_count: 15
+      Former static section in engineer.md listing all role profiles
+      inline. Replaced by the Role Roster dynamic protocol: the
+      Engineer now scans docs/harness/agents/*.md on every invocation
+      rather than reading a cached profile table. The role profiles
+      live in individual agent files; the Engineer reads them from
+      disk, not from a snapshot in the Engineer protocol.
+    was_encoded_in: framework/agents/engineer.md ## Squad Reference
+    now_encoded_in: framework/agents/engineer.md ## Role Roster
     mandatory_triggers:
       - code_changes_plus_live_operations → Coder + SRE
       - auth_credentials_network_surface  → Security mandatory
@@ -693,6 +695,82 @@ concepts:
       - tenant (isolation model, blast radius)
       - billing (payment states, activation flows)
       - api (contract surface, quota limits)
+
+  harnessable.RosterScan:
+    type: concept
+    definition: >
+      The first action of every Engineer invocation.
+      Scans docs/harness/agents/*.md to discover the
+      current generation of the framework's capability
+      surface. The roster is what exists on disk —
+      not what any document says, not what was true
+      at install time. New roles appear here first.
+      Deprecated roles disappear from here. The
+      Engineer that plans from a cached mental model
+      plans from a previous generation.
+    command: ls docs/harness/agents/*.md
+    timing: before reading mandate, before planning,
+            before authoring DIP
+    for_each_file:
+      - read ## Role Scope (Reach and Hard limits)
+      - understand when to commission this role
+      - if unseen before: read full file before planning
+    gap_detection: >
+      After scan, map every mandate step to an
+      available role. Steps with no role match
+      trigger a Protocol Enhancement Request.
+
+  harnessable.ExecutionManifest:
+    type: harnessable.Artifact
+    label: Execution Manifest
+    definition: >
+      An explicit ordered sequence of agent invocation
+      commands included in every DIP. Makes the DIP
+      fully self-contained — the operator reads once
+      and knows exactly what to run in what order.
+      No interpretation required. Resume point is
+      clear after any failure.
+    format: "N) /role-name path/to/dip.md"
+    location: ## Execution Manifest section of DIP
+    authored_by: harnessable.Engineer
+    gap_notation: >
+      N) [GAP] — PER filed: docs/mandates/per/PER-NNN.md
+      Used when a manifest step has no available role.
+    rules:
+      - one line per agent session
+      - role must exist in docs/harness/agents/
+      - order reflects execution dependency
+      - QA always follows the role it verifies
+      - SRE deployment follows Coder implementation
+
+  harnessable.ProtocolEnhancementRequest:
+    type: harnessable.Artifact
+    label: Protocol Enhancement Request
+    abbreviation: PER
+    definition: >
+      Filed by the Engineer when a roster scan reveals
+      no existing role that covers a mandate step.
+      The Engineer holds the complete picture: what
+      needs doing AND what the framework can currently
+      do. The delta is the enhancement signal. No
+      other agent has this vantage point. PERs are
+      high-signal Dreamer corpus input. The Evolver
+      acts on recurring PER patterns.
+    path_convention: docs/mandates/per/PER-{NNN}.md
+    filed_by: harnessable.Engineer
+    read_by: harnessable.Dreamer (high-signal corpus)
+    actioned_by: harnessable.Evolver
+    template: framework/templates/per.md
+    status_values:
+      - OPEN
+      - RESOLVED (new role created or mutation applied)
+      - DECLINED (gap does not warrant a role)
+    loop: >
+      Engineer files PER (gap detected)
+      Dreamer reads PERs across fleet (pattern)
+      Evolver decides: new role / mutation / decline
+      New role appears in docs/harness/agents/
+      Engineer scans roster — gap is gone
 
   harnessable.IncidentRecord:
     type: harnessable.Artifact

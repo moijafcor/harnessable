@@ -25,7 +25,8 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Target Outcome Mandate (TOM)](#target-outcome-mandate-tom)
   - [Knowledge Graph](#knowledge-graph)
   - [Models Manifest](#models-manifest)
-  - [Squad Reference](#squad-reference)
+  - [Role Roster](#role-roster)
+  - [Roster Scan](#roster-scan)
   - [Role Scope](#role-scope)
   - [Context Continuity](#context-continuity)
   - [Recursive Self-Improvement](#recursive-self-improvement)
@@ -334,7 +335,7 @@ harnessable/
 │   ├── agents/                    Tier 1 (copy and own) — role-specific agent protocols
 │   │   ├── orchestrator.md        Engagement CTO: TOM authoring, templated/novel classification, ACT/SKIP
 │   │   ├── architect.md           Intent ownership, DMT authoring, mandate closure discipline
-│   │   ├── engineer.md            Recon passes, DIP authoring, Squad Reference (15 role profiles), multi-role DIP decomposition
+│   │   ├── engineer.md            Recon passes, DIP authoring, Role Roster (dynamic roster scan + gap detection), multi-role DIP decomposition
 │   │   ├── coder.md               Build discipline, pre-completion hook runner, exit gate
 │   │   ├── sre.md                 Pre-change capture, blast radius, incident response, SIR
 │   │   ├── qa.md                  Adversarial verification protocol, verdict criteria
@@ -540,13 +541,14 @@ any role, then declares the selected model explicitly in the commission. If
 the file is absent or a role entry is missing, the Orchestrator applies the
 framework's tier defaults and files the required discovery.
 
-### Squad Reference
+### Role Roster
 
-The `## Squad Reference` section in `framework/agents/engineer.md` is the
-Engineer's authoritative map of all 15 roles: capability surface, hard
-limits, commissioning criteria, DIP step labels, and handoff requirements.
-The Engineer is accountable for multi-role DIP decomposition — when
-implementation crosses role boundaries, the Squad Reference drives which
+The `## Role Roster` section in `framework/agents/engineer.md` replaces the
+static Squad Reference with a dynamic protocol: the Engineer's first action
+on every invocation is to scan `docs/harness/agents/*.md` and read each
+role's `## Role Scope`. The roster is what exists on disk — not a cached
+mental model. The Engineer is accountable for multi-role DIP decomposition —
+when implementation crosses role boundaries, the roster scan drives which
 roles to commission and how to label each step.
 
 **Mandatory decomposition triggers** (always require multi-role decomposition):
@@ -573,7 +575,7 @@ Every agent protocol file (`framework/agents/*.md`) contains a
 - **At the boundary** — what to do when a limit is reached
 
 Role Scope makes each role self-aware without requiring it to read the
-Engineer's Squad Reference. It is the authoritative declaration of what
+Engineer's Role Roster. It is the authoritative declaration of what
 a role may and may not do when operating independently.
 
 ### Context Continuity
@@ -813,6 +815,27 @@ after DONE, the PM deploys the resulting Communication Package to each
 declared destination. Technical decisions that arrive through stakeholder
 channels are packaged as Decision Requests and routed to the Orchestrator;
 the PM never decides technical matters unilaterally.
+
+### Roster Scan
+
+The Engineer's first action on every invocation is
+to scan `docs/harness/agents/*.md` — discovering the
+current generation of the framework's capability
+surface before planning any work. The roster is what
+exists on disk, not what any document says. New roles
+appear here first; deprecated roles disappear from
+here. An Engineer planning from a cached mental model
+plans from a previous generation. After scanning, the
+Engineer maps every mandate step to an available role.
+When no role fits a step, a Protocol Enhancement
+Request (PER) is filed — a structured signal naming
+the gap that feeds the Dreamer's corpus for the
+Evolver to act on. Every DIP produced by the Engineer
+includes an Execution Manifest: an explicit ordered
+sequence of `/role path/to/dip.md` invocation
+commands that makes the DIP fully self-contained.
+The operator reads the manifest once and knows exactly
+what to run, in what order, with no interpretation.
 
 ---
 

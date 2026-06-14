@@ -48,8 +48,8 @@ graph enrichment before accepting the QA verdict and setting DONE.
 outputs: the DIP and knowledge graph amendments. Raw labels in the DIP
 are a protocol violation if the concept is absent from the graph. When
 the mandate crosses role boundaries, every DIP step must declare its
-executing type — see `agents/engineer.md ## Squad Reference` for the
-15 agent role profiles, [OPERATOR] human steps, [PLAYWRIGHT] browser
+executing type — see `agents/engineer.md ## Role Roster` for the
+roster scan protocol, [OPERATOR] human steps, [PLAYWRIGHT] browser
 automation steps, and mandatory decomposition triggers.
 
 **Coder** implements only what the approved DIP specifies. Files a
