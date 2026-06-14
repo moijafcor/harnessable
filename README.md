@@ -46,6 +46,8 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Governed Credential Operations](#governed-credential-operations)
   - [Spike](#spike)
   - [Project Manager](#project-manager)
+  - [Evolver](#evolver)
+  - [Extensibility — Packages](#extensibility--packages)
 - [Core Principles](#core-principles)
 - [Getting Started](#getting-started)
   - [1. Set up your project tracker](#1-set-up-your-project-tracker)
@@ -861,6 +863,93 @@ framework became and why. The Dreamer and Evolver
 together form the framework's self-improvement loop:
 Dreamer names what the fleet experienced, Evolver
 decides what the framework becomes.
+
+### Extensibility — Packages
+
+harnessable is a governance framework, not a knowledge
+monopoly. The field is producing domain expertise —
+design systems, testing frameworks, infrastructure
+runbooks, billing intelligence — and that expertise
+should flow into harnessable-governed pipelines without
+being forked, copied, or baked into the framework.
+
+The package convention enforces a clean separation:
+
+```text
+Third-party package     lives where installed
+                        (~/.claude/skills/hallmark/,
+                         node_modules/, pip packages)
+                        canonical, maintained upstream
+                        harnessable never touches it
+
+packages/{name}/        lives in the project
+                        governance bridge — not a copy
+                        wraps the package in harnessable
+                        conventions without duplicating it
+```
+
+The adapter in `packages/{name}/` contributes four things
+to the harnessable pipeline:
+
+```text
+PACKAGE.md              manifest — what this is,
+                        what it extends, where installed
+
+skills/                 /command wrappers that invoke
+                        the package within a governed session
+
+adapter/                role extensions, Rubric additions,
+                        world model templates for this
+                        package's domain
+
+harnessable: block      role extension declarations
+in PACKAGE.md           discovered by Engineer roster scan
+```
+
+Discovery is convention-based — no registry, no central
+manifest, no framework modification required:
+
+```bash
+ls packages/*/PACKAGE.md    # what packages are installed
+ls packages/*/skills/*.md   # what commands they add
+```
+
+The Engineer sees package skills during the roster scan.
+The Execution Manifest can include package commands. The
+Dreamer reads package outputs as corpus. The Evolver can
+recommend a package as the answer to a recurring PER —
+installing domain expertise rather than building a new
+role from scratch.
+
+harnessable wraps the package in governance. The package
+provides the domain expertise. Neither needs to know
+the other's internals.
+
+Hallmark is the inaugural package. It provides
+design intelligence — 22 themes, 65-gate slop test,
+design DNA extraction via study, project memory.
+harnessable provides the governance: the Designer role
+invokes Hallmark, the Rubric verifies the 65 slop gates
+passed, the Dreamer reads `.hallmark/log.json` as a
+design-domain corpus input. Hallmark stays at
+`~/.claude/skills/hallmark/` — where
+`npx skills add nutlope/hallmark` put it. The adapter at
+`packages/hallmark/` is the bridge. harnessable never
+copies Hallmark. Hallmark never knows about harnessable.
+
+The same pattern applies to any domain package:
+
+```text
+hallmark        design execution + slop gates
+playwright      browser testing (see [PLAYWRIGHT] steps)
+terraform       infrastructure world model + SRE tools
+stripe          billing world model + PM automation
+langchain       RubricMiddleware integration
+```
+
+Each follows the convention. harnessable gains domain
+expertise without baking it in. The framework stays lean.
+The packages stay canonical.
 
 ---
 
