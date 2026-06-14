@@ -16,9 +16,10 @@ Harnessable works with Codex through five mechanisms:
    assigned an explicit model/provider/cost tier and `cost_per_1k_tokens`
    values for budget reporting.
 
-4. **`WORLD_MODEL.md`** — project-owned operational knowledge base at the
-   project root. It records topology, vendor capabilities, failure patterns,
-   and known operational edge cases.
+4. **`WORLD_MODEL.md` and `world_models/`** — project-owned operational
+   knowledge. `WORLD_MODEL.md` is a thin discovery index; real topology,
+   vendor capabilities, failure patterns, and known edge cases live in
+   focused `world_models/*_world_model.md` files.
 
 5. **`codex/*.prompt.md` and `codex/examples/`** — role prompt templates. Use
    these as your starting point for each engagement, pipeline, quality
@@ -31,12 +32,13 @@ Harnessable works with Codex through five mechanisms:
 bash codex/install.sh /path/to/your-project
 ```
 
-The script installs `AGENTS.md`, `WORLD_MODEL.md`,
-`docs/harness/models.yaml`, `docs/incidents/`, and the harnessable skill. It
-will not overwrite a customised `AGENTS.md`, `WORLD_MODEL.md`, or model
-manifest; it reports `MERGE` where manual review is needed so you can merge
-Harnessable blocks without losing project-specific instructions, operational
-knowledge, model choices, or model cost values.
+The script installs `AGENTS.md`, `WORLD_MODEL.md`, three
+`world_models/*_world_model.md` seed files, `docs/harness/models.yaml`,
+`docs/incidents/`, and the harnessable skill. It will not overwrite a
+customised `AGENTS.md`, `WORLD_MODEL.md`, world model file, or model manifest;
+it reports `MERGE` where manual review is needed so you can merge Harnessable
+blocks without losing project-specific instructions, operational knowledge,
+model choices, or model cost values.
 
 To install the full enforcement layer (hooks, guards, audit logger,
 completion gate), run the root installer from this checkout:
@@ -106,14 +108,16 @@ SRE must file a BLOCKER before proceeding. If the DIP declares credential
 files in `## Credential Operations`, the SRE must create the session-scoped
 `.harnessable/credential_ops.json` before credential steps; it permits only
 verify-only operations and is removed by the Stop hook. SRE also reads
-`WORLD_MODEL.md` before operational work, classifies the failure mode using
-the classifier pattern in `references/classifier.md` and taxonomy in
+`WORLD_MODEL.md` as the discovery index, scans `world_models/`, reads relevant
+`*_world_model.md` files before operational work, classifies the failure mode
+using the classifier pattern in `references/classifier.md` and taxonomy in
 `references/error-modes.md`, and does not act on a `Loop permitted: NO` mode
 without human approval. For below-horizon failures, SRE backs off by packaging
 observable state and declaring the lower-layer access needed instead of
-retrying at the wrong layer. After resolution, SRE updates `WORLD_MODEL.md`
-when an incident reveals a new failure pattern, vendor capability, or edge
-case, or records that no update is required.
+retrying at the wrong layer. After resolution, SRE updates the relevant
+`world_models/{domain}_world_model.md` file when an incident reveals a new
+failure pattern, vendor capability, or edge case, or records that no update is
+required.
 
 ### Designer
 
@@ -259,7 +263,8 @@ Emergency prompt arms `.harnessable/emergency_gate`, which blocks code edits
 until a local EIR exists. The `AGENTS.md` Safety Floor still applies, and the
 session ends at `NEEDS_REVISION` with retroactive Engineer, Coder, and QA work
 required within 24 hours. Any new operational knowledge from the incident
-must be encoded in `WORLD_MODEL.md`, or the EIR must state "no new pattern".
+must be encoded in the relevant `world_models/{domain}_world_model.md`, or
+the EIR must state "no new pattern".
 Failed emergency attempts are classified before retry; below-horizon symptoms
 are packaged with last known good state, attempted actions, exhaustion
 evidence, and required lower-layer access.
@@ -278,11 +283,18 @@ You do not need to repeat these in your prompts.
 
 ## World Model
 
-The Codex installer creates `WORLD_MODEL.md` at the project root and
-`docs/incidents/` for incident records when absent. The file is
-project-owned and never overwritten by updates. SRE and Emergency sessions
-read it before operational action and update it before closing any incident
-that reveals a new failure pattern, vendor capability, or known edge case.
+The Codex installer creates a thin `WORLD_MODEL.md` discovery index,
+`world_models/fleet_world_model.md`, `world_models/vendor_world_model.md`,
+`world_models/staging_world_model.md`, and `docs/incidents/` when absent.
+These files are project-owned and never overwritten by updates.
+
+`world_models/` contains operational infrastructure knowledge. In a public
+repository, add `world_models/` to `.gitignore` before adding real IPs, node
+names, service names, or dependency graphs.
+
+SRE and Emergency sessions scan `world_models/` before operational action and
+update the relevant `*_world_model.md` before closing any incident that
+reveals a new failure pattern, vendor capability, or known edge case.
 
 ## What the skill adds
 

@@ -7,8 +7,11 @@ DIP: [PASTE OR REFERENCE DIP HERE]
 Execute only the operational steps specified in the DIP. Before touching
 live systems, confirm:
 
-- Pass 0 is complete: WORLD_MODEL.md searched for Failure Patterns, Vendor
-  Capabilities, and Known Edge Cases
+- Pass 0 is complete: `world_models/` discovered with
+  `find world_models/ -name "*_world_model.md" | sort`, relevant
+  `*_world_model.md` files searched for Failure Patterns, Vendor
+  Capabilities, and Known Edge Cases, and `WORLD_MODEL.md` followed only
+  as the thin discovery index
 - Failure mode classified using classifier.md and error-modes.md, with
   signals matched, layer, Loop permitted, prescribed response, and action
   recorded
@@ -17,7 +20,7 @@ live systems, confirm:
 - DIP status is PLANNED
 - Rollback procedure exists
 - Blast radius is declared
-- WORLD_MODEL.md has been read when present
+- Relevant world model files have been read when present
 - Credential Operations is reviewed; if credential files are declared,
   create `.harnessable/credential_ops.json` for the declared paths only
   before credential steps
@@ -38,9 +41,10 @@ Produce an SRE Implementation Report (SIR) with:
 - Rollback status
 - Observation window evidence
 - Discoveries filed, if any
-- Pass 0 classification and WORLD_MODEL.md match/no-match declaration
-- Knowledge Extracted: YES (full pattern encoded in WORLD_MODEL.md with
+- Pass 0 classification and world_models/ match/no-match declaration
+- Knowledge Extracted: YES (full pattern encoded in the relevant
+  `world_models/{domain}_world_model.md` file with
   commit SHA, incident record filed) or NO (explicit declaration:
-  "No new patterns discovered. WORLD_MODEL.md does not require update.")
+  "No new patterns discovered. world_models/ does not require update.")
 
 Set board status to IN_REVIEW when complete. Do not perform QA yourself.

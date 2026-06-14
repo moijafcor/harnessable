@@ -9,6 +9,13 @@ Recon produces two outputs — complete both before authoring the DIP:
 2. Knowledge graph amendments for every concept encountered in recon
    that is not already declared in docs/knowledge-graph.yaml
 
+Before planning, scan the role roster and world models:
+- `ls docs/harness/agents/*.md` and read `## Role Scope`
+- `find world_models/ -name "*_world_model.md" | sort`
+- Read relevant world model files: `fleet_world_model.md` for cross-service,
+  `vendor_world_model.md` for infrastructure, `staging_world_model.md` for
+  staging, plus cross-repo pointers from `WORLD_MODEL.md`
+
 Produce a DIP that includes:
 - Prerequisites copied from the DMT plus the criterion validity audit
   result; file `BLOCKER: BLOCKED_CRITERION` and do not set PLANNED if an

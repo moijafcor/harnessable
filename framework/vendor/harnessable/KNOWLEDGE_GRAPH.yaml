@@ -280,9 +280,10 @@ concepts:
     world_model_consultation:
       pass: 0 (first, unconditional)
       searches:
-        - WORLD_MODEL.md ## Failure Patterns
-        - WORLD_MODEL.md ## Vendor Capabilities
-        - WORLD_MODEL.md ## Known Edge Cases
+        - world_models/*_world_model.md failure patterns
+        - world_models/*_world_model.md vendor capabilities
+        - world_models/*_world_model.md known edge cases
+        - WORLD_MODEL.md discovery index and cross-repo pointers
       if_match: declare explicitly, follow documented procedure
       if_no_match: proceed with recon, flag for encoding
     failure_classification:
@@ -295,8 +296,8 @@ concepts:
         human approval
     encoding_obligation:
       timing: before mandate closes (not after, not eventually)
-      trigger: any pattern not already in WORLD_MODEL.md
-      format: WORLD_MODEL.md ## Failure Patterns entry
+      trigger: any pattern not already in world_models/
+      format: world_models/{domain}_world_model.md pattern entry
       declaration_required: YES (even when no new pattern)
 
   harnessable.QA:
@@ -712,7 +713,7 @@ concepts:
       - Discovery Path
       - Resolution
       - Knowledge Extracted
-      - WORLD_MODEL.md update
+      - world_models/ update
 
   harnessable.FailureMode:
     type: concept
@@ -778,7 +779,7 @@ concepts:
       - fresh_context: no shared contamination
       - stop_authority: unconditional
       - reads: error-modes.md
-      - reads: WORLD_MODEL.md failure patterns
+      - reads: world_models/*_world_model.md failure patterns
       - observes: programmatic signals (Layer 1)
       - observes: model behaviour signals (Layer 2)
     instantiations:
@@ -807,17 +808,18 @@ concepts:
       failure. Symptoms manifest at the observable layer
       while the cause lives below it. Agent capability
       is not the limitation — pattern recognition is.
-      If the pattern exists in WORLD_MODEL.md the agent
-      can execute recovery autonomously. If not, no
-      amount of retrying at the observable layer will
-      reveal a below-horizon cause.
+      If the pattern exists in a relevant
+      world_models/*_world_model.md file the agent can
+      execute recovery autonomously. If not, no amount
+      of retrying at the observable layer will reveal a
+      below-horizon cause.
     layers:
       below_horizon: Hardware, Firmware, Bootloader, Kernel
       agent_layer:   OS, Network, Services, Application
       model_layer:   Model reasoning, back-pressure signals
     failure_mode: BELOW_HORIZON (see error-modes.md)
     resolution: >
-      Check WORLD_MODEL.md for matching pattern.
+      Search world_models/ for a matching pattern.
       If match: execute documented recovery.
       If no match: package observable state,
       request lower-layer access, stop.
@@ -1265,8 +1267,8 @@ concepts:
       branches:
         YES: >
           Full pattern encoding matching
-          WORLD_MODEL.md ## Failure Patterns format.
-          WORLD_MODEL.md update confirmed with commit SHA.
+          world_models/{domain}_world_model.md pattern format.
+          world_models/ update confirmed with commit SHA.
         NO: >
           Explicit declaration required.
           Silence is not permitted.
@@ -1440,13 +1442,13 @@ concepts:
       note: >
         If the failure required Emergency protocol,
         ask whether the pattern should have been in
-        WORLD_MODEL.md. If yes: this section prevents
+        world_models/. If yes: this section prevents
         recurrence.
       branches:
         YES: >
           Full pattern encoding matching
-          WORLD_MODEL.md ## Failure Patterns format.
-          WORLD_MODEL.md update confirmed with commit SHA.
+          world_models/{domain}_world_model.md pattern format.
+          world_models/ update confirmed with commit SHA.
         NO: >
           Explicit declaration required.
           Silence is not permitted.

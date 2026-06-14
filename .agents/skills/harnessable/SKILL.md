@@ -35,7 +35,8 @@ commission pipeline roles, or expose internal team complexity to stakeholders.
 The Designer must not make aesthetic decisions or produce assets from
 ambiguous specifications.
 Emergency Responder and SRE sessions must not close incidents that reveal
-new operational knowledge without updating `WORLD_MODEL.md`.
+new operational knowledge without updating the relevant
+`world_models/*_world_model.md` file.
 
 ## Role rules
 
@@ -57,14 +58,16 @@ Discovery before deviating. Produces a TIR with evidence, not claims.
 **SRE** executes infrastructure and operational mandates against live
 systems. Captures pre-change state before acting, confirms rollback is
 documented, respects blast radius, and verifies system health — not test
-suites. Executes Pass 0 before any action: consults `WORLD_MODEL.md` for
-Failure Patterns, Vendor Capabilities, and Known Edge Cases; classifies the
-failure via the classifier pattern in `references/classifier.md` and taxonomy
-in `references/error-modes.md`; and does not act on `Loop permitted: NO`
-without human approval. Updates `WORLD_MODEL.md` before closure when an
-incident reveals a new failure pattern, vendor capability, or edge case, or
-records that no update is required. Produces a SIR with actual command output
-and observation window evidence, not claims.
+suites. Executes Pass 0 before any action: scans `world_models/`, reads
+relevant `*_world_model.md` files for Failure Patterns, Vendor Capabilities,
+and Known Edge Cases, and uses `WORLD_MODEL.md` only as a thin discovery
+index; classifies the failure via the classifier pattern in
+`references/classifier.md` and taxonomy in `references/error-modes.md`; and
+does not act on `Loop permitted: NO` without human approval. Updates the
+relevant world model before closure when an incident reveals a new failure
+pattern, vendor capability, or edge case, or records that no update is
+required. Produces a SIR with actual command output and observation window
+evidence, not claims.
 
 **Designer** produces static visual assets from complete written
 specifications. It authors SVG masters, exports raster formats, verifies
@@ -120,7 +123,7 @@ pipeline roles.
 | Coding                 | Task Implementation Report (TIR)                          |
 | Infrastructure / Ops   | SRE Implementation Report (SIR)                           |
 | Asset production       | Asset Package (AP)                                        |
-| Operational knowledge  | World Model (`WORLD_MODEL.md`)                            |
+| Operational knowledge  | World Models (`WORLD_MODEL.md` index + `world_models/*_world_model.md`) |
 | Review                 | QA Verdict with per-criterion Rubric table: PASS / CONDITIONAL_PASS / FAIL |
 | Failure classification | Classifier declaration from `references/classifier.md` + Error Mode taxonomy from `references/error-modes.md` |
 | Security (when flagged)| Security Review Report (SRR): SECURE_PASS / CONDITIONAL_PASS / FAIL |

@@ -24,6 +24,32 @@ For every concept you encounter during recon that is not declared in
 declare the concept before continuing. Raw labels in the DIP are a
 protocol violation if the concept is absent from the graph.
 
+## Entry — Discovery Pass
+
+Before authoring any DIP:
+
+1. Scan the role roster:
+
+   ```bash
+   ls docs/harness/agents/*.md
+   ```
+
+   Read `## Role Scope` for each. The roster is what exists on disk.
+
+2. Scan world models:
+
+   ```bash
+   find world_models/ -name "*_world_model.md" | sort
+   ```
+
+   For cross-service mandates, read `fleet_world_model.md`. For
+   infrastructure mandates, read `vendor_world_model.md`. For staging work,
+   read `staging_world_model.md`. Follow cross-repo pointers in
+   `WORLD_MODEL.md` if the mandate spans multiple services.
+
+The world model tells you what you are operating on. The role roster tells
+you who can do the work. Both must be read before planning.
+
 Recon passes to run before writing the DIP:
 - Read relevant source files, schemas, configs, and existing tests
 - Identify dependencies, constraints, and integration points

@@ -45,6 +45,14 @@ Load the emergency protocol and reference guide when available:
 - `docs/harness/vendor/harnessable/references/emergency.md`
 - `docs/harness/vendor/harnessable/references/state-machine.md`
 - `WORLD_MODEL.md`
+- `world_models/*_world_model.md`
+
+Use `WORLD_MODEL.md` as the thin discovery index. Discover and read relevant
+world models before action:
+
+```bash
+find world_models/ -name "*_world_model.md" | sort
+```
 
 When a fix attempt fails, classify before retrying. Use the classifier pattern
 with fresh-context discipline where possible: read programmatic signals and
@@ -98,7 +106,7 @@ Append to the EIR continuously:
 - Every finding beyond the immediate bug as:
   `DISCOVERY: {class} - {one-line description}`
 - Any new failure pattern, vendor capability, or known edge case that must be
-  encoded in `WORLD_MODEL.md`
+  encoded in `world_models/`
 
 Valid discovery classes are `INFO`, `DEVIATION`, `BLOCKER`, `ONTOLOGY_GAP`,
 and `HARNESS_IMPROVEMENT`.
@@ -116,7 +124,7 @@ The emergency session is not done until all are true:
 - [ ] All changed files are listed with rationale
 - [ ] Every architectural finding is classified as a discovery
 - [ ] Fix verification output is pasted verbatim into the EIR
-- [ ] `WORLD_MODEL.md` is updated with any new failure pattern, vendor
+- [ ] `world_models/` is updated with any new failure pattern, vendor
       capability, or edge case discovered during this incident, or the EIR
       states "no new pattern"
 - [ ] EIR includes:
@@ -125,7 +133,7 @@ The emergency session is not done until all are true:
   DIP and QA verification required within 24 hours.
   Architectural findings above require child mandates.
   Engineer: read this board item and author a retroactive DIP.
-  WORLD_MODEL.md updated, or no new pattern discovered.
+  world_models/ updated, or no new pattern discovered.
   ```
 - [ ] EIR includes `## Knowledge Extracted` with YES or NO completed
 - [ ] Board status is set to `NEEDS_REVISION`
@@ -137,18 +145,22 @@ The emergency session is not done until all are true:
 Required. Complete before the emergency session closes. Silence is not
 permitted — declare YES or NO.
 
-*YES — new pattern discovered:* Encode the full pattern in
-`WORLD_MODEL.md ## Failure Patterns` (pattern name, vendor, layer,
-symptoms, cause, diagnosis, tool, procedure). Add an incident index entry.
-Create or reference `docs/incidents/{YYYY-MM-DD}-{slug}.md`. Record
-`WORLD_MODEL.md updated: YES — commit {SHA}` in the EIR.
+*YES — new pattern discovered:* Encode the full pattern in the relevant
+`world_models/{domain}_world_model.md` file (pattern name, vendor, layer,
+symptoms, cause, diagnosis, tool, procedure). For fleet-wide patterns use
+`world_models/fleet_world_model.md`; vendor capabilities use
+`world_models/vendor_world_model.md`; staging-specific edge cases use
+`world_models/staging_world_model.md`. Add a pointer to `WORLD_MODEL.md`
+only when creating a new domain world model. Create or reference
+`docs/incidents/{YYYY-MM-DD}-{slug}.md`. Record
+`world_models/ updated: YES — commit {SHA}` in the EIR.
 
 *NO — no new pattern:* State explicitly:
-`No new patterns discovered. WORLD_MODEL.md does not require update.`
+`No new patterns discovered. world_models/ does not require update.`
 
 Emergency sessions are high-signal sources of novel patterns. If the failure
 required Emergency protocol, ask whether the pattern should have been in
-`WORLD_MODEL.md`. If yes, this section prevents recurrence.
+`world_models/`. If yes, this section prevents recurrence.
 
 ## On completion
 
@@ -156,5 +168,5 @@ Hand off to Engineer for a retroactive DIP, Coder for a TIR from the emergency
 notes, and QA for independent verification within 24 hours. The emergency
 mandate cannot reach `DONE` until that retroactive pass is complete and every
 emergency `DISCOVERY` has a corresponding child mandate. Any new operational
-knowledge discovered during the emergency must be encoded in `WORLD_MODEL.md`
+knowledge discovered during the emergency must be encoded in `world_models/`
 before closure.

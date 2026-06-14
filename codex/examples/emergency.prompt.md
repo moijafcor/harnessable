@@ -7,7 +7,9 @@ Emergency: [DESCRIBE THE PRODUCTION SYMPTOM HERE]
 A production system is broken. Fix first, document concurrently, and leave a
 trail. The AGENTS.md Safety Floor still applies.
 
-Read WORLD_MODEL.md when present so known topology, vendor capabilities, and
+Use WORLD_MODEL.md as the thin discovery index. Discover relevant
+world models with `find world_models/ -name "*_world_model.md" | sort`,
+then read the applicable files so known topology, vendor capabilities, and
 failure patterns inform the response.
 
 When a fix attempt fails, use classifier.md and error-modes.md when present:
@@ -39,11 +41,12 @@ Append to the EIR as you work:
 - Files changed with rationale
 - Discoveries as `DISCOVERY: {class} - {one-line description}`
 - Verification output
-- WORLD_MODEL.md updates for any new failure pattern, vendor capability, or
+- world_models/ updates for any new failure pattern, vendor capability, or
   edge case, or "no new pattern"
-- Knowledge Extracted: YES (full pattern encoded in WORLD_MODEL.md with
-  commit SHA, incident record filed) or NO (explicit declaration:
-  "No new patterns discovered. WORLD_MODEL.md does not require update.")
+- Knowledge Extracted: YES (full pattern encoded in the relevant
+  `world_models/{domain}_world_model.md` file with commit SHA, incident
+  record filed) or NO (explicit declaration:
+  "No new patterns discovered. world_models/ does not require update.")
 
 End by appending:
 ```text
@@ -51,7 +54,7 @@ End by appending:
 DIP and QA verification required within 24 hours.
 Architectural findings above require child mandates.
 Engineer: read this board item and author a retroactive DIP.
-WORLD_MODEL.md updated, or no new pattern discovered.
+world_models/ updated, or no new pattern discovered.
 ```
 
 Set status to NEEDS_REVISION and hand off for retroactive Engineer, Coder TIR,

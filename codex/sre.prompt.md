@@ -21,15 +21,25 @@ Do not perform QA for the same mandate.
 This pass is unconditional. Execute before reconnaissance, before tool calls,
 and before operational action.
 
-**Step 0a — Consult `WORLD_MODEL.md`**
+**Step 0a — Consult `world_models/`**
 
-Read `WORLD_MODEL.md` in full when present. Search:
+Discover available world models:
 
-- `## Failure Patterns`: match current symptoms against documented patterns.
+```bash
+find world_models/ -name "*_world_model.md" | sort
+```
+
+Read the index entry of each relevant `*_world_model.md`. Use
+`WORLD_MODEL.md` as the thin discovery index and follow any cross-repo
+pointers there when the mandate spans services.
+
+Search across all relevant world model files:
+
+- Failure patterns: match current symptoms against documented patterns.
   If a match is found, declare:
 
   ```text
-  WORLD_MODEL.md match: {pattern name}
+  world_models/ match: {file} — {pattern name}
   Documented tool: {tool}
   Following documented procedure.
   ```
@@ -37,16 +47,16 @@ Read `WORLD_MODEL.md` in full when present. Search:
   Follow the documented procedure. If it fails, update the pattern entry with
   that failure before closing.
 
-- `## Vendor Capabilities`: before declaring a recovery path unavailable,
+- Vendor capabilities: before declaring a recovery path unavailable,
   confirm whether the vendor has virtual KVM, rescue mode, management console,
   or support escalation.
-- `## Known Edge Cases`: review non-obvious operational facts for the vendor
+- Known edge cases: review non-obvious operational facts for the vendor
   and infrastructure.
 
 If no pattern matches, state:
 
 ```text
-No matching pattern in WORLD_MODEL.md. Proceeding with reconnaissance.
+No matching pattern in world_models/. Proceeding with reconnaissance.
 ```
 
 Flag the incident for encoding on resolution.
@@ -82,8 +92,8 @@ Before touching live systems:
 1. Confirm the DIP status is `PLANNED`.
 2. Confirm the DIP contains a `## Rollback Procedure`.
 3. Confirm the DIP contains a blast radius declaration.
-4. Read `WORLD_MODEL.md` when present, especially Infrastructure Topology,
-   Vendor Capabilities, Failure Patterns, and Known Edge Cases.
+4. Scan `world_models/` and read relevant `*_world_model.md` files, using
+   `WORLD_MODEL.md` only as the discovery index.
 5. Read the DIP `## Credential Operations` section. If it declares
    credential files, create `.harnessable/credential_ops.json` before any
    credential step with only the declared paths and a max four-hour
@@ -122,14 +132,18 @@ List any discoveries filed during execution with class and resolution.
 Required. Complete before mandate closes. Silence is not permitted —
 declare YES or NO.
 
-*YES — new pattern discovered:* Encode the full pattern in
-`WORLD_MODEL.md ## Failure Patterns` (pattern name, vendor, layer,
-symptoms, cause, diagnosis, tool, procedure). Add an incident index
-entry. Create `docs/incidents/{YYYY-MM-DD}-{slug}.md`. Record
-`WORLD_MODEL.md updated: YES — commit {SHA}` in the SIR.
+*YES — new pattern discovered:* Encode the full pattern in the relevant
+`world_models/{domain}_world_model.md` file (pattern name, vendor, layer,
+symptoms, cause, diagnosis, tool, procedure). For fleet-wide patterns use
+`world_models/fleet_world_model.md`; vendor capabilities use
+`world_models/vendor_world_model.md`; staging-specific edge cases use
+`world_models/staging_world_model.md`. Add a pointer to `WORLD_MODEL.md`
+only when creating a new domain world model. Create
+`docs/incidents/{YYYY-MM-DD}-{slug}.md`. Record
+`world_models/ updated: YES — commit {SHA}` in the SIR.
 
 *NO — no new pattern:* State explicitly:
-`No new patterns discovered. WORLD_MODEL.md does not require update.`
+`No new patterns discovered. world_models/ does not require update.`
 
 The SIR must include the Pass 0 classification alongside the Knowledge
 Extracted declaration before it is handed to QA.

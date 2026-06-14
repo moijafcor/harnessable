@@ -13,6 +13,7 @@
 # What this installs:
 #   <target>/AGENTS.md
 #   <target>/WORLD_MODEL.md
+#   <target>/world_models/*_world_model.md
 #   <target>/docs/incidents/.gitkeep
 #   <target>/docs/harness/models.yaml
 #   <target>/.agents/skills/harnessable/SKILL.md
@@ -34,6 +35,7 @@ TARGET=""
 
 AGENTS_SRC="$REPO_ROOT/AGENTS.md"
 WORLD_MODEL_SRC="$REPO_ROOT/framework/templates/world-model.md"
+WORLD_MODELS_SRC="$REPO_ROOT/framework/templates/world_models"
 MODELS_SRC="$REPO_ROOT/framework/templates/models.yaml"
 SKILL_SRC="$REPO_ROOT/.agents/skills/harnessable/SKILL.md"
 VERSION_SRC="$REPO_ROOT/framework/vendor/harnessable/HARNESSABLE_VERSION"
@@ -73,10 +75,11 @@ parse_args() {
 }
 
 check_source() {
-  if [[ ! -f "$AGENTS_SRC" || ! -f "$WORLD_MODEL_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
+  if [[ ! -f "$AGENTS_SRC" || ! -f "$WORLD_MODEL_SRC" || ! -d "$WORLD_MODELS_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
     echo "ERR  Source does not look like a Harnessable checkout:"
     [[ -f "$AGENTS_SRC" ]] || echo "     Missing: $AGENTS_SRC"
     [[ -f "$WORLD_MODEL_SRC" ]] || echo "     Missing: $WORLD_MODEL_SRC"
+    [[ -d "$WORLD_MODELS_SRC" ]] || echo "     Missing: $WORLD_MODELS_SRC"
     [[ -f "$MODELS_SRC" ]] || echo "     Missing: $MODELS_SRC"
     [[ -f "$SKILL_SRC" ]] || echo "     Missing: $SKILL_SRC"
     exit 3
@@ -167,7 +170,9 @@ install_agents_file() {
 
 install_world_model() {
   local world_model="$TARGET/WORLD_MODEL.md"
+  local world_models_dir="$TARGET/world_models"
   local incidents_dir="$TARGET/docs/incidents"
+  local template fname
 
   if [[ ! -d "$incidents_dir" ]]; then
     mkdir -p "$incidents_dir"
@@ -175,15 +180,32 @@ install_world_model() {
     echo "  CREATED docs/incidents/"
   fi
 
-  if [[ -f "$world_model" ]]; then
-    echo "  OK      WORLD_MODEL.md"
-    return 0
+  if [[ ! -d "$world_models_dir" ]]; then
+    mkdir -p "$world_models_dir"
+    echo "  CREATED world_models/"
   fi
 
-  cp "$WORLD_MODEL_SRC" "$world_model"
-  echo "  SYNCED  WORLD_MODEL.md  (NEW)"
-  echo "          Fill this project-owned file with topology, vendor capabilities,"
-  echo "          failure patterns, and known operational edge cases."
+  for template in "$WORLD_MODELS_SRC"/*_world_model.md; do
+    [[ -f "$template" ]] || continue
+    fname="$(basename "$template")"
+    if [[ ! -f "$world_models_dir/$fname" ]]; then
+      cp "$template" "$world_models_dir/$fname"
+      echo "  CREATED world_models/$fname"
+    fi
+  done
+
+  touch "$world_models_dir/.gitkeep"
+
+  if [[ -f "$world_model" ]]; then
+    echo "  OK      WORLD_MODEL.md"
+  else
+    cp "$WORLD_MODEL_SRC" "$world_model"
+    echo "  SYNCED  WORLD_MODEL.md  (NEW)"
+    echo "          Thin discovery index for project-owned world_models/ files."
+  fi
+
+  echo "          SECURITY: add world_models/ to .gitignore before adding real"
+  echo "          infrastructure data to any public repository."
 }
 
 install_models_manifest() {

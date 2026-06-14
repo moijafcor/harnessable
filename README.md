@@ -375,7 +375,8 @@ harnessable/
 │   │   ├── dip.md                 Design Implementation Plan template (all required sections)
 │   │   ├── knowledge-graph.yaml   Project knowledge graph bootstrap template
 │   │   ├── models.yaml            Project model manifest bootstrap template
-│   │   ├── world-model.md         WORLD_MODEL.md bootstrap template — operational knowledge base
+│   │   ├── world-model.md         WORLD_MODEL.md thin discovery index template
+│   │   ├── world_models/          Seed templates for project-owned operational world models
 │   │   └── skills/                Role skill wrappers (installed as .claude/commands/ — framework-owned)
 │   │
 │   └── vendor/                    Tier 2 (pin and never modify)
@@ -392,7 +393,7 @@ harnessable/
 │               └── knowledge-graph.md Knowledge graph model, vendoring instructions, and project extension guide
 │
 ├── CHEAT_SHEET.md                 Condensed harness engineering reference
-├── WORLD_MODEL.md                 Framework repo operational knowledge base (topology, failure patterns)
+├── WORLD_MODEL.md                 Thin discovery index for framework repo world models
 └── docs/                          Mandate history and implementation plans (not part of the install)
 ```
 
@@ -931,7 +932,7 @@ It installs:
 | `KNOWLEDGE_GRAPH.yaml`, `references/`, `HARNESSABLE_VERSION` | `docs/harness/vendor/harnessable/` | 2 — never modify |
 | `agents/`, `hooks/`, `tools/web_verify.py`, `templates/` | `docs/harness/` | 1 — copy and own |
 | Project model manifest | `docs/harness/models.yaml` | project-owned config |
-| `WORLD_MODEL.md` (greenfield only — never overwrites) | project root | project-owned — fill after install |
+| `WORLD_MODEL.md` thin index and `world_models/*_world_model.md` seeds (greenfield only — never overwrites) | project root | project-owned — fill after install |
 | `docs/incidents/` (greenfield only) | project root | project-owned — filled after each incident |
 | Fourteen role skills | `.claude/commands/` | framework-owned — do not edit |
 | Hook dispatcher wired | `.claude/settings.json` | config |

@@ -120,12 +120,13 @@ Findings above require child mandates.
 
 *Complete the YES branch if a failure pattern, vendor
 capability, or operational edge case was encountered
-that is not already in WORLD_MODEL.md.*
+that is not already in world_models/.*
 
 ### YES — Pattern details
 
+  World model:     {world_models/{domain}_world_model.md}
   Pattern name:    {short descriptive name for
-                    WORLD_MODEL.md entry}
+                    world model entry}
   Vendor:          {vendor name or 'any'}
   Layer:           {Hardware | Boot | OS | Network |
                     Service | Application | Auth}
@@ -139,14 +140,14 @@ that is not already in WORLD_MODEL.md.*
   Prevention:      {optional — how to avoid in future}
   Discovered:      {YYYY-MM-DD}
 
-  WORLD_MODEL.md updated:   YES — commit {SHA}
+  world_models/ updated:    YES — commit {SHA}
   docs/incidents/ record:   {filed at path | deferred:
                               reason}
 
 ### NO — Explicit declaration
 
   No new patterns discovered.
-  WORLD_MODEL.md does not require update.
+  world_models/ does not require update.
   Reason: {known pattern / no novel failure /
            other}
 
