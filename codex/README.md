@@ -35,7 +35,7 @@ bash codex/install.sh /path/to/your-project
 The script installs `AGENTS.md`, `WORLD_MODEL.md`, three
 `world_models/*_world_model.md` seed files, `docs/harness/models.yaml`,
 `docs/harness/templates/per.md`, `docs/harness/templates/er.md`,
-`docs/harness/templates/package.md`, `docs/mandates/per/`,
+`docs/harness/templates/package.md`, `docs/mandates/per/`, `docs/dreams/`,
 `docs/evolutions/`, `docs/incidents/`, `packages/`, any framework package
 adapters under `packages/{name}/`, and the harnessable skill. It will not
 overwrite a
@@ -251,6 +251,21 @@ author TOMs or DIPs, commission pipeline roles, verify implementations, or
 commit to technical timelines without Orchestrator sign-off.
 
 ### Self-Improvement Track
+
+#### Dreamer
+
+```bash
+codex "$(cat codex/dreamer.prompt.md)"
+```
+
+Dreamer reads the artifact buffer accumulated since the last collapse, extracts
+recurring signals invisible to individual sessions, promotes them to permanent
+knowledge (world_models/, KNOWLEDGE_GRAPH, error-modes.md), writes a Dream
+Report at `docs/dreams/DR-{NNN}.md`, and executes a collapse — writing
+`.harnessable/last_collapse.json` and resetting the buffer to zero. Three sleep
+modes: `nap` (burst window, partial collapse), `full` (complete buffer, full
+collapse), `debt` (critical backlog, emergency triage). Dreamer does not create,
+mutate, or deprecate roles — that belongs to the Evolver.
 
 #### Evolver
 

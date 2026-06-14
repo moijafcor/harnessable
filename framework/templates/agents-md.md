@@ -311,6 +311,19 @@ All email, social, press, customer, partner, or provider
 communications must remain drafts until explicitly approved.
 ```
 
+## Dreamer
+
+# Declares Dreamer thresholds for this deployment.
+# debt_monitor.py reads these to calculate pressure.
+
+# REPLACE: tune to pipeline velocity
+
+# dreamer:
+#   collapse_threshold: 50
+#   nap_threshold:      15
+#   debt_critical:      1.5
+#   debt_emergency:     3.0
+
 ## Evolver
 
 # Declares Evolver thresholds for this deployment.

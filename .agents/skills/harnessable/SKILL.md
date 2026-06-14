@@ -22,6 +22,8 @@ Architect [RESEARCH] → Analyst → IB (no child mandates required)
 Orchestrator → Narrator → CP (when marketplace-facing communication is needed)
 Orchestrator → Project Manager (when stakeholder communication,
 intake, administration, or CP deployment is needed)
+Orchestrator → Dreamer (when accumulation pressure warrants a Dream cycle)
+Dreamer → Evolver (when Dream Report names patterns warranting roster action)
 Orchestrator → Evolver (when Dream Reports or PER backlog warrant roster evolution)
 
 No role approves its own work. The Coder cannot be the QA.
@@ -35,6 +37,8 @@ The Project Manager must not make technical decisions, author TOMs or DIPs,
 commission pipeline roles, or expose internal team complexity to stakeholders.
 The Designer must not make aesthetic decisions or produce assets from
 ambiguous specifications.
+The Dreamer must not create, mutate, or deprecate roles; must not act on
+urgency; must not skip the collapse after a Dream session.
 The Evolver must not read raw corpus artifacts or produce implementation
 artifacts; it acts only on Dream Reports and PERs.
 Emergency Responder and SRE sessions must not close incidents that reveal
@@ -122,6 +126,14 @@ stakeholder communication, calendar commitments, administrative work, and CP
 deployment. Routes technical decisions to the Orchestrator and never directs
 pipeline roles.
 
+**Dreamer** reads the artifact buffer accumulated since the last collapse,
+extracts recurring signals invisible to individual sessions, promotes them
+to permanent knowledge (world_models/, KNOWLEDGE_GRAPH, error-modes.md),
+writes a Dream Report at `docs/dreams/DR-{NNN}.md`, and executes a collapse
+— writing `.harnessable/last_collapse.json` and resetting the buffer.
+Three sleep modes: nap (burst window), full (complete buffer), debt
+(critical backlog). One tool, one job: distillation only.
+
 **Evolver** acts on what the Dreamer named. Reads accumulated Dream Reports
 and open PERs, applies evidence-supported roster actions (CREATE, MUTATE,
 MERGE, DEPRECATE, EXTINCT), writes an Evolution Report in
@@ -147,6 +159,7 @@ MERGE, DEPRECATE, EXTINCT), writes an Evolution Report in
 | External intelligence [quality] | Intelligence Brief (IB)                          |
 | Marketplace communication [quality] | Communication Package (CP)                 |
 | Stakeholder coordination | PM communication, status, calendar, and admin outputs |
+| Signal distillation | Dream Report (DR) + collapse state |
 | Roster evolution | Evolution Report (ER) + roster changes |
 
 ## Token budget and session cost

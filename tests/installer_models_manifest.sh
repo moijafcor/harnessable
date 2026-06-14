@@ -32,8 +32,10 @@ import yaml
 with open(sys.argv[1], encoding="utf-8") as fh:
     data = yaml.safe_load(fh)
 roles = data.get("roles", {})
-if len(roles) != 16:
-    raise SystemExit(f"expected 16 roles, got {len(roles)}")
+if len(roles) != 17:
+    raise SystemExit(f"expected 17 roles, got {len(roles)}")
+if "dreamer" not in roles:
+    raise SystemExit("dreamer role missing")
 for name, role in roles.items():
     cost = role.get("cost_per_1k_tokens")
     if not isinstance(cost, dict):
@@ -86,6 +88,12 @@ assert_evolution_support() {
   grep -q "## PER resolutions" "$target/docs/harness/templates/er.md" || fail "ER template missing PER resolutions"
 }
 
+assert_dream_support() {
+  local target="$1"
+  [[ -d "$target/docs/dreams" ]] || fail "docs/dreams missing"
+  [[ -f "$target/docs/dreams/.gitkeep" ]] || fail "docs/dreams/.gitkeep missing"
+}
+
 assert_package_support() {
   local target="$1"
   [[ -d "$target/packages" ]] || fail "packages directory missing"
@@ -115,12 +123,14 @@ bash "$ROOT/install.sh" "$target" > "$TMP_ROOT/full.out"
 assert_models_manifest "$target"
 assert_world_model "$target"
 assert_per_support "$target"
+assert_dream_support "$target"
 assert_evolution_support "$target"
 assert_package_support "$target"
 assert_hallmark_adapter "$target"
 assert_version_file "$target/docs/harness/vendor/harnessable/HARNESSABLE_VERSION"
 [[ ! -f "$target/docs/harness/templates/models.yaml" ]] || fail "models.yaml copied under templates"
 grep -q "SYNCED  docs/harness/models.yaml  (NEW)" "$TMP_ROOT/full.out" || fail "full installer did not report models manifest sync"
+grep -q "CREATED docs/dreams/" "$TMP_ROOT/full.out" || fail "full installer did not report dreams directory seed"
 grep -q "CREATED packages/" "$TMP_ROOT/full.out" || fail "full installer did not report packages bootstrap"
 grep -q "SYNCED  packages/hallmark/PACKAGE.md  (NEW)" "$TMP_ROOT/full.out" || fail "full installer did not report hallmark package sync"
 grep -q "HARNESSABLE_VERSION → $EXPECTED_VERSION" "$TMP_ROOT/full.out" || fail "full installer did not report resolved version"
@@ -141,6 +151,7 @@ bash "$ROOT/codex/install.sh" "$target" > "$TMP_ROOT/codex.out"
 assert_models_manifest "$target"
 assert_world_model "$target"
 assert_per_support "$target"
+assert_dream_support "$target"
 assert_evolution_support "$target"
 assert_package_support "$target"
 assert_hallmark_adapter "$target"
@@ -152,6 +163,7 @@ grep -q "CREATED world_models/vendor_world_model.md" "$TMP_ROOT/codex.out" || fa
 grep -q "CREATED world_models/staging_world_model.md" "$TMP_ROOT/codex.out" || fail "codex installer did not report staging world model seed"
 grep -q "CREATED docs/mandates/per/" "$TMP_ROOT/codex.out" || fail "codex installer did not report PER directory seed"
 grep -q "SYNCED  docs/harness/templates/per.md  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report PER template sync"
+grep -q "CREATED docs/dreams/" "$TMP_ROOT/codex.out" || fail "codex installer did not report dreams directory seed"
 grep -q "CREATED docs/evolutions/" "$TMP_ROOT/codex.out" || fail "codex installer did not report evolutions directory seed"
 grep -q "SYNCED  docs/harness/templates/er.md  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report ER template sync"
 grep -q "CREATED packages/" "$TMP_ROOT/codex.out" || fail "codex installer did not report packages bootstrap"

@@ -631,6 +631,21 @@ bootstrap_per_directory() {
   fi
 }
 
+# ── bootstrap_dreams_directory ────────────────────────────────────────────────
+# Greenfield/update safe. Creates the project-owned Dream Report directory.
+bootstrap_dreams_directory() {
+  local DREAMS_DIR="$TARGET/docs/dreams"
+
+  if [[ ! -d "$DREAMS_DIR" ]]; then
+    mkdir -p "$DREAMS_DIR"
+    touch "$DREAMS_DIR/.gitkeep"
+    echo "  CREATED docs/dreams/"
+  elif [[ ! -f "$DREAMS_DIR/.gitkeep" ]]; then
+    touch "$DREAMS_DIR/.gitkeep"
+    echo "  CREATED docs/dreams/.gitkeep"
+  fi
+}
+
 # ── bootstrap_evolutions_directory ────────────────────────────────────────────
 # Greenfield/update safe. Creates the project-owned Evolution Report directory.
 bootstrap_evolutions_directory() {
@@ -1704,6 +1719,7 @@ main() {
   bootstrap_world_models
   bootstrap_packages
   bootstrap_per_directory
+  bootstrap_dreams_directory
   bootstrap_evolutions_directory
   cleanup_vendor_templates
   setup_github_board

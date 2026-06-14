@@ -1113,6 +1113,28 @@ A CRITICAL or HIGH finding without Architect risk acceptance blocks DONE.
 
 ---
 
+### Dreamer [Self-Improvement]
+
+Reads the artifact buffer since the last collapse, extracts recurring signals
+invisible to individual sessions, promotes them to permanent knowledge, writes
+a Dream Report, and executes a collapse. Produces the **Dream Report (DR)**,
+containing:
+
+- Frequency table of signals across deployments
+- New signals promoted (world_models/, KNOWLEDGE_GRAPH, error-modes.md)
+- Contradictions found (corpus vs. permanent knowledge)
+- Urgent flags (if any)
+- "For Evolver" section naming patterns warranting roster action
+- Collapse confirmation: `last_collapse.json` written, buffer reset
+
+Three sleep modes: `nap` (burst window, partial collapse), `full` (complete
+buffer, full collapse), `debt` (critical backlog, emergency triage).
+
+The Dreamer must not create, mutate, or deprecate roles; must not act on
+urgency; must not skip the collapse. A Dream without collapse adds to the debt.
+
+---
+
 ### Evolver [Self-Improvement]
 
 Acts on accumulated Dream Reports and open Protocol Enhancement Requests
@@ -1266,7 +1288,7 @@ BACKLOG → MANDATED → IN_PROGRESS → DONE
 Self-improvement lifecycle:
 
 ```text
-Dream Reports / PER backlog → Evolver → ER → roster change or explicit decline
+Corpus buffer → Dreamer → DR → Evolver → ER → roster change or explicit decline
 ```
 
 Full transition tables and invariants: `framework/vendor/harnessable/references/state-machine.md`

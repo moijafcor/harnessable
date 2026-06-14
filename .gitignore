@@ -6,6 +6,8 @@ docs/
 !docs/
 docs/*
 !docs/knowledge-graph.yaml
+!docs/dreams/
+!docs/dreams/**
 !docs/evolutions/
 !docs/evolutions/**
 

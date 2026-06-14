@@ -38,7 +38,7 @@ roles:
     rationale: >
       Role roster scanning, Execution Manifest authoring,
       PER gap detection, multi-role DIP decomposition.
-      Requires breadth across all 16 role profiles.
+      Requires breadth across all 17 role profiles.
     cost_per_1k_tokens:
       input:  # REPLACE: USD per 1k input tokens
       output: # REPLACE: USD per 1k output tokens
@@ -147,6 +147,18 @@ roles:
       External stakeholder communication, intake triage,
       and administrative coordination. Nuanced tone required
       for stakeholder-facing output.
+    cost_per_1k_tokens:
+      input:  # REPLACE: USD per 1k input tokens
+      output: # REPLACE: USD per 1k output tokens
+
+  dreamer:
+    model:      # REPLACE: claude-opus-4-7 | claude-sonnet-4-6
+    provider:   anthropic
+    cost_tier:  high
+    rationale: >
+      Artifact-buffer distillation, signal extraction, knowledge promotion,
+      and collapse decisions require broad context across completed
+      framework artifacts.
     cost_per_1k_tokens:
       input:  # REPLACE: USD per 1k input tokens
       output: # REPLACE: USD per 1k output tokens

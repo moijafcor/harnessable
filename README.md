@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents doing high-stakes production work: sixteen roles across seven tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: seventeen roles across seven tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -47,6 +47,7 @@ All framework concepts — roles, artifacts, enumerations, and their relationshi
   - [Spike](#spike)
   - [Project Manager](#project-manager)
   - [Evolver](#evolver)
+  - [Dreamer](#dreamer)
   - [Extensibility — Packages](#extensibility--packages)
 - [Core Principles](#core-principles)
 - [Getting Started](#getting-started)
@@ -349,6 +350,7 @@ harnessable/
 │   │   ├── designer.md            Pixel-precise visual asset production: SVG authoring, CLI export pipeline, AP artifact
 │   │   ├── spike.md               Branch-first micro-mandate: time box, scope, Ship/Abandon exits
 │   │   ├── emergency.md           Break-glass protocol: fix first, document concurrent, EIR
+│   │   ├── dreamer.md             Artifact-buffer distillation, Dream Reports, collapse/reset protocol
 │   │   └── evolver.md             Roster evolution: CREATE/MUTATE/MERGE/DEPRECATE/EXTINCT actions driven by Dream Reports and PERs
 │   │
 │   ├── hooks/                     Tier 1 (copy and own) — Enforcement Layer
@@ -870,6 +872,34 @@ together form the framework's self-improvement loop:
 Dreamer names what the fleet experienced, Evolver
 decides what the framework becomes.
 
+### Dreamer
+
+The Dreamer runs when the framework feels the weight
+of unprocessed experience — not on a schedule, but
+when signal density demands it. It reads the artifact
+buffer accumulated since the last collapse (DIPs, TIRs,
+SIRs, SRRs, CRRs, PIRs, HARNESS_IMPROVEMENT tags,
+Framework Observations), extracts patterns invisible
+to individual sessions, and promotes signal into
+permanent knowledge: world_models/, KNOWLEDGE_GRAPH,
+error-modes.md. It then executes a collapse — marking
+processed artifacts as DREAMED, writing
+last_collapse.json, and resetting the buffer to zero
+so the next Dream starts fresh. Without collapse, each
+Dream reads the entire history of the fleet and
+signal-to-noise degrades with every cycle. Three sleep
+modes calibrate to accumulation pressure: Nap (light,
+burst window), Full (deep, complete buffer), Debt
+(emergency triage when critical backlog detected).
+Sleep debt is measured by debt_monitor.py and surfaced
+to the Orchestrator. The Dreamer does not create,
+mutate, or deprecate roles — that belongs to the
+Evolver. One tool, one job. Named after the
+neuroscientific process of memory consolidation:
+the brain replaying experience, finding signal, and
+wiring it into permanent memory while the system is
+quiet.
+
 ### Extensibility — Packages
 
 harnessable is a governance framework, not a knowledge
@@ -1078,8 +1108,9 @@ It installs:
 | `WORLD_MODEL.md` thin index and `world_models/*_world_model.md` seeds (greenfield only — never overwrites) | project root | project-owned — fill after install |
 | `docs/incidents/` (greenfield only) | project root | project-owned — filled after each incident |
 | `docs/mandates/per/` | project root | project-owned — Protocol Enhancement Requests |
+| `docs/dreams/` | project root | project-owned — Dream Reports |
 | `docs/evolutions/` | project root | project-owned — Evolution Reports |
-| Sixteen role skills | `.claude/commands/` | framework-owned — do not edit |
+| Seventeen role skills | `.claude/commands/` | framework-owned — do not edit |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |
 | Audit defaults | `.harnessable/config.json` | config |

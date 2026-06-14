@@ -17,6 +17,7 @@
 #   <target>/docs/incidents/.gitkeep
 #   <target>/docs/mandates/per/.gitkeep
 #   <target>/docs/harness/templates/per.md
+#   <target>/docs/dreams/.gitkeep
 #   <target>/docs/evolutions/.gitkeep
 #   <target>/docs/harness/templates/er.md
 #   <target>/packages/README.md
@@ -263,6 +264,19 @@ install_per_support() {
   copy_if_changed "$PER_SRC" "$per_template" "docs/harness/templates/per.md"
 }
 
+install_dream_support() {
+  local dreams_dir="$TARGET/docs/dreams"
+
+  if [[ ! -d "$dreams_dir" ]]; then
+    mkdir -p "$dreams_dir"
+    touch "$dreams_dir/.gitkeep"
+    echo "  CREATED docs/dreams/"
+  elif [[ ! -f "$dreams_dir/.gitkeep" ]]; then
+    touch "$dreams_dir/.gitkeep"
+    echo "  CREATED docs/dreams/.gitkeep"
+  fi
+}
+
 install_evolution_support() {
   local evolutions_dir="$TARGET/docs/evolutions"
   local er_template="$TARGET/docs/harness/templates/er.md"
@@ -421,6 +435,8 @@ main() {
 
   install_per_support
   count_status
+
+  install_dream_support
 
   install_evolution_support
   count_status
