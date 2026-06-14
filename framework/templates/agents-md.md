@@ -311,6 +311,23 @@ All email, social, press, customer, partner, or provider
 communications must remain drafts until explicitly approved.
 ```
 
+## Evolver
+
+# Declares Evolver thresholds for this deployment.
+# The Orchestrator reads these to determine when
+# to dispatch the Evolver.
+
+# REPLACE: tune to your fleet velocity and risk tolerance
+
+# evolver:
+#   dream_reports_threshold: 4    # Dream Reports before Evolution
+#   consecutive_pattern_threshold: 2  # same pattern N Dreams = action
+#   per_backlog_threshold: 5      # open PERs before forced Evolution
+#
+# conservative (low velocity):  dream_reports_threshold: 8
+# standard:                     dream_reports_threshold: 4
+# aggressive (high velocity):   dream_reports_threshold: 2
+
 ## High Risk Surfaces
 
 ```text

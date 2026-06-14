@@ -6,6 +6,8 @@ docs/
 !docs/
 docs/*
 !docs/knowledge-graph.yaml
+!docs/evolutions/
+!docs/evolutions/**
 
 # Never commit these anywhere
 *.env

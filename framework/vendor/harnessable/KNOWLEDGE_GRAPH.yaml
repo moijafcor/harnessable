@@ -38,7 +38,8 @@ concepts:
     subclasses: [harnessable.DMT, harnessable.DIP, harnessable.TIR,
                  harnessable.SIR, harnessable.QAVerdict, harnessable.ADR,
                  harnessable.SRR, harnessable.CRR, harnessable.PIR,
-                 harnessable.EIR, harnessable.IB, harnessable.AssetPackage]
+                 harnessable.EIR, harnessable.IB, harnessable.AssetPackage,
+                 harnessable.EvolutionReport]
     properties:
       append_only: true
       requires_predecessor: true
@@ -55,7 +56,7 @@ concepts:
                  harnessable.Security, harnessable.Reviewer,
                  harnessable.Inspector, harnessable.EmergencyResponder,
                  harnessable.Analyst, harnessable.Designer,
-                 harnessable.ProjectManager]
+                 harnessable.ProjectManager, harnessable.Evolver]
     constraints:
       - no_self_approval: true
         note: No Role may verify or accept work it produced.
@@ -557,7 +558,7 @@ concepts:
       provider:   anthropic | openai | google | cisco | local | other
       cost_tier:  low | medium | high
       rationale:  justification for this model for this role
-    roles_declared: 15
+    roles_declared: 16
 
   harnessable.SquadReference:
     type: concept
@@ -2147,3 +2148,83 @@ concepts:
       - "tail {file}"
       - "echo $VAR"
       - "printenv"
+
+  harnessable.Evolver:
+    type: harnessable.IndependentRole
+    definition: >
+      Acts on what the Dreamer named. Reads accumulated
+      Dream Reports and open Protocol Enhancement
+      Requests and applies natural selection to the
+      current roster generation. Creates roles the
+      corpus shows are needed. Mutates protocols the
+      evidence shows are wrong. Merges roles that prove
+      redundant. Deprecates roles that no longer fit.
+      Extinccts roles the fleet has stopped using.
+      The framework's fitness function made executable.
+      Does not read raw corpus — only Dream Reports
+      and PERs. One tool, one job.
+    inputs:
+      primary:
+        - Dream Reports (docs/dreams/DR-*.md)
+        - Protocol Enhancement Requests
+          (docs/mandates/per/PER-*.md)
+      boundary: last_evolution.json
+    trigger: signal density (N Dream Reports OR
+              M consecutive patterns OR
+              PER backlog threshold)
+    evolution_actions:
+      - CREATE (new role)
+      - MUTATE (existing role protocol)
+      - MERGE (two roles into one)
+      - DEPRECATE (mark end-of-life)
+      - EXTINCT (remove from roster)
+    produces: harnessable.EvolutionReport
+    executes: Evolution collapse (last_evolution.json)
+    resolves: harnessable.ProtocolEnhancementRequest
+
+  harnessable.EvolutionReport:
+    type: harnessable.Artifact
+    label: Evolution Report
+    abbreviation: ER
+    path_convention: docs/evolutions/ER-{NNN}.md
+    produced_by: harnessable.Evolver
+    consumed_by: harnessable.Orchestrator
+    sections:
+      - Roster diff (before/after)
+      - Actions taken (CREATE/MUTATE/MERGE/DEPRECATE/EXTINCT)
+      - PER resolutions
+      - Signals deferred
+      - Signals to watch
+    failure_mode: >
+      Evolution without collapse = Dream Reports
+      accumulate as EVOLVED debt.
+      Action without sufficient evidence = noise
+      in the roster.
+
+  harnessable.EvolutionAction:
+    type: concept
+    definition: >
+      One of five actions the Evolver applies to
+      the roster based on pattern evidence from
+      Dream Reports and PERs.
+    actions:
+      CREATE:
+        evidence: 3+ PERs or Dream Reports
+        produces: new framework/agents/{name}.md
+      MUTATE:
+        evidence: 3+ sessions with wrong outcomes
+        produces: updated framework/agents/{role}.md
+      MERGE:
+        evidence: two roles always commissioned together
+        produces: survivor file, extinct merged file
+      DEPRECATE:
+        evidence: role not commissioned in 3+ Dream cycles
+        produces: deprecation notice at top of agent file
+      EXTINCT:
+        evidence: prior deprecation period elapsed
+        produces: role removed from roster
+    threshold_principle: >
+      A single PER or Dream Report is noise.
+      The same signal across 3+ instances is a pattern.
+      The same pattern across 5+ instances is a defect.
+      Only patterns warrant Evolution actions.

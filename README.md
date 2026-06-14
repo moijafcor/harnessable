@@ -2,7 +2,7 @@
 
 **Harness Engineering** is the practice of designing the operating environment for an AI agent, including context, tools, permissions, enforcement, verification, and observability.
 
-This repository is the operational governance layer for autonomous agents doing high-stakes production work: fifteen roles across seven tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
+This repository is the operational governance layer for autonomous agents doing high-stakes production work: sixteen roles across seven tracks, a structured artifact chain, a state machine, a deployable enforcement layer, context-continuity hooks, and a recursive self-improvement loop that governs the framework by governing itself. Runtime-agnostic — reference implementation for Claude Code, Codex adapter included.
 
 All framework concepts — roles, artifacts, enumerations, and their relationships — are defined in [KNOWLEDGE_GRAPH.yaml](framework/vendor/harnessable/KNOWLEDGE_GRAPH.yaml).
 
@@ -346,7 +346,8 @@ harnessable/
 │   │   ├── narrator.md            Destination-calibrated communication from DIP: CP authoring, audience personas
 │   │   ├── designer.md            Pixel-precise visual asset production: SVG authoring, CLI export pipeline, AP artifact
 │   │   ├── spike.md               Branch-first micro-mandate: time box, scope, Ship/Abandon exits
-│   │   └── emergency.md           Break-glass protocol: fix first, document concurrent, EIR
+│   │   ├── emergency.md           Break-glass protocol: fix first, document concurrent, EIR
+│   │   └── evolver.md             Roster evolution: CREATE/MUTATE/MERGE/DEPRECATE/EXTINCT actions driven by Dream Reports and PERs
 │   │
 │   ├── hooks/                     Tier 1 (copy and own) — Enforcement Layer
 │   │   ├── run.py                 Universal dispatcher: discovers and runs *.py scripts per event
@@ -837,6 +838,30 @@ commands that makes the DIP fully self-contained.
 The operator reads the manifest once and knows exactly
 what to run, in what order, with no interpretation.
 
+### Evolver
+
+The Evolver acts on what the Dreamer named. It reads
+accumulated Dream Reports and open Protocol Enhancement
+Requests and applies natural selection to the current
+roster generation — creating roles the corpus shows
+are needed, mutating protocols the evidence shows are
+wrong, merging roles that prove redundant, deprecating
+roles that no longer fit, and extincting roles the
+fleet has stopped using. It does not read raw corpus
+directly; that is the Dreamer's job. One tool, one job:
+evolve the roster. Five evolution actions: CREATE,
+MUTATE, MERGE, DEPRECATE, EXTINCT. Each requires
+pattern evidence across multiple Dream Reports or PERs
+before being applied — a single signal is noise. After
+each Evolution, last_evolution.json is written and
+Dream Reports consumed are marked EVOLVED, resetting
+the signal boundary for the next cycle. The Evolution
+Report is the Orchestrator's record of what the
+framework became and why. The Dreamer and Evolver
+together form the framework's self-improvement loop:
+Dreamer names what the fleet experienced, Evolver
+decides what the framework becomes.
+
 ---
 
 ## Core Principles
@@ -958,7 +983,7 @@ It installs:
 | `WORLD_MODEL.md` thin index and `world_models/*_world_model.md` seeds (greenfield only — never overwrites) | project root | project-owned — fill after install |
 | `docs/incidents/` (greenfield only) | project root | project-owned — filled after each incident |
 | `docs/mandates/per/` | project root | project-owned — Protocol Enhancement Requests |
-| Fourteen role skills | `.claude/commands/` | framework-owned — do not edit |
+| Fifteen role skills | `.claude/commands/` | framework-owned — do not edit |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |
 | Audit defaults | `.harnessable/config.json` | config |
