@@ -81,6 +81,38 @@ Prefix inferred content with `# INFERRED:`.
 
 ---
 
+## Final step - update WORLD_MODEL.md index
+
+After all `world_models/` files are created or updated, update the target
+deployment's `WORLD_MODEL.md` discovery index.
+
+1. List the world model files that now exist:
+
+   ```bash
+   find "$DEPLOYMENT/world_models" -name "*_world_model.md" 2>/dev/null | sort
+   ```
+
+2. In `$DEPLOYMENT/WORLD_MODEL.md`, update `## World models in this project`
+   so it lists one path per discovered world model file, for example:
+
+   ```text
+   -> world_models/fleet_world_model.md
+   -> world_models/vendor_world_model.md
+   -> world_models/staging_world_model.md
+   ```
+
+3. If recon found cross-repo world model pointers, update
+   `## Cross-repo world models` with those paths. Otherwise leave unresolved
+   placeholders as `REPLACE`.
+
+4. Verify the final index:
+
+   ```bash
+   cat "$DEPLOYMENT/WORLD_MODEL.md"
+   ```
+
+---
+
 ## Output
 
 Produce:
@@ -104,6 +136,7 @@ Security reminder:
 End by reminding the operator:
 
 - Review every generated world model before committing.
+- Verify `WORLD_MODEL.md` lists every generated or existing world model file.
 - Fill remaining `REPLACE` markers.
 - Verify all `# INFERRED:` entries.
 - Ensure the repository is private before committing infrastructure topology.

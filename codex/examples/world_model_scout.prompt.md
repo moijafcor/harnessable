@@ -29,6 +29,11 @@ Create only missing world model files. Use templates from
 files.
 Do not fill IPs or credentials.
 
+After creating or updating `world_models/`, update `WORLD_MODEL.md` so
+`## World models in this project` lists every discovered `*_world_model.md`
+file. Add cross-repo world model pointers when recon found them; otherwise
+leave unresolved placeholders as `REPLACE`.
+
 Output a World Model Scout recon summary with files created, files skipped,
 FOUND/INFERRED/UNKNOWN findings, recommended manual additions, and the security
 reminder that the repo must be private before committing infrastructure

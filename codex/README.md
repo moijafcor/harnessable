@@ -354,9 +354,10 @@ World Model Scout bootstraps project world models from reconnaissance. It
 reads project structure, `.env.example`, dependency manifests, safe
 infrastructure hints, mandate artifacts, incident records, and git history;
 then drafts `world_models/*_world_model.md` entries with FOUND / INFERRED / UNKNOWN
-classifications. It never reads bare `.env`, never
-overwrites existing world model files, and never commits. Operator review is
-required before any generated topology is committed.
+classifications and updates the root `WORLD_MODEL.md` discovery index. It never
+reads bare `.env`, never overwrites existing world model files, and never
+commits. Operator review is required before any generated topology is
+committed.
 
 ## What the skill adds
 
