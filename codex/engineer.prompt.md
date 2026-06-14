@@ -36,7 +36,21 @@ Before authoring any DIP:
 
    Read `## Role Scope` for each. The roster is what exists on disk.
 
-2. Scan world models:
+2. Scan package adapters:
+
+   ```bash
+   ls packages/*/PACKAGE.md 2>/dev/null || true
+   ls packages/*/skills/*.md 2>/dev/null || true
+   ```
+
+   For each package manifest returned, read `PACKAGE.md` and any
+   `harnessable:` block declaring role extensions, Rubric additions, world
+   model templates, or package commands. Package skills are governance
+   bridges to installed third-party expertise; they are not framework roles.
+   When a mandate step is covered by a package skill, include the package
+   command in the Execution Manifest and record the package adapter path.
+
+3. Scan world models:
 
    ```bash
    find world_models/ -name "*_world_model.md" | sort
@@ -48,7 +62,9 @@ Before authoring any DIP:
    `WORLD_MODEL.md` if the mandate spans multiple services.
 
 The world model tells you what you are operating on. The role roster tells
-you who can do the work. Both must be read before planning.
+you who can do the work. Package adapters tell you which project-installed
+expertise can extend that work without changing the framework. All three
+must be read before planning.
 
 After scanning the roster, map every mandate step to an available role. If
 no role fits a step, do not assign it to the closest role. File a Protocol
@@ -163,6 +179,8 @@ Rules:
 - One line per agent session.
 - Role name must match an existing file in docs/harness/agents/ confirmed
   during roster scan.
+- Package command entries must cite the matching packages/{name}/ adapter
+  manifest discovered during package adapter scan.
 - Order reflects execution dependency.
 - QA always appears after the role it verifies.
 - SRE deployment always appears after Coder implementation.

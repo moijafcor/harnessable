@@ -57,7 +57,21 @@ ls docs/harness/agents/*.md
 Read `## Role Scope` for each.
 The roster is what exists on disk.
 
-### 2. Scan world models
+### 2. Scan package adapters
+
+```bash
+ls packages/*/PACKAGE.md 2>/dev/null || true
+ls packages/*/skills/*.md 2>/dev/null || true
+```
+
+For each package manifest returned, read `PACKAGE.md` and any
+`harnessable:` block declaring role extensions, Rubric additions, world
+model templates, or package commands. Package skills are governance
+bridges to installed third-party expertise; they are not framework roles.
+When a mandate step is covered by a package skill, include the package
+command in the Execution Manifest and record the package adapter path.
+
+### 3. Scan world models
 
 ```bash
 find world_models/ -name "*_world_model.md" | sort
@@ -71,7 +85,9 @@ the mandate spans multiple services.
 
 The world model tells you what you are operating on.
 The role roster tells you who can do the work.
-Both must be read before planning.
+Package adapters tell you which project-installed expertise can extend
+that work without changing the framework.
+All three surfaces must be read before planning.
 
 ---
 
@@ -629,6 +645,29 @@ framework's capability surface.
 An Engineer that plans from a cached mental model
 of the roster is planning from a previous generation.
 
+### Package adapter scan — second action on every invocation
+
+After roster scan. Before mandate planning.
+
+  ls packages/*/PACKAGE.md 2>/dev/null || true
+  ls packages/*/skills/*.md 2>/dev/null || true
+
+For each package manifest returned:
+  1. Read PACKAGE.md
+  2. Read the harnessable: block if present
+  3. Note role extensions, Rubric additions, package
+     commands, and world model templates
+
+Package adapters live in packages/{name}/ and bridge
+installed third-party expertise into harnessable
+governance. They are not copies of the package and
+not framework roles.
+
+If a mandate step is covered by a package skill,
+the Execution Manifest may include the package command.
+Record the package adapter path so the operator can
+inspect the bridge before execution.
+
 ### Gap detection
 
 After scanning the roster, map every step of the
@@ -648,9 +687,9 @@ If a step has no role that fits:
   The mandate may proceed on steps that are covered.
   The gap step waits for the PER to be actioned.
 
-### World model scan — second action on every invocation
+### World model scan — third action on every invocation
 
-After roster scan. Before mandate planning.
+After roster and package adapter scans. Before mandate planning.
 
   find world_models/ -name "*_world_model.md" | sort
 
@@ -661,8 +700,10 @@ Follow cross-repo pointers in WORLD_MODEL.md for
 mandates that span multiple services.
 
 The role roster tells you who can do the work.
+Package adapters tell you which installed domain
+expertise can extend that work.
 The world models tell you what you are operating on.
-Both must be read before planning.
+All three must be read before planning.
 ---
 
 ## Framework Observation — RSI Obligation

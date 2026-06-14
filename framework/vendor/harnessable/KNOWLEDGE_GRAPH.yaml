@@ -701,25 +701,70 @@ concepts:
     type: concept
     definition: >
       The first action of every Engineer invocation.
-      Scans docs/harness/agents/*.md to discover the
-      current generation of the framework's capability
-      surface. The roster is what exists on disk —
-      not what any document says, not what was true
-      at install time. New roles appear here first.
-      Deprecated roles disappear from here. The
-      Engineer that plans from a cached mental model
-      plans from a previous generation.
+      Scans docs/harness/agents/*.md and project package
+      adapters to discover the current generation of the
+      framework's capability surface. The roster is what
+      exists on disk — not what any document says, not
+      what was true at install time. New roles appear
+      here first. Deprecated roles disappear from here.
+      Package skills may extend the roster without
+      becoming framework roles. The Engineer that plans
+      from a cached mental model plans from a previous
+      generation.
     command: ls docs/harness/agents/*.md
+    package_adapter_commands:
+      - ls packages/*/PACKAGE.md
+      - ls packages/*/skills/*.md
     timing: before reading mandate, before planning,
             before authoring DIP
     for_each_file:
       - read ## Role Scope (Reach and Hard limits)
       - understand when to commission this role
       - if unseen before: read full file before planning
+    package_adapter_scan:
+      - read PACKAGE.md
+      - read harnessable: block if present
+      - note package skills, role extensions, Rubric additions,
+        and world model templates
     gap_detection: >
       After scan, map every mandate step to an
       available role. Steps with no role match
-      trigger a Protocol Enhancement Request.
+      or package skill match trigger a Protocol
+      Enhancement Request.
+
+  harnessable.PackageAdapter:
+    type: concept
+    label: Package Adapter
+    definition: >
+      A project-local governance bridge at packages/{name}/
+      that wraps an installed third-party package in
+      harnessable conventions without copying or owning
+      the package. Discovered by the Engineer during
+      roster scan. May declare role extensions, Rubric
+      additions, package skills, and world model templates.
+    path_convention: packages/{name}/
+    manifest: packages/{name}/PACKAGE.md
+    project_owned: true
+    framework_never_modifies: true
+    not_a_framework_role: true
+    discovered_by: harnessable.Engineer
+    discovery_commands:
+      - ls packages/*/PACKAGE.md
+      - ls packages/*/skills/*.md
+
+  harnessable.PackageSkill:
+    type: concept
+    label: Package Skill
+    definition: >
+      A command wrapper declared by a Package Adapter.
+      Invokes installed third-party domain expertise
+      inside a governed harnessable session. May appear
+      in the Execution Manifest when the adapter's
+      harnessable declaration covers a mandate step.
+    path_convention: packages/{name}/skills/*.md
+    declared_by: harnessable.PackageAdapter
+    may_appear_in: harnessable.ExecutionManifest
+    not_a_framework_role: true
 
   harnessable.ExecutionManifest:
     type: harnessable.Artifact

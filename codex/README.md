@@ -329,7 +329,10 @@ The skill loads the full protocol when invoked. This adds:
 - The complete discovery classification table including `ONTOLOGY_GAP`
 - Knowledge graph obligations (grounding, amendment, PLANNED and DONE gates)
 - Dynamic roster obligations for Engineer: Role Roster scan, PER filing for
-  missing capabilities, and Execution Manifest authoring
+  missing capabilities, package adapter discovery from
+  `packages/*/PACKAGE.md` and `packages/*/skills/*.md`, Execution Manifest
+  authoring, and package commands when a package adapter covers the mandate
+  step
 - Token Budget guidance: model cost fields in `docs/harness/models.yaml`,
   session cost logs, and `session_cost_report.py` when logs are available
 - Classifier obligations: use `references/classifier.md` for separation,

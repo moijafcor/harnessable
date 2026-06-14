@@ -231,6 +231,9 @@ Example:
 1. /role-name   docs/mandates/{path}/this-dip.md
 2. /role-name   docs/mandates/{path}/this-dip.md
 
+Package command entries must cite the matching packages/{name}/ adapter
+manifest discovered during package adapter scan.
+
 Gap notation when PER filed:
 N) [GAP] — PER: docs/mandates/per/PER-NNN.md
 

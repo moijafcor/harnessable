@@ -11,6 +11,9 @@ Recon produces two outputs — complete both before authoring the DIP:
 
 Before planning, scan the role roster and world models:
 - `ls docs/harness/agents/*.md` and read `## Role Scope`
+- `ls packages/*/PACKAGE.md 2>/dev/null || true` and
+  `ls packages/*/skills/*.md 2>/dev/null || true`; read each package
+  manifest and `harnessable:` block before using package commands
 - `find world_models/ -name "*_world_model.md" | sort`
 - Read relevant world model files: `fleet_world_model.md` for cross-service,
   `vendor_world_model.md` for infrastructure, `staging_world_model.md` for
@@ -18,7 +21,8 @@ Before planning, scan the role roster and world models:
 - Map every mandate step to an available role. If no role fits, file a
   Protocol Enhancement Request at `docs/mandates/per/PER-{NNN}.md` using
   `docs/harness/templates/per.md`, then mark the step as `[GAP]` in the
-  Execution Manifest
+  Execution Manifest. If a package skill fits, include the package command
+  in the Execution Manifest and cite the `packages/{name}/` adapter path
 
 Produce a DIP that includes:
 - Prerequisites copied from the DMT plus the criterion validity audit

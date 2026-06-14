@@ -396,6 +396,8 @@ harnessable/
 │               ├── hooks.md           Hook lifecycle events, installation, and extension guide
 │               └── knowledge-graph.md Knowledge graph model, vendoring instructions, and project extension guide
 │
+├── packages/                      Project-local package adapters: PACKAGE.md, skills/, adapter/
+│
 ├── CHEAT_SHEET.md                 Condensed harness engineering reference
 ├── WORLD_MODEL.md                 Thin discovery index for framework repo world models
 └── docs/                          Mandate history and implementation plans (not part of the install)
