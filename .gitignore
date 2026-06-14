@@ -20,3 +20,7 @@ credentials/
 # The framework ships a sanitized template at framework/templates/world-model.md.
 # Uncomment the line below if you want to prevent accidental commits:
 # WORLD_MODEL.md
+.claude/*
+!.claude/settings.json
+!.claude/commands/
+.harnessable/logs/
