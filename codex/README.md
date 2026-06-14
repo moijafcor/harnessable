@@ -35,8 +35,10 @@ bash codex/install.sh /path/to/your-project
 The script installs `AGENTS.md`, `WORLD_MODEL.md`, three
 `world_models/*_world_model.md` seed files, `docs/harness/models.yaml`,
 `docs/harness/templates/per.md`, `docs/harness/templates/er.md`,
-`docs/mandates/per/`, `docs/evolutions/`, `docs/incidents/`, and the
-harnessable skill. It will not overwrite a
+`docs/harness/templates/package.md`, `docs/mandates/per/`,
+`docs/evolutions/`, `docs/incidents/`, `packages/`, any framework package
+adapters under `packages/{name}/`, and the harnessable skill. It will not
+overwrite a
 customised `AGENTS.md`, `WORLD_MODEL.md`, world model file, or model manifest;
 it reports `MERGE` where manual review is needed so you can merge Harnessable
 blocks without losing project-specific instructions, operational knowledge,

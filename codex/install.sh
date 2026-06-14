@@ -19,6 +19,9 @@
 #   <target>/docs/harness/templates/per.md
 #   <target>/docs/evolutions/.gitkeep
 #   <target>/docs/harness/templates/er.md
+#   <target>/packages/README.md
+#   <target>/packages/{name}/PACKAGE.md
+#   <target>/docs/harness/templates/package.md
 #   <target>/docs/harness/models.yaml
 #   <target>/.agents/skills/harnessable/SKILL.md
 #   <target>/.agents/skills/harnessable/HARNESSABLE_VERSION
@@ -42,6 +45,8 @@ WORLD_MODEL_SRC="$REPO_ROOT/framework/templates/world-model.md"
 WORLD_MODELS_SRC="$REPO_ROOT/framework/templates/world_models"
 PER_SRC="$REPO_ROOT/framework/templates/per.md"
 ER_SRC="$REPO_ROOT/framework/templates/er.md"
+PACKAGE_TEMPLATE_SRC="$REPO_ROOT/framework/templates/package.md"
+PACKAGES_SRC="$REPO_ROOT/framework/packages"
 MODELS_SRC="$REPO_ROOT/framework/templates/models.yaml"
 SKILL_SRC="$REPO_ROOT/.agents/skills/harnessable/SKILL.md"
 VERSION_SRC="$REPO_ROOT/framework/vendor/harnessable/HARNESSABLE_VERSION"
@@ -50,6 +55,8 @@ ACTION_ITEMS=()
 SYNCED_COUNT=0
 OK_COUNT=0
 MERGE_COUNT=0
+PKG_SYNCED=0
+PKG_OK=0
 LAST_STATUS=""
 
 ensure_dir() {
@@ -81,13 +88,15 @@ parse_args() {
 }
 
 check_source() {
-  if [[ ! -f "$AGENTS_SRC" || ! -f "$WORLD_MODEL_SRC" || ! -d "$WORLD_MODELS_SRC" || ! -f "$PER_SRC" || ! -f "$ER_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
+  if [[ ! -f "$AGENTS_SRC" || ! -f "$WORLD_MODEL_SRC" || ! -d "$WORLD_MODELS_SRC" || ! -f "$PER_SRC" || ! -f "$ER_SRC" || ! -f "$PACKAGE_TEMPLATE_SRC" || ! -d "$PACKAGES_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
     echo "ERR  Source does not look like a Harnessable checkout:"
     [[ -f "$AGENTS_SRC" ]] || echo "     Missing: $AGENTS_SRC"
     [[ -f "$WORLD_MODEL_SRC" ]] || echo "     Missing: $WORLD_MODEL_SRC"
     [[ -d "$WORLD_MODELS_SRC" ]] || echo "     Missing: $WORLD_MODELS_SRC"
     [[ -f "$PER_SRC" ]] || echo "     Missing: $PER_SRC"
     [[ -f "$ER_SRC" ]] || echo "     Missing: $ER_SRC"
+    [[ -f "$PACKAGE_TEMPLATE_SRC" ]] || echo "     Missing: $PACKAGE_TEMPLATE_SRC"
+    [[ -d "$PACKAGES_SRC" ]] || echo "     Missing: $PACKAGES_SRC"
     [[ -f "$MODELS_SRC" ]] || echo "     Missing: $MODELS_SRC"
     [[ -f "$SKILL_SRC" ]] || echo "     Missing: $SKILL_SRC"
     exit 3
@@ -270,6 +279,112 @@ install_evolution_support() {
   copy_if_changed "$ER_SRC" "$er_template" "docs/harness/templates/er.md"
 }
 
+bootstrap_packages() {
+  local pkg_dir="$TARGET/packages"
+  local readme="$pkg_dir/README.md"
+
+  if [[ -d "$pkg_dir" ]]; then
+    return 0
+  fi
+
+  mkdir -p "$pkg_dir"
+
+  cat > "$readme" << 'EOF'
+# packages/
+
+Third-party package adapters for this project.
+
+Each subdirectory is a governance bridge between
+a third-party package and harnessable conventions.
+The package lives where installed. The adapter lives here.
+
+## Discovery
+
+  ls packages/*/PACKAGE.md       # installed adapters
+  ls packages/*/skills/*.md      # available commands
+
+## Installing a package adapter
+
+Run codex/install.sh --update after adding the adapter
+to the harnessable framework source, or manually copy
+from framework/packages/{name}/.
+
+See framework/packages/README.md for the convention.
+EOF
+
+  echo "  CREATED packages/"
+}
+
+sync_package_file() {
+  local src="$1" dst="$2" label="$3"
+  copy_if_changed "$src" "$dst" "$label"
+  case "$LAST_STATUS" in
+    synced) PKG_SYNCED=$((PKG_SYNCED + 1)) ;;
+    ok)     PKG_OK=$((PKG_OK + 1)) ;;
+  esac
+}
+
+sync_packages() {
+  local src_dir="$PACKAGES_SRC"
+  local dst_dir="$TARGET/packages"
+  local found=0
+  local pkg_dir
+
+  [[ -d "$src_dir" ]] || return 0
+
+  for pkg_dir in "$src_dir"/*/; do
+    [[ -d "$pkg_dir" ]] || continue
+    [[ -f "$pkg_dir/PACKAGE.md" ]] || continue
+    found=$((found + 1))
+  done
+
+  [[ "$found" -gt 0 ]] || return 0
+
+  echo "-- Packages --------------------------------------------------------------"
+  ensure_dir "$dst_dir"
+
+  for pkg_dir in "$src_dir"/*/; do
+    [[ -d "$pkg_dir" ]] || continue
+    [[ -f "$pkg_dir/PACKAGE.md" ]] || continue
+
+    local pkg_name dst_pkg f name
+    pkg_name="$(basename "$pkg_dir")"
+    dst_pkg="$dst_dir/$pkg_name"
+    ensure_dir "$dst_pkg"
+
+    sync_package_file \
+      "$pkg_dir/PACKAGE.md" \
+      "$dst_pkg/PACKAGE.md" \
+      "packages/$pkg_name/PACKAGE.md"
+
+    if [[ -d "$pkg_dir/skills" ]]; then
+      ensure_dir "$dst_pkg/skills"
+      for f in "$pkg_dir/skills/"*.md; do
+        [[ -f "$f" ]] || continue
+        name="$(basename "$f")"
+        sync_package_file \
+          "$f" \
+          "$dst_pkg/skills/$name" \
+          "packages/$pkg_name/skills/$name"
+      done
+    fi
+
+    if [[ -d "$pkg_dir/adapter" ]]; then
+      ensure_dir "$dst_pkg/adapter"
+      for f in "$pkg_dir/adapter/"*; do
+        [[ -f "$f" ]] || continue
+        name="$(basename "$f")"
+        sync_package_file \
+          "$f" \
+          "$dst_pkg/adapter/$name" \
+          "packages/$pkg_name/adapter/$name"
+      done
+    fi
+  done
+
+  echo ""
+}
+
 main() {
   parse_args "$@"
   check_source
@@ -292,6 +407,8 @@ main() {
 
   install_world_model
 
+  bootstrap_packages
+
   install_models_manifest
   count_status
 
@@ -300,6 +417,11 @@ main() {
 
   install_evolution_support
   count_status
+
+  copy_if_changed "$PACKAGE_TEMPLATE_SRC" "$TARGET/docs/harness/templates/package.md" "docs/harness/templates/package.md"
+  count_status
+
+  sync_packages
 
   SKILL_DIR="$TARGET/.agents/skills/harnessable"
   copy_if_changed "$SKILL_SRC" "$SKILL_DIR/SKILL.md" ".agents/skills/harnessable/SKILL.md"
@@ -334,6 +456,10 @@ main() {
   echo ""
   printf "  %-12s %d synced / %d current / %d manual merge\n" \
     "Adapter:" "$SYNCED_COUNT" "$OK_COUNT" "$MERGE_COUNT"
+  if [[ $((PKG_SYNCED + PKG_OK)) -gt 0 ]]; then
+    printf "  %-12s %d synced / %d current\n" \
+      "Packages:" "$PKG_SYNCED" "$PKG_OK"
+  fi
   echo ""
 
   if [[ ${#ACTION_ITEMS[@]} -gt 0 ]]; then

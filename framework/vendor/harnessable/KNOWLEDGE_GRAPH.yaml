@@ -2316,3 +2316,29 @@ concepts:
       - harnessable.extends_role
       - harnessable.adds_skills
       - harnessable.requires
+
+  harnessable.HallmarkAdapter:
+    type: harnessable.PackageAdapter
+    label: Hallmark Adapter
+    definition: >
+      The inaugural harnessable package adapter.
+      Governance bridge for Hallmark — anti-AI-slop
+      design skill by Nutlope / Together AI. Provides
+      /hallmark and /hallmark-study skill wrappers,
+      Designer role extension, 65-gate slop Rubric,
+      and design domain world model template. Hallmark
+      lives at ~/.agents/skills/hallmark/ — the adapter
+      at packages/hallmark/ does not copy it.
+    package: Hallmark (nutlope/hallmark)
+    install_cmd: npx skills add nutlope/hallmark
+    extends_role: harnessable.Designer
+    adds_skills:
+      - /hallmark (design execution)
+      - /hallmark-study (DNA extraction)
+    rubric: packages/hallmark/adapter/rubric.md
+    corpus_input: .hallmark/log.json
+    world_model: packages/hallmark/adapter/design_world_model.md
+    principle: >
+      Hallmark provides design intelligence.
+      harnessable provides governance.
+      The adapter bridges without copying.

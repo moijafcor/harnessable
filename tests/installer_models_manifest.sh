@@ -86,15 +86,26 @@ assert_evolution_support() {
   grep -q "## PER resolutions" "$target/docs/harness/templates/er.md" || fail "ER template missing PER resolutions"
 }
 
+assert_package_support() {
+  local target="$1"
+  [[ -d "$target/packages" ]] || fail "packages directory missing"
+  [[ -f "$target/packages/README.md" ]] || fail "packages/README.md missing"
+  [[ -f "$target/docs/harness/templates/package.md" ]] || fail "package template missing"
+  grep -q "Harnessable package adapter manifest" "$target/docs/harness/templates/package.md" || fail "package template missing manifest heading"
+  grep -q "REPLACE" "$target/docs/harness/templates/package.md" || fail "package template missing REPLACE markers"
+}
+
 target="$(new_target)"
 bash "$ROOT/install.sh" "$target" > "$TMP_ROOT/full.out"
 assert_models_manifest "$target"
 assert_world_model "$target"
 assert_per_support "$target"
 assert_evolution_support "$target"
+assert_package_support "$target"
 assert_version_file "$target/docs/harness/vendor/harnessable/HARNESSABLE_VERSION"
 [[ ! -f "$target/docs/harness/templates/models.yaml" ]] || fail "models.yaml copied under templates"
 grep -q "SYNCED  docs/harness/models.yaml  (NEW)" "$TMP_ROOT/full.out" || fail "full installer did not report models manifest sync"
+grep -q "CREATED packages/" "$TMP_ROOT/full.out" || fail "full installer did not report packages bootstrap"
 grep -q "HARNESSABLE_VERSION → $EXPECTED_VERSION" "$TMP_ROOT/full.out" || fail "full installer did not report resolved version"
 
 echo "# project-selected models" >> "$target/docs/harness/models.yaml"
@@ -114,6 +125,7 @@ assert_models_manifest "$target"
 assert_world_model "$target"
 assert_per_support "$target"
 assert_evolution_support "$target"
+assert_package_support "$target"
 assert_version_file "$target/.agents/skills/harnessable/HARNESSABLE_VERSION"
 grep -q "SYNCED  docs/harness/models.yaml  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report models manifest sync"
 grep -q "SYNCED  WORLD_MODEL.md  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report world model sync"
@@ -124,6 +136,8 @@ grep -q "CREATED docs/mandates/per/" "$TMP_ROOT/codex.out" || fail "codex instal
 grep -q "SYNCED  docs/harness/templates/per.md  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report PER template sync"
 grep -q "CREATED docs/evolutions/" "$TMP_ROOT/codex.out" || fail "codex installer did not report evolutions directory seed"
 grep -q "SYNCED  docs/harness/templates/er.md  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report ER template sync"
+grep -q "CREATED packages/" "$TMP_ROOT/codex.out" || fail "codex installer did not report packages bootstrap"
+grep -q "SYNCED  docs/harness/templates/package.md  (NEW)" "$TMP_ROOT/codex.out" || fail "codex installer did not report package template sync"
 grep -q "harnessable Codex adapter $EXPECTED_VERSION" "$TMP_ROOT/codex.out" || fail "codex installer did not report resolved version"
 
 echo "# codex project-selected models" >> "$target/docs/harness/models.yaml"

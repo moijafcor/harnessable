@@ -15,7 +15,7 @@ source:      # REPLACE: upstream source (e.g. nutlope/hallmark)
 install_cmd: # REPLACE: how to install the package
              # (e.g. npx skills add nutlope/hallmark)
 install_path: # REPLACE: where the package lands after install
-              # (e.g. ~/.claude/skills/hallmark/)
+              # (e.g. ~/.agents/skills/hallmark/)
 adapter_path: packages/ # REPLACE: adapter location in project
                          # (e.g. packages/hallmark/)
 
@@ -63,7 +63,7 @@ harnessable:
 #
 # REPLACE: command that confirms installation
 # e.g.:
-#   ls ~/.claude/skills/hallmark/SKILL.md
+#   ls ~/.agents/skills/hallmark/SKILL.md
 #   npx hallmark --version
 
 ---

@@ -340,11 +340,11 @@ communications must remain drafts until explicitly approved.
 
 # packages:
 #   hallmark:
-#     installed:   ~/.claude/skills/hallmark/
+#     installed:   ~/.agents/skills/hallmark/
 #     adapter:     packages/hallmark/
 #     extends:     Designer
 #     commands:    /hallmark, /hallmark-study
-#     verify:      ls ~/.claude/skills/hallmark/SKILL.md
+#     verify:      ls ~/.agents/skills/hallmark/SKILL.md
 
 ## High Risk Surfaces
 

@@ -52,4 +52,4 @@ The Engineer discovers packages during roster scan:
 ## Current adapters
 
   hallmark/       design execution, slop gates,
-                  DNA extraction (PLANNED)
+                  DNA extraction

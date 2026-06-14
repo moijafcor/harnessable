@@ -883,7 +883,7 @@ The package convention enforces a clean separation:
 
 ```text
 Third-party package     lives where installed
-                        (~/.claude/skills/hallmark/,
+                        (~/.agents/skills/hallmark/,
                          node_modules/, pip packages)
                         canonical, maintained upstream
                         harnessable never touches it
@@ -938,7 +938,7 @@ harnessable provides the governance: the Designer role
 invokes Hallmark, the Rubric verifies the 65 slop gates
 passed, the Dreamer reads `.hallmark/log.json` as a
 design-domain corpus input. Hallmark stays at
-`~/.claude/skills/hallmark/` — where
+`~/.agents/skills/hallmark/` — where
 `npx skills add nutlope/hallmark` put it. The adapter at
 `packages/hallmark/` is the bridge. harnessable never
 copies Hallmark. Hallmark never knows about harnessable.
