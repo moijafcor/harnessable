@@ -34,7 +34,8 @@ bash codex/install.sh /path/to/your-project
 
 The script installs `AGENTS.md`, `WORLD_MODEL.md`, three
 `world_models/*_world_model.md` seed files, `docs/harness/models.yaml`,
-`docs/incidents/`, and the harnessable skill. It will not overwrite a
+`docs/harness/templates/per.md`, `docs/mandates/per/`, `docs/incidents/`,
+and the harnessable skill. It will not overwrite a
 customised `AGENTS.md`, `WORLD_MODEL.md`, world model file, or model manifest;
 it reports `MERGE` where manual review is needed so you can merge Harnessable
 blocks without losing project-specific instructions, operational knowledge,
@@ -88,6 +89,13 @@ Define a mandate for: [describe the work here]."
 ```bash
 codex "$(cat codex/engineer.prompt.md)"
 ```
+
+Engineer starts by scanning `docs/harness/agents/*.md` and reading each
+role's `## Role Scope`, then scanning `world_models/`. It maps every mandate
+step to the live roster, files a Protocol Enhancement Request (PER) at
+`docs/mandates/per/PER-{NNN}.md` when no role fits, and includes an Execution
+Manifest in every DIP so the operator knows the exact `/role dip-path`
+sequence to run.
 
 ### Coder
 
@@ -303,6 +311,8 @@ The skill loads the full protocol when invoked. This adds:
 - Detailed role rules (what each role must and must not do)
 - The complete discovery classification table including `ONTOLOGY_GAP`
 - Knowledge graph obligations (grounding, amendment, PLANNED and DONE gates)
+- Dynamic roster obligations for Engineer: Role Roster scan, PER filing for
+  missing capabilities, and Execution Manifest authoring
 - Token Budget guidance: model cost fields in `docs/harness/models.yaml`,
   session cost logs, and `session_cost_report.py` when logs are available
 - Classifier obligations: use `references/classifier.md` for separation,

@@ -15,6 +15,10 @@ Before planning, scan the role roster and world models:
 - Read relevant world model files: `fleet_world_model.md` for cross-service,
   `vendor_world_model.md` for infrastructure, `staging_world_model.md` for
   staging, plus cross-repo pointers from `WORLD_MODEL.md`
+- Map every mandate step to an available role. If no role fits, file a
+  Protocol Enhancement Request at `docs/mandates/per/PER-{NNN}.md` using
+  `docs/harness/templates/per.md`, then mark the step as `[GAP]` in the
+  Execution Manifest
 
 Produce a DIP that includes:
 - Prerequisites copied from the DMT plus the criterion validity audit
@@ -38,6 +42,9 @@ Produce a DIP that includes:
 - For `[PLAYWRIGHT]` steps, declare test file, command, pass criteria,
   evidence path, and confirm `AGENTS.md ## Browser Testing`
 - Containment checklist per step (Detect / Contain / Recover / Prevent)
+- Execution Manifest: ordered `/role docs/mandates/{path}/dip.md` sessions,
+  with `[GAP] — PER filed: docs/mandates/per/PER-NNN.md` entries where no
+  existing role fits
 - Verification Checklists as Rubric Layer 2: `[REQUIRED]` checks QA will
   re-execute alongside DMT Acceptance Criteria and the Completion Gate
 

@@ -49,8 +49,11 @@ outputs: the DIP and knowledge graph amendments. Raw labels in the DIP
 are a protocol violation if the concept is absent from the graph. When
 the mandate crosses role boundaries, every DIP step must declare its
 executing type — see `agents/engineer.md ## Role Roster` for the
-roster scan protocol, [OPERATOR] human steps, [PLAYWRIGHT] browser
-automation steps, and mandatory decomposition triggers.
+roster scan protocol, gap detection, PER filing, [OPERATOR] human steps,
+[PLAYWRIGHT] browser automation steps, and mandatory decomposition
+triggers. Every DIP must include an Execution Manifest with the ordered
+agent sessions to run; gaps with no fitting role are recorded as
+`[GAP]` entries that point to `docs/mandates/per/PER-{NNN}.md`.
 
 **Coder** implements only what the approved DIP specifies. Files a
 Discovery before deviating. Produces a TIR with evidence, not claims.

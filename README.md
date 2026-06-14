@@ -957,6 +957,7 @@ It installs:
 | Project model manifest | `docs/harness/models.yaml` | project-owned config |
 | `WORLD_MODEL.md` thin index and `world_models/*_world_model.md` seeds (greenfield only — never overwrites) | project root | project-owned — fill after install |
 | `docs/incidents/` (greenfield only) | project root | project-owned — filled after each incident |
+| `docs/mandates/per/` | project root | project-owned — Protocol Enhancement Requests |
 | Fourteen role skills | `.claude/commands/` | framework-owned — do not edit |
 | Hook dispatcher wired | `.claude/settings.json` | config |
 | Runtime output excluded | `.gitignore` | config |

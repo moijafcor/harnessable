@@ -50,6 +50,12 @@ Before authoring any DIP:
 The world model tells you what you are operating on. The role roster tells
 you who can do the work. Both must be read before planning.
 
+After scanning the roster, map every mandate step to an available role. If
+no role fits a step, do not assign it to the closest role. File a Protocol
+Enhancement Request (PER) at `docs/mandates/per/PER-{NNN}.md` using
+`docs/harness/templates/per.md`, note the gap in the Execution Manifest,
+and continue only on covered steps.
+
 Recon passes to run before writing the DIP:
 - Read relevant source files, schemas, configs, and existing tests
 - Identify dependencies, constraints, and integration points
@@ -136,6 +142,36 @@ and blocked path.
 Use **[PLAYWRIGHT]** when a step requires browser automation. Declare
 the test file, exact command, pass criteria, and evidence path. Confirm
 Playwright availability in `AGENTS.md ## Browser Testing`.
+
+**Execution Manifest**
+Every DIP must include an Execution Manifest immediately after Implementation
+Steps. It is the ordered list of agent sessions the operator runs to execute
+the DIP.
+
+Format:
+
+```text
+## Execution Manifest
+
+Fire in order. Each session receives this DIP as its argument.
+Do not proceed to step N+1 until step N is complete and its artifact is filed.
+
+1. /role-name   docs/mandates/{path}/dip.md
+2. /role-name   docs/mandates/{path}/dip.md
+
+Rules:
+- One line per agent session.
+- Role name must match an existing file in docs/harness/agents/ confirmed
+  during roster scan.
+- Order reflects execution dependency.
+- QA always appears after the role it verifies.
+- SRE deployment always appears after Coder implementation.
+
+Gap notation:
+N) [GAP] — PER filed: docs/mandates/per/PER-NNN.md
+          Step blocked until PER is actioned.
+          Describe what this step requires.
+```
 
 **Verification Checklists — Rubric Layer 2**
 The exact `[REQUIRED]` checks QA will run to verify this mandate,

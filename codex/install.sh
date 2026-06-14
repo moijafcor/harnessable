@@ -15,6 +15,8 @@
 #   <target>/WORLD_MODEL.md
 #   <target>/world_models/*_world_model.md
 #   <target>/docs/incidents/.gitkeep
+#   <target>/docs/mandates/per/.gitkeep
+#   <target>/docs/harness/templates/per.md
 #   <target>/docs/harness/models.yaml
 #   <target>/.agents/skills/harnessable/SKILL.md
 #   <target>/.agents/skills/harnessable/HARNESSABLE_VERSION
@@ -36,6 +38,7 @@ TARGET=""
 AGENTS_SRC="$REPO_ROOT/AGENTS.md"
 WORLD_MODEL_SRC="$REPO_ROOT/framework/templates/world-model.md"
 WORLD_MODELS_SRC="$REPO_ROOT/framework/templates/world_models"
+PER_SRC="$REPO_ROOT/framework/templates/per.md"
 MODELS_SRC="$REPO_ROOT/framework/templates/models.yaml"
 SKILL_SRC="$REPO_ROOT/.agents/skills/harnessable/SKILL.md"
 VERSION_SRC="$REPO_ROOT/framework/vendor/harnessable/HARNESSABLE_VERSION"
@@ -75,11 +78,12 @@ parse_args() {
 }
 
 check_source() {
-  if [[ ! -f "$AGENTS_SRC" || ! -f "$WORLD_MODEL_SRC" || ! -d "$WORLD_MODELS_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
+  if [[ ! -f "$AGENTS_SRC" || ! -f "$WORLD_MODEL_SRC" || ! -d "$WORLD_MODELS_SRC" || ! -f "$PER_SRC" || ! -f "$MODELS_SRC" || ! -f "$SKILL_SRC" ]]; then
     echo "ERR  Source does not look like a Harnessable checkout:"
     [[ -f "$AGENTS_SRC" ]] || echo "     Missing: $AGENTS_SRC"
     [[ -f "$WORLD_MODEL_SRC" ]] || echo "     Missing: $WORLD_MODEL_SRC"
     [[ -d "$WORLD_MODELS_SRC" ]] || echo "     Missing: $WORLD_MODELS_SRC"
+    [[ -f "$PER_SRC" ]] || echo "     Missing: $PER_SRC"
     [[ -f "$MODELS_SRC" ]] || echo "     Missing: $MODELS_SRC"
     [[ -f "$SKILL_SRC" ]] || echo "     Missing: $SKILL_SRC"
     exit 3
@@ -230,6 +234,22 @@ install_models_manifest() {
   LAST_STATUS="merge"
 }
 
+install_per_support() {
+  local per_dir="$TARGET/docs/mandates/per"
+  local per_template="$TARGET/docs/harness/templates/per.md"
+
+  if [[ ! -d "$per_dir" ]]; then
+    mkdir -p "$per_dir"
+    touch "$per_dir/.gitkeep"
+    echo "  CREATED docs/mandates/per/"
+  elif [[ ! -f "$per_dir/.gitkeep" ]]; then
+    touch "$per_dir/.gitkeep"
+    echo "  CREATED docs/mandates/per/.gitkeep"
+  fi
+
+  copy_if_changed "$PER_SRC" "$per_template" "docs/harness/templates/per.md"
+}
+
 main() {
   parse_args "$@"
   check_source
@@ -253,6 +273,9 @@ main() {
   install_world_model
 
   install_models_manifest
+  count_status
+
+  install_per_support
   count_status
 
   SKILL_DIR="$TARGET/.agents/skills/harnessable"

@@ -577,6 +577,21 @@ bootstrap_world_models() {
   echo ""
 }
 
+# ── bootstrap_per_directory ───────────────────────────────────────────────────
+# Greenfield/update safe. Creates the project-owned PER filing directory.
+bootstrap_per_directory() {
+  local PER_DIR="$TARGET/docs/mandates/per"
+
+  if [[ ! -d "$PER_DIR" ]]; then
+    mkdir -p "$PER_DIR"
+    touch "$PER_DIR/.gitkeep"
+    echo "  CREATED docs/mandates/per/"
+  elif [[ ! -f "$PER_DIR/.gitkeep" ]]; then
+    touch "$PER_DIR/.gitkeep"
+    echo "  CREATED docs/mandates/per/.gitkeep"
+  fi
+}
+
 # ── setup_github_board ────────────────────────────────────────────────────────
 # Handles --github-board=<N|new|empty>.
 # Writes result to AGENTS.md ## Project Tracker.
@@ -1530,6 +1545,7 @@ main() {
 
   bootstrap_agents_md
   bootstrap_world_models
+  bootstrap_per_directory
   cleanup_vendor_templates
   setup_github_board
   sync_tier2
