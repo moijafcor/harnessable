@@ -65,6 +65,37 @@ def _count_audit_tool_calls(session_id: str) -> int:
         return 0
 
 
+def _extract_context_size(payload: dict) -> int:
+    """
+    Extract context window usage from stop payload.
+    CC uses inconsistent field names across versions —
+    try all known variants.
+    Returns 0 if unavailable.
+    """
+    candidates = [
+        "context_window_usage",
+        "context_tokens_used",
+        "total_context_tokens",
+        "context_length",
+        "input_token_count",
+        "context_window",
+    ]
+    for field in candidates:
+        val = payload.get(field, 0)
+        if val and int(val) > 0:
+            return int(val)
+
+    # Check nested usage object
+    usage = payload.get("usage", {})
+    if isinstance(usage, dict):
+        for field in candidates:
+            val = usage.get(field, 0)
+            if val and int(val) > 0:
+                return int(val)
+
+    return 0
+
+
 def main():
     # Read stop hook payload from stdin
     payload = {}
@@ -89,6 +120,14 @@ def main():
     # when payload provides no data
     if tool_calls == 0:
         tool_calls = _count_audit_tool_calls(session_id)
+
+    context_size    = _extract_context_size(payload)
+    context_warning = context_size > 150_000
+    context_pct     = round(
+        (context_size / 200_000) * 100, 1
+    ) if context_size > 0 else 0
+    # 200k = claude-sonnet-4-6 context window
+    # adjust per model in AGENTS.md ## Models
 
     tokens_available = (input_tokens > 0 or output_tokens > 0)
 
@@ -116,6 +155,7 @@ def main():
         "--output-tokens",    str(output_tokens),
         "--tool-calls",       str(tool_calls),
         "--session-id",       session_id,
+        "--context-size",     str(context_size),
     ]
 
     try:

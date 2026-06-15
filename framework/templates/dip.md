@@ -413,6 +413,22 @@ Do not leave this section blank.
 
 [links to logs, metrics, screenshots, or commit hashes]
 
+### Session Metadata
+
+*Agent fills at TIR filing time.*
+
+Context size:    {N}k tokens  (approximate — read from
+                  CC context bar or /context command)
+Context warning: YES / NO  (YES if approaching 150k)
+Session mode:    {single-pass | multi-session | resumed}
+Compact used:    YES / NO  (YES if /compact was called
+                  during this session)
+
+*If context exceeded 150k:*
+  Consider /compact before next session on this mandate.
+  Agents operating near context limit show increased
+  THROTTLING signals — see references/error-modes.md.
+
 ### Blockers (if any remain)
 
 - [item]: [status]

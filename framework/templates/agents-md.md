@@ -296,6 +296,22 @@ REPLACE: fill docs/harness/models.yaml after installing harnessable.
 
 manifest: docs/harness/models.yaml
 
+```yaml
+# REPLACE: update with actual model assignments
+# context_window is used by session_cost.py to
+# calculate context percentage
+
+# models:
+#   default:
+#     model_id:        claude-sonnet-4-6
+#     context_window:  200000
+#     cost_tier:       medium
+#   architect:
+#     model_id:        claude-opus-4-8
+#     context_window:  200000
+#     cost_tier:       high
+```
+
 ## Token Budget
 
 ```text

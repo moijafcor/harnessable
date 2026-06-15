@@ -1035,6 +1035,9 @@ concepts:
       - tool_calls
       - duration_seconds
       - estimated_cost_usd
+      - context_size
+      - context_pct
+      - context_warning
 
   harnessable.TokenBudget:
     type: concept
