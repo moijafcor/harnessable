@@ -13,8 +13,8 @@ Harnessable works with Codex through five mechanisms:
 
 3. **`docs/harness/models.yaml`** — project-owned model manifest. The
    Orchestrator reads it before commissioning roles so each role can be
-   assigned an explicit model/provider/cost tier and `cost_per_1k_tokens`
-   values for budget reporting.
+   assigned an explicit model/provider/cost tier, `context_window`, and
+   `cost_per_1k_tokens` values for context and budget reporting.
 
 4. **`WORLD_MODEL.md` and `world_models/`** — project-owned operational
    knowledge. `WORLD_MODEL.md` is a thin discovery index; real topology,
@@ -403,10 +403,12 @@ alone may be sufficient.
 The Codex installer places the default manifest at
 `docs/harness/models.yaml`. Fill the `# REPLACE` model fields for the
 providers available to your project, including `cost_per_1k_tokens.input` and
-`cost_per_1k_tokens.output` for every role. The Orchestrator reads this file
-at INITIALISING and should name the selected model when commissioning any
-role. Cost values are used by session cost reporting; leave them explicit so
-budget reviews can compare spend by role, mandate, and model.
+`cost_per_1k_tokens.output` for every role. Declare `context_window` for each
+model so session cost logs can calculate context usage percentages. The
+Orchestrator reads this file at INITIALISING and should name the selected model
+when commissioning any role. Cost values are used by session cost reporting;
+leave them explicit so budget reviews can compare spend by role, mandate, and
+model.
 
 ## Token Budget
 
@@ -416,15 +418,16 @@ Full Harnessable installs include Claude Code stop-hook session logging:
 `.harnessable/logs/session-cost.YYYY-MM.jsonl`. Claude Code Stop payloads may
 omit token counts; those entries are still logged with zero input/output
 tokens and `tokens_available: false`, preserving role, mandate, model,
-session, and tool-call proxy data when available. The reporting tool
-`docs/harness/tools/session_cost_report.py` summarises logs by role, mandate,
-and model.
+session, context size, context warning, and tool-call proxy data when
+available. The reporting tool `docs/harness/tools/session_cost_report.py`
+summarises logs by role, mandate, model, and context warning rate.
 
 Codex-only installs do not receive Claude Code stop-hook payloads
 automatically. They still install the model manifest with cost fields, and can
 read reports from logs produced by the full enforcement layer or by manual
 calls to `session_cost.py`. Manual logs may also use zero token counts; the
-resulting entry records `tokens_available: false`.
+resulting entry records `tokens_available: false`. Manual logs can pass
+`--context-size` when the context bar or `/context` output is available.
 
 ## Knowledge graph
 

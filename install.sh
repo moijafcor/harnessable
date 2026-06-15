@@ -1384,6 +1384,72 @@ _sync_package_file() {
   PKG_SYNCED=$((PKG_SYNCED + 1))
 }
 
+# ── cleanup_stale_hook_entries ────────────────────────────────────────────────
+# Removes stale relative-path harness hook entries from existing deployments.
+# Called during --update runs only, before merge_settings().
+
+cleanup_stale_hook_entries() {
+  local SETTINGS="$TARGET/.claude/settings.json"
+
+  [[ -f "$SETTINGS" ]] || return 0
+
+  echo "── Hook entry cleanup ───────────────────────────────────────────────────"
+
+  local CLEANED
+  CLEANED=$(python3 - "$SETTINGS" "$TARGET" << 'PYEOF'
+import json, sys
+
+settings_path = sys.argv[1]
+target        = sys.argv[2]
+
+with open(settings_path) as f:
+    settings = json.load(f)
+
+def is_harness_hook(cmd):
+    return "harness/hooks/run.py" in cmd
+
+def is_relative_harness_hook(cmd):
+    return is_harness_hook(cmd) and not cmd.startswith("python3 /")
+
+def is_absolute_harness_hook(cmd):
+    return is_harness_hook(cmd) and cmd.startswith("python3 /")
+
+removed = 0
+hooks = settings.get("hooks", {})
+
+for event_type, entries in hooks.items():
+    keep = []
+    for entry in entries:
+        hook_cmds = [h.get("command", "") for h in entry.get("hooks", [])]
+        has_relative = any(is_relative_harness_hook(c) for c in hook_cmds)
+        has_absolute = any(is_absolute_harness_hook(c) for c in hook_cmds)
+        if has_relative and not has_absolute:
+            removed += 1
+            continue
+        keep.append(entry)
+    hooks[event_type] = keep
+
+settings["hooks"] = hooks
+
+with open(settings_path, "w") as f:
+    json.dump(settings, f, indent=2)
+    f.write("\n")
+
+print(removed)
+PYEOF
+)
+
+  if [[ "$CLEANED" -gt 0 ]]; then
+    echo "  CLEANED  $CLEANED stale relative-path hook entries"
+    echo "           from .claude/settings.json"
+    CFG_SETTINGS="CLEANED"
+  else
+    echo "  OK       no stale hook entries found"
+  fi
+
+  echo ""
+}
+
 # ── merge_settings ────────────────────────────────────────────────────────────
 
 merge_settings() {
@@ -1399,11 +1465,12 @@ merge_settings() {
     fi
   fi
 
-  CFG_SETTINGS="$(python3 - "$SETTINGS_FILE" "$HAS_PRECOMPACT" <<'PYEOF'
+  CFG_SETTINGS="$(python3 - "$SETTINGS_FILE" "$HAS_PRECOMPACT" "$TARGET" <<'PYEOF'
 import json, sys, os
 
 settings_path = sys.argv[1]
 has_precompact = sys.argv[2] == 'true'
+target_path   = sys.argv[3]
 
 if os.path.exists(settings_path):
     try:
@@ -1413,38 +1480,52 @@ if os.path.exists(settings_path):
 else:
     settings = {}
 
+settings.pop('_readme', None)
+original_json = json.dumps(settings, sort_keys=True)
+
 hooks = settings.setdefault('hooks', {})
 
-def ensure_hook(hooks, event, matcher, command):
-    entries = hooks.setdefault(event, [])
-    for entry in entries:
-        for h in entry.get('hooks', []):
-            if h.get('command') == command:
-                return False
-    new_entry = {'hooks': [{'type': 'command', 'command': command}]}
+def is_harness_hook(cmd):
+    return "harness/hooks/run.py" in cmd
+
+# Deduplicate: remove all existing run.py hook entries before re-adding with absolute paths
+for event_type in list(hooks.keys()):
+    hooks[event_type] = [
+        entry for entry in hooks[event_type]
+        if not any(
+            is_harness_hook(h.get("command", ""))
+            for h in entry.get("hooks", [])
+        )
+    ]
+
+run_py = f"python3 {target_path}/docs/harness/hooks/run.py"
+
+def add_hook(hooks, event, matcher, command):
+    entry = {"hooks": [{"type": "command", "command": command}]}
     if matcher is not None:
-        new_entry['matcher'] = matcher
-    entries.append(new_entry)
-    return True
+        entry["matcher"] = matcher
+    hooks.setdefault(event, []).append(entry)
 
-changed = False
-changed |= ensure_hook(hooks, 'PreToolUse', 'Bash',
-                        'python3 docs/harness/hooks/run.py pre_tool_use')
-changed |= ensure_hook(hooks, 'PostToolUse', '',
-                        'python3 docs/harness/hooks/run.py post_tool_use')
-changed |= ensure_hook(hooks, 'Stop', None,
-                        'python3 docs/harness/hooks/run.py stop')
+add_hook(hooks, 'PreToolUse', 'Bash', f"{run_py} pre_tool_use")
+add_hook(hooks, 'PostToolUse', '', f"{run_py} post_tool_use")
+add_hook(hooks, 'Stop', None, f"{run_py} stop")
 if has_precompact:
-    changed |= ensure_hook(hooks, 'PreCompact', None,
-                            'python3 docs/harness/hooks/run.py pre_compact')
-
-settings.pop('_readme', None)
+    add_hook(hooks, 'PreCompact', None, f"{run_py} pre_compact")
 
 with open(settings_path, 'w') as f:
     json.dump(settings, f, indent=2)
     f.write('\n')
 
-json.loads(open(settings_path).read())
+# Validation pass: warn on any remaining relative harness hook paths
+for event, entries in settings.get('hooks', {}).items():
+    for entry in entries:
+        for hook in entry.get('hooks', []):
+            cmd = hook.get('command', '')
+            if is_harness_hook(cmd) and not cmd.startswith('python3 /'):
+                print(f'  WARN  relative hook path detected in {event}: {cmd}',
+                      file=sys.stderr)
+
+changed = json.dumps(settings, sort_keys=True) != original_json
 print('PATCHED' if changed else 'OK')
 PYEOF
 )"
@@ -1731,6 +1812,9 @@ main() {
   sync_models_manifest
   sync_skills
   sync_packages
+  if [[ "$MODE" == "update" ]]; then
+    cleanup_stale_hook_entries
+  fi
   merge_settings
   patch_gitignore
   merge_config
