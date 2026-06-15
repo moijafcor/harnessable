@@ -166,9 +166,12 @@ MERGE, DEPRECATE, EXTINCT), writes an Evolution Report in
 
 `docs/harness/models.yaml` declares model/provider/cost tier per role and
 must include `cost_per_1k_tokens` for input and output tokens. Full
-Harnessable installs log Claude Code stop-hook token usage to
+Harnessable installs log Claude Code stop-hook session boundaries to
 `.harnessable/logs/session-cost.YYYY-MM.jsonl` via `session_cost.py`.
-Use `session_cost_report.py` to summarise spend by role, mandate, and model
+Claude Code Stop payloads may omit token counts; such entries log zero
+tokens, set `tokens_available: false`, and still preserve role, mandate,
+model, session, and tool-call proxy data when available. Use
+`session_cost_report.py` to summarise spend by role, mandate, and model
 when those logs exist. Codex-only installs do not receive Claude Code stop-hook
 payloads automatically; use the report tool only against logs produced by the
 full enforcement layer or manually logged sessions.

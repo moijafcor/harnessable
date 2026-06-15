@@ -410,17 +410,21 @@ budget reviews can compare spend by role, mandate, and model.
 
 ## Token Budget
 
-Full Harnessable installs include Claude Code stop-hook token logging:
+Full Harnessable installs include Claude Code stop-hook session logging:
 `hooks/stop/session_cost.py` delegates to
 `docs/harness/tools/session_cost.py` and appends
-`.harnessable/logs/session-cost.YYYY-MM.jsonl`. The reporting tool
+`.harnessable/logs/session-cost.YYYY-MM.jsonl`. Claude Code Stop payloads may
+omit token counts; those entries are still logged with zero input/output
+tokens and `tokens_available: false`, preserving role, mandate, model,
+session, and tool-call proxy data when available. The reporting tool
 `docs/harness/tools/session_cost_report.py` summarises logs by role, mandate,
 and model.
 
 Codex-only installs do not receive Claude Code stop-hook payloads
 automatically. They still install the model manifest with cost fields, and can
 read reports from logs produced by the full enforcement layer or by manual
-calls to `session_cost.py` when token counts are available.
+calls to `session_cost.py`. Manual logs may also use zero token counts; the
+resulting entry records `tokens_available: false`.
 
 ## Knowledge graph
 
