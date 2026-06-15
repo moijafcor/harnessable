@@ -34,6 +34,37 @@ def find_tool(start: Path, tool_name: str) -> Path | None:
     return None
 
 
+def _count_audit_tool_calls(session_id: str) -> int:
+    """
+    Count tool calls for this session from today's audit log as a proxy
+    when payload has no data. Returns 0 if audit log is absent or unreadable.
+    """
+    from datetime import datetime, timezone
+
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    log_path = Path.cwd() / ".harnessable" / "logs" / f"audit.{today}.jsonl"
+
+    if not log_path.exists():
+        return 0
+    try:
+        count = 0
+        with open(log_path) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                    if session_id == "unknown" or \
+                       entry.get("session_id") == session_id:
+                        count += 1
+                except json.JSONDecodeError:
+                    continue
+        return count
+    except Exception:
+        return 0
+
+
 def main():
     # Read stop hook payload from stdin
     payload = {}
@@ -45,11 +76,21 @@ def main():
         pass  # Degrade gracefully — never block exit
 
     # Extract what CC provides
-    session_id     = payload.get("session_id",
-                       os.environ.get("CLAUDE_SESSION_ID", "unknown"))
-    input_tokens   = payload.get("total_input_tokens",   0)
-    output_tokens  = payload.get("total_output_tokens",  0)
-    tool_calls     = payload.get("num_turns",            0)
+    session_id    = payload.get("session_id",
+                      os.environ.get("CLAUDE_SESSION_ID", "unknown"))
+    # CC stop payload does not include token counts.
+    # Log 0 explicitly — session record is still useful
+    # for role/mandate/model tracking even without tokens.
+    input_tokens  = payload.get("total_input_tokens",  0)
+    output_tokens = payload.get("total_output_tokens", 0)
+    tool_calls    = payload.get("num_turns",            0)
+
+    # Count tool calls from today's audit log as proxy
+    # when payload provides no data
+    if tool_calls == 0:
+        tool_calls = _count_audit_tool_calls(session_id)
+
+    tokens_available = (input_tokens > 0 or output_tokens > 0)
 
     # Role and mandate from environment
     # Declare these in AGENTS.md skill wrapper or CC invocation
@@ -57,12 +98,6 @@ def main():
     mandate  = os.environ.get("HARNESS_MANDATE", "unknown")
     model    = os.environ.get("HARNESS_MODEL",
                payload.get("model", "unknown"))
-
-    # If no token data available, exit cleanly
-    if input_tokens == 0 and output_tokens == 0:
-        print("[session_cost] No token data in payload — skipping log.",
-              file=sys.stderr)
-        return 0
 
     # Find the logging tool
     tool = find_tool(Path.cwd(), "session_cost.py")

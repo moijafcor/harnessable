@@ -122,6 +122,8 @@ def build_entry(args, cost_per_1k: dict) -> dict:
         "duration_seconds":  args.duration_seconds,
         "estimated_cost_usd": estimated_cost,
         "cost_per_1k":       cost_per_1k,
+        "tokens_available":  (args.input_tokens > 0 or
+                              args.output_tokens > 0),
     }
 
 
@@ -132,8 +134,8 @@ def main():
     parser.add_argument("--role",             required=True)
     parser.add_argument("--mandate",          default=None)
     parser.add_argument("--model",            required=True)
-    parser.add_argument("--input-tokens",     type=int, required=True)
-    parser.add_argument("--output-tokens",    type=int, required=True)
+    parser.add_argument("--input-tokens",     type=int, default=0)
+    parser.add_argument("--output-tokens",    type=int, default=0)
     parser.add_argument("--tool-calls",       type=int, default=0)
     parser.add_argument("--duration-seconds", type=int, default=0)
     parser.add_argument("--session-id",       default=None)
