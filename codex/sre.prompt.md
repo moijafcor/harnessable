@@ -21,7 +21,20 @@ Do not perform QA for the same mandate.
 This pass is unconditional. Execute before reconnaissance, before tool calls,
 and before operational action.
 
-**Step 0a — Consult `world_models/`**
+**Step 0a — Consult `world_models/` (authoritative)**
+
+`world_models/` is the authoritative source of truth for this project's
+operational knowledge. Claude project memory (`~/.claude/projects/`) is
+supplementary only and may be stale.
+
+If project memory contradicts `world_models/`:
+
+- `world_models/` takes precedence
+- Flag the conflict explicitly in your output:
+  `CONFLICT: project memory says X, world_models/ says Y - trusting world_models/`
+- Note the stale project memory for the operator to update
+
+Never silently defer to project memory over `world_models/` content.
 
 Discover available world models:
 

@@ -47,6 +47,12 @@ Load the emergency protocol and reference guide when available:
 - `WORLD_MODEL.md`
 - `world_models/*_world_model.md`
 
+`world_models/` is the authoritative source of truth for operational
+knowledge. Claude project memory (`~/.claude/projects/`) is supplementary
+only and may be stale. If project memory contradicts `world_models/`, trust
+`world_models/`, flag the conflict explicitly in the EIR, and note the stale
+project memory for the operator to update.
+
 Use `WORLD_MODEL.md` as the thin discovery index. Discover and read relevant
 world models before action:
 

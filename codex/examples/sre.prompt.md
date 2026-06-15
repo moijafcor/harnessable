@@ -7,6 +7,11 @@ DIP: [PASTE OR REFERENCE DIP HERE]
 Execute only the operational steps specified in the DIP. Before touching
 live systems, confirm:
 
+- `world_models/` is treated as the authoritative source for operational
+  knowledge; Claude project memory is supplementary and stale-risk. If they
+  conflict, declare
+  `CONFLICT: project memory says X, world_models/ says Y - trusting world_models/`
+  and note the stale project memory for the operator
 - Pass 0 is complete: `world_models/` discovered with
   `find world_models/ -name "*_world_model.md" | sort`, relevant
   `*_world_model.md` files searched for Failure Patterns, Vendor

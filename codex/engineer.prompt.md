@@ -28,6 +28,13 @@ protocol violation if the concept is absent from the graph.
 
 Before authoring any DIP:
 
+0. Declare the source of truth:
+
+   `world_models/` is the authoritative source for operational knowledge.
+   Claude project memory is supplementary and potentially stale. If project
+   memory contradicts `world_models/` during planning, trust `world_models/`,
+   flag the conflict, and note it in the DIP preamble.
+
 1. Scan the role roster:
 
    ```bash

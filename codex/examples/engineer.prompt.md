@@ -10,6 +10,10 @@ Recon produces two outputs — complete both before authoring the DIP:
    that is not already declared in docs/knowledge-graph.yaml
 
 Before planning, scan the role roster and world models:
+- Declare that `world_models/` is authoritative for operational knowledge;
+  Claude project memory is supplementary and stale-risk. If project memory
+  contradicts `world_models/`, trust `world_models/`, flag the conflict, and
+  note it in the DIP preamble
 - `ls docs/harness/agents/*.md` and read `## Role Scope`
 - `ls packages/*/PACKAGE.md 2>/dev/null || true` and
   `ls packages/*/skills/*.md 2>/dev/null || true`; read each package

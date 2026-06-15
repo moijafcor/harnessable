@@ -7,6 +7,11 @@ Emergency: [DESCRIBE THE PRODUCTION SYMPTOM HERE]
 A production system is broken. Fix first, document concurrently, and leave a
 trail. The AGENTS.md Safety Floor still applies.
 
+Treat `world_models/` as authoritative for operational knowledge. Claude
+project memory is supplementary and stale-risk. If project memory contradicts
+`world_models/`, trust `world_models/`, flag the conflict in the EIR, and note
+the stale project memory for the operator.
+
 Use WORLD_MODEL.md as the thin discovery index. Discover relevant
 world models with `find world_models/ -name "*_world_model.md" | sort`,
 then read the applicable files so known topology, vendor capabilities, and

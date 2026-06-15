@@ -4,7 +4,7 @@ Harnessable works with Codex through five mechanisms:
 
 1. **`AGENTS.md`** at the repo root — persistent repository instructions
    loaded automatically by Codex at session start. Declares role boundaries,
-   blocked actions, and the completion gate.
+   blocked actions, source-of-truth precedence, and the completion gate.
 
 2. **`.agents/skills/harnessable/SKILL.md`** — skill loaded on demand.
    Invoke with `"Use the harnessable skill."` to load the full role
@@ -19,7 +19,8 @@ Harnessable works with Codex through five mechanisms:
 4. **`WORLD_MODEL.md` and `world_models/`** — project-owned operational
    knowledge. `WORLD_MODEL.md` is a thin discovery index; real topology,
    vendor capabilities, failure patterns, and known edge cases live in
-   focused `world_models/*_world_model.md` files.
+   focused `world_models/*_world_model.md` files. `world_models/` is
+   authoritative; Claude project memory is supplementary and stale-risk.
 
 5. **`codex/*.prompt.md` and `codex/examples/`** — role prompt templates. Use
    these as your starting point for each engagement, pipeline, quality
@@ -100,7 +101,9 @@ codex "$(cat codex/engineer.prompt.md)"
 ```
 
 Engineer starts by scanning `docs/harness/agents/*.md` and reading each
-role's `## Role Scope`, then scanning `world_models/`. It maps every mandate
+role's `## Role Scope`, then scanning `world_models/`. During planning,
+`world_models/` is authoritative over Claude project memory; conflicts are
+flagged in the DIP preamble and `world_models/` wins. It maps every mandate
 step to the live roster, files a Protocol Enhancement Request (PER) at
 `docs/mandates/per/PER-{NNN}.md` when no role fits, and includes an Execution
 Manifest in every DIP so the operator knows the exact `/role dip-path`
@@ -129,9 +132,11 @@ verify-only operations and is removed by the Stop hook. SRE also reads
 `*_world_model.md` files before operational work, classifies the failure mode
 using the classifier pattern in `references/classifier.md` and taxonomy in
 `references/error-modes.md`, and does not act on a `Loop permitted: NO` mode
-without human approval. For below-horizon failures, SRE backs off by packaging
-observable state and declaring the lower-layer access needed instead of
-retrying at the wrong layer. After resolution, SRE updates the relevant
+without human approval. `world_models/` is authoritative over Claude project
+memory; if they conflict, SRE flags the conflict and trusts `world_models/`.
+For below-horizon failures, SRE backs off by packaging observable state and
+declaring the lower-layer access needed instead of retrying at the wrong
+layer. After resolution, SRE updates the relevant
 `world_models/{domain}_world_model.md` file when an incident reveals a new
 failure pattern, vendor capability, or edge case, or records that no update is
 required.
@@ -336,9 +341,16 @@ The Codex installer creates a thin `WORLD_MODEL.md` discovery index,
 `world_models/staging_world_model.md`, and `docs/incidents/` when absent.
 These files are project-owned and never overwritten by updates.
 
-`world_models/` contains operational infrastructure knowledge. In a public
-repository, add `world_models/` to `.gitignore` before adding real IPs, node
-names, service names, or dependency graphs.
+`world_models/` contains operational infrastructure knowledge and is the
+authoritative source for topology, vendor capabilities, failure patterns, and
+known edge cases. Claude project memory (`~/.claude/projects/{hash}/memory/`)
+is supplementary only, model-written, outside the repository, not
+version-controlled, and may be stale. When project memory conflicts with
+`world_models/`, `world_models/` wins; flag the conflict explicitly and note
+the stale project memory for the operator.
+
+In a public repository, add `world_models/` to `.gitignore` before adding real
+IPs, node names, service names, or dependency graphs.
 
 SRE and Emergency sessions scan `world_models/` before operational action and
 update the relevant `*_world_model.md` before closing any incident that

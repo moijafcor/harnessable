@@ -41,7 +41,7 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 MODE="fresh"
 TARGET=""
 
-AGENTS_SRC="$REPO_ROOT/AGENTS.md"
+AGENTS_SRC="$REPO_ROOT/framework/templates/agents-md.md"
 WORLD_MODEL_SRC="$REPO_ROOT/framework/templates/world-model.md"
 WORLD_MODELS_SRC="$REPO_ROOT/framework/templates/world_models"
 PER_SRC="$REPO_ROOT/framework/templates/per.md"
