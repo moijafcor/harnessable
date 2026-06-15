@@ -1,5 +1,30 @@
 # AGENTS.md
 
+## Source of Truth
+
+# CRITICAL: world_models/ is the authoritative source
+# for infrastructure topology, vendor capabilities,
+# failure patterns, and operational knowledge.
+#
+# Claude project memory (~/.claude/projects/{hash}/memory/)
+# is written by the model, lives outside the repository,
+# is not version-controlled, and may be arbitrarily stale.
+#
+# Precedence (highest to lowest):
+#   1. world_models/*.md          — authoritative
+#   2. AGENTS.md declarations     — authoritative
+#   3. WORLD_MODEL.md index       — authoritative
+#   4. Claude project memory      — supplementary only,
+#                                   treat as potentially stale
+#
+# When project memory conflicts with world_models/:
+#   world_models/ wins.
+#   Flag the conflict in your output.
+#   Do not silently defer to project memory.
+#
+# Always read world_models/ before acting.
+# Always flag stale project memory when detected.
+
 ## Harnessable {Project Name} Protocol
 
 ```text

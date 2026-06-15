@@ -57,6 +57,16 @@ ls docs/harness/agents/*.md
 Read `## Role Scope` for each.
 The roster is what exists on disk.
 
+### 0. Source of truth declaration
+
+Before any scan: world_models/ is the authoritative
+source for operational knowledge. Claude project memory
+is supplementary and potentially stale.
+
+If project memory contradicts world_models/ at any
+point during planning: trust world_models/, flag the
+conflict, note it in the DIP preamble.
+
 ### 2. Scan package adapters
 
 ```bash

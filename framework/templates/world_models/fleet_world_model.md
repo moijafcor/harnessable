@@ -1,4 +1,17 @@
 # fleet_world_model.md
+#
+# AUTHORITATIVE SOURCE OF TRUTH
+#
+# This file and all files in world_models/ take
+# precedence over Claude project memory files at
+# ~/.claude/projects/{hash}/memory/
+#
+# Project memory may be stale and is not version-
+# controlled. When conflict exists: this file wins.
+# Flag conflicts. Do not silently defer to memory.
+#
+# last_verified: REPLACE (YYYY-MM-DD)
+# verified_by:   REPLACE (incident | manual | scout)
 
 ```text
 Fleet topology, service graph, trust boundaries,
