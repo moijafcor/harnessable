@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 docs/harness/hooks/run.py pre_tool_use"
+            "command": "python3 /home/ubuntu/code/harnessable/docs/harness/hooks/run.py pre_tool_use"
           }
         ],
         "matcher": "Bash"
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 docs/harness/hooks/run.py post_tool_use"
+            "command": "python3 /home/ubuntu/code/harnessable/docs/harness/hooks/run.py post_tool_use"
           }
         ],
         "matcher": ""
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 docs/harness/hooks/run.py stop"
+            "command": "python3 /home/ubuntu/code/harnessable/docs/harness/hooks/run.py stop"
           }
         ]
       }
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 docs/harness/hooks/run.py pre_compact"
+            "command": "python3 /home/ubuntu/code/harnessable/docs/harness/hooks/run.py pre_compact"
           }
         ]
       }
